@@ -407,6 +407,9 @@ body::before{opacity:.32;height:55vh}
 .hbars i{background:color-mix(in srgb,var(--tint) 22%,var(--fill))}
 .bar.sel i{background:var(--tint)}
 .meter.bad i{background:var(--bad)} .meter.warn i{background:var(--warn)}
+.item.tope{grid-template-columns:auto 1fr auto;column-gap:13px}
+.item.tope .meter{grid-column:2/-1;height:4px;margin-top:6px}
+.item.tope .a{font-weight:700;font-size:18px}
 </style>
 </head>
 <body>
@@ -437,7 +440,7 @@ body::before{opacity:.32;height:55vh}
   <!-- RESUMEN -->
   <div id="v-resumen" class="view">
     <div class="wallet">
-      <span class="wlabel">Tienes ahora</span>
+      <span class="wlabel">Te queda</span>
       <span class="wbig num" id="wTotal"></span>
       <span class="wsub num" id="wSub"></span>
       <div class="wacc" id="wAcc"></div>
@@ -450,21 +453,13 @@ body::before{opacity:.32;height:55vh}
     </div>
 
     <div class="group">
-      <div class="ghrow"><h2>Este mes</h2><span class="ghnote num" id="vidaDe"></span></div>
-      <div class="card pad">
-        <div class="mrow"><span class="mbig num" id="vidaGastado"></span><span class="status" id="vidaPill"></span></div>
-        <div id="pace"></div>
-      </div>
+      <div class="ghrow"><h2>Para gastar</h2><span class="ghnote num" id="vidaDe"></span></div>
+      <div class="card"><div class="list" id="topes"></div></div>
     </div>
 
     <div class="group">
-      <div class="ghrow"><h2>A dónde va</h2><span class="ghnote num" id="flujoNota"></span></div>
-      <div class="card pad"><div id="flujo"></div></div>
-    </div>
-
-    <div class="group">
-      <div class="ghrow"><h2>Topes</h2><button class="ghlink" id="topesMore"></button></div>
-      <div class="card pad"><div class="rows" id="topes"></div></div>
+      <div class="ghrow"><h2 id="gastosT">Gastos del mes</h2><button class="ghlink" id="verMovs">Ver todos</button></div>
+      <div class="card"><div class="list" id="gastosMes"></div></div>
     </div>
   </div>
 
@@ -491,6 +486,10 @@ body::before{opacity:.32;height:55vh}
       <input type="radio" name="periodo" id="per12" value="12"><label for="per12">12 meses</label>
     </div>
     <div class="kpis" id="kpis"></div>
+    <div class="group">
+      <div class="ghrow"><h2>A dónde va</h2><span class="ghnote num" id="flujoNota"></span></div>
+      <div class="card pad"><div id="flujo"></div></div>
+    </div>
     <div class="group">
       <div class="ghrow"><h2>Últimos 12 meses</h2><span class="ghnote num" id="media"></span></div>
       <div class="card pad"><div class="bars" id="bars"></div></div>
@@ -729,7 +728,7 @@ function navbar(){
   $('navSub').textContent = view === 'deudas' ? '' : $('mlabel').textContent;
 }
 addEventListener('scroll', navbar, {passive: true});
-$('topesMore').onclick = () => { verTopes = !verTopes; render(); };
+$('verMovs').onclick = () => setView('movs');
 $('prev').onclick = () => { const ms = months(), i = ms.indexOf(cur); if (i > 0) { cur = ms[i-1]; movLimit = 60; render(); } };
 $('next').onclick = () => { const ms = months(), i = ms.indexOf(cur); if (i < ms.length-1) { cur = ms[i+1]; movLimit = 60; render(); } };
 document.addEventListener('visibilitychange', () => { if (!document.hidden && shown && $('scrim').hidden) load(); });
@@ -794,26 +793,27 @@ function renderResumen(){
   const hoy = cur === now ? Number(new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Madrid',day:'numeric'}).format(new Date())) : (cur > now ? 0 : dias);
   const ritmo = vidaT * hoy / dias;
   const lvl = vidaG > vidaT ? 'bad' : vidaG > ritmo * 1.1 ? 'warn' : '';
-  $('vidaGastado').textContent = eur(vidaG);
-  $('vidaPill').className = 'status ' + lvl;
-  $('vidaDe').textContent = `para vivir · tope ${eur(vidaT)}`;
-  $('vidaPill').textContent = vidaG > vidaT ? `+${eur(vidaG - vidaT)} sobre el tope`
-    : cur === now ? `Quedan ${eur(vidaT - vidaG)}` : cur > now ? '' : `Sobraron ${eur(vidaT - vidaG)}`;
-  $('pace').innerHTML = paceChart(vida, vidaT, dias, hoy);
-
-  const m = estadoMes();
-
-  const tl = topes.map(t => ({t, g: sum(gastos.filter(p => t.incluye.includes(p.categoria)))}))
-    .sort((a,b) => (b.g - b.t.tope) - (a.g - a.t.tope));
-  $('topesMore').hidden = tl.length <= 3; $('topesMore').textContent = verTopes ? 'Menos' : 'Ver todos';
-  $('topes').innerHTML = (verTopes ? tl : tl.slice(0, 3)).map(({t, g}) => {
-    const over = g > t.tope, near = !over && t.tope && g > t.tope * hoy / dias * 1.1;
-    const w = t.tope ? Math.min(100, g / t.tope * 100) : (g ? 100 : 0);
-    return `<div class="row"><span class="name">${esc(t.categoria)}</span>
-      <span class="val num ${over ? 'over' : ''}">${eur(g)} <small>de ${eur(t.tope)}</small></span>
-      <div class="meter ${over ? 'bad' : near ? 'warn' : ''}"><i style="width:${w}%"></i></div></div>`;
-  }).join('');
-
+  $('vidaDe').textContent = vidaG > vidaT ? `te has pasado ${eur(vidaG - vidaT)}` : `quedan ${eur(vidaT - vidaG)} de ${eur(vidaT)}`;
+  $('vidaDe').className = 'ghnote num' + (vidaG > vidaT ? ' neg-bad' : '');
+  // Cuánto queda en cada tope, en el orden del plan. Los topes a 0 solo salen si hay gasto.
+  $('topes').innerHTML = topes.map(t => ({t, g: sum(gastos.filter(p => t.incluye.includes(p.categoria)))}))
+    .filter(({t, g}) => t.tope > 0 || g > 0.5).map(({t, g}) => {
+      const q = t.tope - g, over = q < 0, near = !over && t.tope && g > t.tope * hoy / dias * 1.1;
+      const w = t.tope ? Math.min(100, g / t.tope * 100) : 100;
+      return `<button class="item tope" data-cat="${esc(t.incluye[0])}">${icon(t.incluye[0])}<span class="c">${esc(t.categoria)}</span>
+        <span class="a num ${over ? 'neg-bad' : ''}">${over ? '−' + eur(-q) : eur(q)}</span>
+        <span class="s num">${over ? 'Te has pasado' : 'Te quedan'} · gastado ${eur(g)} de ${eur(t.tope)}</span>
+        <div class="meter ${over ? 'bad' : near ? 'warn' : ''}"><i style="width:${w}%"></i></div></button>`;
+    }).join('');
+  $('topes').querySelectorAll('.tope').forEach(b => b.onclick = () => { busqueda = b.dataset.cat.toLowerCase(); $('search').value = b.dataset.cat; setView('movs'); });
+  // Gastos del mes, del más reciente al más antiguo.
+  $('gastosT').textContent = 'Gastos de ' + monthName(cur, {month: 'long'});
+  const gl = gastos.slice().sort((a,b) => b.fecha.localeCompare(a.fecha));
+  $('gastosMes').innerHTML = gl.slice(0, 25).map(p => `<button class="item mov" data-id="${p.id}">${icon(p.categoria)}<span class="c">${esc(p.comercio)}</span>
+      <span class="a num ${p.importe < 0 ? 'neg' : ''}">${p.importe < 0 ? '+' + eur2(-p.importe) : eur2(p.importe)}</span>
+      <span class="s">${cap(dayName(p.dia)).replace(/ de \w+$/,'')} · ${esc(p.categoria)}</span></button>`).join('') || '<p class="muted empty">Sin gastos este mes.</p>';
+  $('gastosMes').querySelectorAll('.item').forEach(b => b.onclick = () => editPago(D.pagos.find(p => p.id == b.dataset.id)));
+  $('verMovs').textContent = gl.length > 25 ? `Ver los ${gl.length}` : 'Ver todos';
 }
 
 // Curva del mes: gasto acumulado día a día frente al ritmo del presupuesto.
@@ -851,7 +851,9 @@ function renderDinero(){
   const pend = m.items.filter(i => !i.done).reduce((a,i) => a + i.importe, 0);
   const queda = total - pend;
   $('wSub').textContent = cur === now && pend > 0 ? `${eur(queda)} tras los ${eur(pend)} que faltan por pagar` : '';
-  // a dónde va: lo que entró frente a lo que salió este mes
+}
+// A dónde va: lo que entró frente a lo que salió este mes.
+function flujoMes(){
   const mp = D.pagos.filter(p => p.mes === cur);
   const enTope = new Set(D.topes.flatMap(t => t.incluye));
   const entro = sum(mp.filter(p => p.tipo === 'Ingreso'));
@@ -934,7 +936,7 @@ let periodo = 1;
 document.querySelectorAll('input[name=periodo]').forEach(r => r.onchange = () => { periodo = +r.value; renderAnalisis(); });
 
 function renderAnalisis(){
-  barras12();
+  barras12(); flujoMes();
   const desde = addMonth(cur, -(periodo - 1));
   // Las devoluciones se restan de la compra a la que corresponden (mismo comercio, hasta 45 días antes).
   const per = D.pagos.filter(p => p.tipo === 'Gasto' && p.mes >= desde && p.mes <= cur);
