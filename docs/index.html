@@ -160,13 +160,12 @@ footer{text-align:center;font-size:12.5px;color:var(--muted);display:flex;flex-d
 
 <section id="login" hidden>
   <h1>Mis cuentas</h1>
-  <p class="muted" id="loginMsg"></p>
+  <p class="muted">Pega tu clave. Solo te la pide la primera vez en este iPhone.</p>
   <form id="fLogin" style="display:flex;flex-direction:column;gap:10px">
-    <input id="email" name="email" type="email" autocomplete="username" placeholder="tu@email.com" required>
-    <input id="pass" name="password" type="password" autocomplete="current-password" placeholder="Contraseña">
+    <input name="username" autocomplete="username" value="Mis cuentas" hidden>
+    <input id="pass" name="password" type="password" autocomplete="current-password" placeholder="Clave" required>
     <button class="primary" type="submit" id="goBtn">Entrar</button>
   </form>
-  <button class="linkbtn" type="button" id="sendLink" style="align-self:flex-start">No tengo contraseña: mandarme un enlace</button>
   <p class="err" id="loginErr" hidden></p>
 </section>
 
@@ -182,15 +181,6 @@ footer{text-align:center;font-size:12.5px;color:var(--muted);display:flex;flex-d
 
   <!-- RESUMEN -->
   <div id="v-resumen" style="display:flex;flex-direction:column;gap:14px">
-    <section class="banner" id="passBanner" hidden>
-      <h2>Entra sin correos</h2>
-      <p class="small">Ponte una contraseña. Desde el icono de la pantalla de inicio entras con email y contraseña, y el iPhone la rellena con Face ID.</p>
-      <form id="fPass1" style="display:flex;gap:8px">
-        <input type="email" name="email" autocomplete="username" id="pbEmail" hidden>
-        <input id="newpass1" name="new-password" type="password" autocomplete="new-password" placeholder="Nueva contraseña (8+)" style="flex:1">
-        <button class="primary" type="submit" style="padding:10px 14px">Guardar</button>
-      </form>
-    </section>
 
     <section class="hero">
       <span class="label">Gasto de vida del mes</span>
@@ -288,15 +278,7 @@ footer{text-align:center;font-size:12.5px;color:var(--muted);display:flex;flex-d
   <footer>
     <span id="updated"></span>
     <button class="linkbtn" id="reload">Actualizar</button>
-    <details style="width:100%;max-width:340px">
-      <summary class="small" style="cursor:pointer">Contraseña</summary>
-      <form id="fPass2" style="display:flex;gap:8px;margin-top:8px">
-        <input type="email" name="email" autocomplete="username" id="pfEmail" hidden>
-        <input id="newpass2" name="new-password" type="password" autocomplete="new-password" placeholder="Nueva contraseña" style="flex:1">
-        <button class="linkbtn" type="submit">Guardar</button>
-      </form>
-    </details>
-    <button class="linkbtn" id="logout" style="color:var(--muted)">Cerrar sesión</button>
+    <button class="linkbtn" id="logout" style="color:var(--muted)">Olvidar la clave en este iPhone</button>
   </footer>
 </main>
 
@@ -319,7 +301,9 @@ const SUPABASE_ANON_KEY = 'sb_publishable_8arQCFyj2F-uAUeYQrN3WA_C7q8oood';
 const INICIO_SEGUIMIENTO = '2026-10';   // fijos y cuotas se marcan desde este mes
 const CUENTAS = ['BBVA','Revolut','Amex','Tarjeta crédito BBVA','Efectivo'];
 
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {auth:{persistSession:true, autoRefreshToken:true, detectSessionInUrl:true}});
+// La base de datos solo responde si la petición lleva la clave (cabecera x-clave).
+const cliente = clave => supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {auth:{persistSession:false, autoRefreshToken:false, detectSessionInUrl:false}, global:{headers:{'x-clave': clave}}});
+let sb = cliente('');
 const $ = id => document.getElementById(id);
 const eur = (n, d=0) => new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR',maximumFractionDigits:d,minimumFractionDigits:d,useGrouping:'always'}).format(n);
 const eur2 = n => eur(n, 2);
@@ -343,52 +327,31 @@ try { const v = localStorage.getItem('cuentas.view'); if (v) view = v; } catch {
 function toast(msg){ const t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 2600); }
 
 // ---------- entrar ----------
-const standalone = navigator.standalone || matchMedia('(display-mode: standalone)').matches;
-$('loginMsg').textContent = standalone
-  ? 'Entra con tu email y tu contraseña. Si aún no tienes, pulsa abajo: te llega un enlace que se abre en Safari, y allí te pones una.'
-  : 'Entra con tu email y tu contraseña, o pide un enlace por correo si aún no tienes contraseña.';
 function loginErr(msg){ $('loginErr').textContent = msg; $('loginErr').hidden = !msg; }
+const leerClave = () => { try { return localStorage.getItem('cuentas.clave') || ''; } catch { return ''; } };
+async function probar(clave){
+  const c = cliente(clave);
+  const {data, error} = await c.from('topes').select('categoria').limit(1);
+  return !error && data && data.length ? c : null;
+}
 $('fLogin').addEventListener('submit', async e => {
   e.preventDefault(); loginErr('');
-  const email = $('email').value.trim().toLowerCase();
-  if (!$('pass').value) return sendLink();
+  const clave = $('pass').value.trim();
   $('goBtn').disabled = true;
-  const {error} = await sb.auth.signInWithPassword({email, password: $('pass').value});
+  const c = await probar(clave);
   $('goBtn').disabled = false;
-  if (error) loginErr('Email o contraseña incorrectos. Si aún no tienes contraseña, pide el enlace.');
+  if (!c) return loginErr('Esa clave no vale. Cópiala otra vez del chat, sin espacios.');
+  try { localStorage.setItem('cuentas.clave', clave); } catch {}
+  sb = c; $('pass').value = ''; show(true);
 });
-async function sendLink(){
-  loginErr('');
-  const email = $('email').value.trim().toLowerCase();
-  if (!email) return loginErr('Escribe tu email primero.');
-  const {error} = await sb.auth.signInWithOtp({email, options:{emailRedirectTo: location.origin + location.pathname, shouldCreateUser:false}});
-  if (error) return loginErr(/rate|seconds|limit/i.test(error.message) ? 'Has pedido varios enlaces seguidos. Espera un rato y vuelve a probar.' : 'No se pudo enviar el enlace: ' + error.message);
-  $('loginMsg').textContent = `Enlace enviado a ${email}. Ábrelo en este iPhone; entrarás en Safari y allí podrás ponerte una contraseña.`;
-}
-$('sendLink').onclick = sendLink;
-async function savePass(input){
-  const pw = input.value;
-  if (pw.length < 8) return toast('La contraseña necesita 8 caracteres o más.');
-  const {error} = await sb.auth.updateUser({password: pw, data:{tiene_pass:true}});
-  if (error) return toast('No se pudo guardar: ' + error.message);
-  input.value = ''; $('passBanner').hidden = true;
-  toast('Contraseña guardada. Ya puedes entrar desde el icono.');
-}
-$('fPass1').addEventListener('submit', e => { e.preventDefault(); savePass($('newpass1')); });
-$('fPass2').addEventListener('submit', e => { e.preventDefault(); savePass($('newpass2')); });
-$('logout').onclick = () => sb.auth.signOut();
+$('logout').onclick = () => { try { localStorage.removeItem('cuentas.clave'); } catch {} sb = cliente(''); show(false); };
 $('reload').onclick = () => load();
 
-let shown = null, user = null;
-sb.auth.onAuthStateChange((_ev, session) => { user = session?.user || null; show(!!session); });
+let shown = null;
 function show(logged){
   if (shown === logged) return; shown = logged;
   $('login').hidden = logged; $('app').hidden = !logged; $('tabs').hidden = !logged;
-  if (logged) {
-    $('passBanner').hidden = !!user?.user_metadata?.tiene_pass;
-    $('pbEmail').value = $('pfEmail').value = user?.email || '';
-    setView(view); load();
-  } else $('fab').hidden = true;
+  if (logged) { setView(view); load(); } else $('fab').hidden = true;
 }
 
 // ---------- datos ----------
@@ -435,7 +398,7 @@ async function load(){
 async function write(q){
   const {data, error} = await q.select();
   if (error) { toast('No se guardó: ' + error.message); throw error; }
-  if (!data || !data.length) { toast('No se guardó. Cierra sesión y vuelve a entrar.'); throw new Error('0 filas'); }
+  if (!data || !data.length) { toast('No se guardó: la clave no vale. Vuelve a pegarla.'); throw new Error('0 filas'); }
   return data;
 }
 
@@ -924,7 +887,7 @@ function editDeuda(d){
     });
 }
 
-sb.auth.getSession().then(({data}) => { user = data.session?.user || null; show(!!data.session); });
+(async () => { const k = leerClave(); const c = k && await probar(k); if (c) { sb = c; show(true); } else show(false); })();
 </script>
 </body>
 </html>
