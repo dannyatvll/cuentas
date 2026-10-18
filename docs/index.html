@@ -266,11 +266,8 @@ svg.pace .spent{fill:none;stroke:var(--ink);stroke-width:2.5;stroke-linejoin:rou
 .tick{width:26px;height:26px}
 .check{padding:14px 0}
 /* --- v4: color, cristal y movimiento --- */
-:root{--b1:#5e5ce6;--b2:#0a84ff;--b3:#bf5af2;--tint:#007aff}
-body[data-view=movs]{--b1:#ff9f0a;--b2:#ff375f;--b3:#ffd60a;--tint:#ff9500}
-body[data-view=analisis]{--b1:#ff2d55;--b2:#5856d6;--b3:#ff9f0a;--tint:#ff2d55}
-body[data-view=mes]{--b1:#30d158;--b2:#64d2ff;--b3:#00c7be;--tint:#34c759}
-body[data-view=deudas]{--b1:#ff453a;--b2:#ff9f0a;--b3:#bf5af2;--tint:#ff3b30}
+:root{--b1:#8b7bff;--b2:#5b4ff0;--b3:#c4b5fd;--tint:#5b4ff0;--grad:linear-gradient(150deg,#7c6cff 0%,#5b4ff0 45%,#3a2fc0 100%)}
+@media (prefers-color-scheme: dark){:root{--tint:#8b80ff}}
 body::before{content:"";position:fixed;inset:-10vh -20vw auto;height:62vh;z-index:-1;pointer-events:none;
   background:radial-gradient(40% 55% at 18% 30%,var(--b1),transparent 70%),radial-gradient(38% 50% at 82% 22%,var(--b2),transparent 70%),radial-gradient(45% 45% at 55% 70%,var(--b3),transparent 72%);
   opacity:.38;filter:blur(30px);transition:background .6s ease;
@@ -392,6 +389,24 @@ body::before{opacity:.55;height:70vh}
 .fl-leg i{width:12px;height:12px;border-radius:4px}
 .fl-leg em{font-style:normal;color:var(--muted);text-align:right;font-size:14px}
 .kpi b,.hero .big,h1{font-weight:800}
+/* --- v6: orden y una sola paleta --- */
+body::before{opacity:.32;height:55vh}
+@media (prefers-color-scheme: dark){body::before{opacity:.38}}
+.wallet,.hero.vivid{background:radial-gradient(90% 70% at 100% 0%,rgba(196,181,253,.55),transparent 60%),var(--grad);box-shadow:0 18px 40px rgba(91,79,240,.28),inset 0 1px 0 rgba(255,255,255,.25)}
+.wbig{margin:2px 0 4px}
+.wsub{font-size:14px;color:rgba(255,255,255,.75);margin-bottom:14px;min-height:4px}
+.mrow{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.mbig{font-family:var(--display);font-size:40px;font-weight:800;letter-spacing:-.04em;line-height:1}
+.mrow .status{margin:0;font-weight:600}
+#pace{margin-top:14px}
+.fl-bar{height:12px;margin:2px 0 4px}
+.fl-leg div{grid-template-columns:12px 1fr auto;font-size:16px;padding:11px 0}
+.fl-leg i{border-radius:50%}
+.wb i{background:color-mix(in srgb,var(--tint) 18%,var(--fill))}
+.wb.hi i,.hbars i.hi{background:var(--tint)}
+.hbars i{background:color-mix(in srgb,var(--tint) 22%,var(--fill))}
+.bar.sel i{background:var(--tint)}
+.meter.bad i{background:var(--bad)} .meter.warn i{background:var(--warn)}
 </style>
 </head>
 <body>
@@ -424,6 +439,7 @@ body::before{opacity:.55;height:70vh}
     <div class="wallet">
       <span class="wlabel">Tienes ahora</span>
       <span class="wbig num" id="wTotal"></span>
+      <span class="wsub num" id="wSub"></span>
       <div class="wacc" id="wAcc"></div>
       <div class="wact">
         <button id="aAdd"><span><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span>Añadir</button>
@@ -434,48 +450,21 @@ body::before{opacity:.55;height:70vh}
     </div>
 
     <div class="group">
-      <div class="card">
-        <div class="lrow"><span>Por pagar este mes</span><b class="num" id="wPend"></b></div>
-        <div class="lrow"><span>Te quedaría</span><b class="num" id="wQueda"></b></div>
-        <div class="lrow"><span>Patrimonio neto</span><b class="num" id="wNeto"></b></div>
+      <div class="ghrow"><h2>Este mes</h2><span class="ghnote num" id="vidaDe"></span></div>
+      <div class="card pad">
+        <div class="mrow"><span class="mbig num" id="vidaGastado"></span><span class="status" id="vidaPill"></span></div>
+        <div id="pace"></div>
       </div>
-      <p class="ghnote" id="wNota" style="padding:0 4px"></p>
     </div>
 
     <div class="group">
-      <div class="ghrow"><h2>A dónde va tu dinero</h2></div>
+      <div class="ghrow"><h2>A dónde va</h2><span class="ghnote num" id="flujoNota"></span></div>
       <div class="card pad"><div id="flujo"></div></div>
-    </div>
-
-    <div class="hero">
-      <span class="label">Gastado para vivir</span>
-      <span class="big num" id="vidaGastado"></span>
-      <span class="status" id="vidaPill"></span>
-      <div id="pace"></div>
-    </div>
-
-    <div class="group">
-      <div class="card">
-        <div class="lrow"><span>Gasto total</span><b class="num" id="sTotal"></b></div>
-        <div class="lrow"><span>Ingresos</span><b class="num" id="sIng"></b></div>
-        <button class="lrow go" id="mesMini"><span>Fijos y cuotas</span><b class="num" id="mesMiniPill"></b></button>
-        <button class="lrow go" id="deudaTile"><span>Deuda</span><b class="num" id="sDeuda"></b></button>
-      </div>
     </div>
 
     <div class="group">
       <div class="ghrow"><h2>Topes</h2><button class="ghlink" id="topesMore"></button></div>
       <div class="card pad"><div class="rows" id="topes"></div></div>
-    </div>
-
-    <div class="group">
-      <div class="ghrow"><h2>Últimos 12 meses</h2><span class="ghnote num" id="media"></span></div>
-      <div class="card pad"><div class="bars" id="bars"></div></div>
-    </div>
-
-    <div class="group">
-      <div class="ghrow"><h2>Categorías</h2><button class="ghlink" id="catsMore"></button></div>
-      <div class="card"><div class="list" id="cats"></div></div>
     </div>
   </div>
 
@@ -502,6 +491,10 @@ body::before{opacity:.55;height:70vh}
       <input type="radio" name="periodo" id="per12" value="12"><label for="per12">12 meses</label>
     </div>
     <div class="kpis" id="kpis"></div>
+    <div class="group">
+      <div class="ghrow"><h2>Últimos 12 meses</h2><span class="ghnote num" id="media"></span></div>
+      <div class="card pad"><div class="bars" id="bars"></div></div>
+    </div>
     <div class="group">
       <div class="ghrow"><h2>Por día de la semana</h2></div>
       <div class="card pad"><p class="insight" id="wdIns"></p><div class="wbars" id="wd"></div></div>
@@ -736,10 +729,7 @@ function navbar(){
   $('navSub').textContent = view === 'deudas' ? '' : $('mlabel').textContent;
 }
 addEventListener('scroll', navbar, {passive: true});
-$('mesMini').onclick = () => setView('mes');
-$('deudaTile').onclick = () => setView('deudas');
 $('topesMore').onclick = () => { verTopes = !verTopes; render(); };
-$('catsMore').onclick = () => { verCats = !verCats; render(); };
 $('prev').onclick = () => { const ms = months(), i = ms.indexOf(cur); if (i > 0) { cur = ms[i-1]; movLimit = 60; render(); } };
 $('next').onclick = () => { const ms = months(), i = ms.indexOf(cur); if (i < ms.length-1) { cur = ms[i+1]; movLimit = 60; render(); } };
 document.addEventListener('visibilitychange', () => { if (!document.hidden && shown && $('scrim').hidden) load(); });
@@ -806,46 +796,24 @@ function renderResumen(){
   const lvl = vidaG > vidaT ? 'bad' : vidaG > ritmo * 1.1 ? 'warn' : '';
   $('vidaGastado').textContent = eur(vidaG);
   $('vidaPill').className = 'status ' + lvl;
-  $('vidaPill').textContent = vidaG > vidaT ? `${eur(vidaG - vidaT)} por encima de tu presupuesto de ${eur(vidaT)}`
-    : cur === now ? `Te quedan ${eur(vidaT - vidaG)} de ${eur(vidaT)} para ${dias - hoy + 1} días`
-    : cur > now ? `Presupuesto: ${eur(vidaT)}` : `Te sobraron ${eur(vidaT - vidaG)} de ${eur(vidaT)}`;
+  $('vidaDe').textContent = `para vivir · tope ${eur(vidaT)}`;
+  $('vidaPill').textContent = vidaG > vidaT ? `+${eur(vidaG - vidaT)} sobre el tope`
+    : cur === now ? `Quedan ${eur(vidaT - vidaG)}` : cur > now ? '' : `Sobraron ${eur(vidaT - vidaG)}`;
   $('pace').innerHTML = paceChart(vida, vidaT, dias, hoy);
 
-  $('sTotal').textContent = eur(sum(gastos));
-  $('sIng').textContent = eur(sum(mp.filter(p => p.tipo === 'Ingreso')));
-  $('sDeuda').textContent = eur(deudaActual());
   const m = estadoMes();
-  $('mesMiniPill').textContent = m.items.length ? `${m.items.filter(i => i.done).length} de ${m.items.length} pagados` : '—';
 
   const tl = topes.map(t => ({t, g: sum(gastos.filter(p => t.incluye.includes(p.categoria)))}))
     .sort((a,b) => (b.g - b.t.tope) - (a.g - a.t.tope));
-  $('topesMore').hidden = tl.length <= 4; $('topesMore').textContent = verTopes ? 'Menos' : 'Ver todos';
-  $('topes').innerHTML = (verTopes ? tl : tl.slice(0, 4)).map(({t, g}) => {
+  $('topesMore').hidden = tl.length <= 3; $('topesMore').textContent = verTopes ? 'Menos' : 'Ver todos';
+  $('topes').innerHTML = (verTopes ? tl : tl.slice(0, 3)).map(({t, g}) => {
     const over = g > t.tope, near = !over && t.tope && g > t.tope * hoy / dias * 1.1;
     const w = t.tope ? Math.min(100, g / t.tope * 100) : (g ? 100 : 0);
     return `<div class="row"><span class="name">${esc(t.categoria)}</span>
       <span class="val num ${over ? 'over' : ''}">${eur(g)} <small>de ${eur(t.tope)}</small></span>
-      <div class="meter ${near ? 'warn' : ''}"><i style="width:${w}%"></i></div></div>`;
+      <div class="meter ${over ? 'bad' : near ? 'warn' : ''}"><i style="width:${w}%"></i></div></div>`;
   }).join('');
 
-  const all12 = []; for (let i = 11; i >= 0; i--) all12.push(addMonth(cur, -i));
-  const tot = all12.map(mm => sum(pagos.filter(p => p.mes === mm && p.tipo === 'Gasto')));
-  const max = Math.max(1, ...tot);
-  $('bars').innerHTML = all12.map((mm,i) => `<button class="bar ${mm === cur ? 'sel' : ''}" data-m="${mm}" aria-label="${monthName(mm)}: ${eur(tot[i])}">
-      <i style="height:${Math.max(2, tot[i]/max*100)}%">${mm === cur ? `<em class="num">${eur(tot[i])}</em>` : ''}</i>
-      <span>${cap(monthName(mm,{month:'short'}).replace('.','').slice(0,1))}</span></button>`).join('');
-  $('bars').querySelectorAll('.bar').forEach(b => b.onclick = () => irAMes(b.dataset.m));
-  const con = tot.filter(v => v > 0);
-  $('media').textContent = con.length ? `media ${eur(con.reduce((a,b)=>a+b,0)/con.length)}` : '';
-
-  const cats = {};
-  gastos.forEach(p => cats[p.categoria] = (cats[p.categoria]||0) + p.importe);
-  const cl = Object.entries(cats).filter(([,v]) => v > 0.5).sort((a,b) => b[1]-a[1]);
-  const total = cl.reduce((s,[,v]) => s + v, 0) || 1;
-  $('catsMore').hidden = cl.length <= 5; $('catsMore').textContent = verCats ? 'Menos' : 'Ver todas';
-  $('cats').innerHTML = (verCats ? cl : cl.slice(0, 5)).map(([k,v]) => `<button class="item catrow" data-cat="${esc(k)}">${icon(k)}<span class="c">${esc(k)}</span>
-      <span class="a num">${eur(v)}</span><span class="s num">${Math.round(v/total*100)} % del gasto</span></button>`).join('') || '<p class="muted empty">Sin gastos este mes.</p>';
-  $('cats').querySelectorAll('.catrow').forEach(b => b.onclick = () => { busqueda = b.dataset.cat.toLowerCase(); $('search').value = b.dataset.cat; setView('movs'); });
 }
 
 // Curva del mes: gasto acumulado día a día frente al ritmo del presupuesto.
@@ -870,7 +838,7 @@ function paceChart(vida, tope, dias, hoy){
 // Saldo de cada cuenta: el último dato que diste, menos lo que se ha movido en esa cuenta después.
 const salida = p => p.tipo === 'Ingreso' ? -p.importe : p.importe;
 function saldoDe(s){ const t = new Date(s.a_fecha).getTime(); return s.saldo - D.pagos.filter(p => p.cuenta === s.cuenta && new Date(p.fecha).getTime() > t).reduce((a,p) => a + salida(p), 0); }
-const ACC_COLOR = {BBVA:'#0a84ff', Revolut:'#bf5af2', Efectivo:'#30d158'};
+const ACC_COLOR = {BBVA:'#1464f4', Revolut:'#111114', Efectivo:'#16a34a'};
 function renderDinero(){
   const ss = D.saldos.map(s => ({...s, ahora: saldoDe(s)}));
   const total = ss.reduce((a,s) => a + s.ahora, 0);
@@ -881,13 +849,8 @@ function renderDinero(){
   const now = monthKey(new Date());
   const m = cur === now ? estadoMes() : {items: []};
   const pend = m.items.filter(i => !i.done).reduce((a,i) => a + i.importe, 0);
-  const queda = total - pend, deuda = deudaActual();
-  $('wPend').textContent = cur === now ? eur(pend) : '—';
-  $('wQueda').textContent = cur === now ? eur(queda) : '—';
-  $('wQueda').className = 'num ' + (cur === now && queda < 0 ? 'neg-bad' : 'pos-ok');
-  $('wNeto').textContent = eur(total - deuda);
-  const ult = ss.length ? ss.reduce((a,s) => s.a_fecha > a ? s.a_fecha : a, ss[0].a_fecha) : null;
-  $('wNota').textContent = ult ? `Saldos puestos el ${new Date(ult).toLocaleDateString('es-ES',{day:'numeric',month:'long'})} y ajustados con los movimientos que han entrado después. "Te quedaría" es lo que tienes menos los fijos y cuotas que faltan este mes. Patrimonio neto = lo que tienes − ${eur(deuda)} de deuda.` : '';
+  const queda = total - pend;
+  $('wSub').textContent = cur === now && pend > 0 ? `${eur(queda)} tras los ${eur(pend)} que faltan por pagar` : '';
   // a dónde va: lo que entró frente a lo que salió este mes
   const mp = D.pagos.filter(p => p.mes === cur);
   const enTope = new Set(D.topes.flatMap(t => t.incluye));
@@ -895,17 +858,16 @@ function renderDinero(){
   const g = mp.filter(p => p.tipo === 'Gasto');
   const fijosCats = new Set(['Vivienda','Suscripciones','Teléfono e internet','Impuestos','Comisiones','Seguros']);
   const parts = [
-    ['Día a día', sum(g.filter(p => enTope.has(p.categoria))), '#ff9f0a'],
-    ['Casa y fijos', sum(g.filter(p => !enTope.has(p.categoria) && fijosCats.has(p.categoria))), '#0a84ff'],
-    ['Otros gastos', sum(g.filter(p => !enTope.has(p.categoria) && !fijosCats.has(p.categoria))), '#ff375f'],
-    ['Deudas', sum(mp.filter(p => p.tipo === 'Deuda' && p.importe > 0)), '#bf5af2'],
-    ['A otras personas', Math.max(0, sum(mp.filter(p => p.tipo === 'Personas'))), '#64d2ff'],
+    ['Día a día', sum(g.filter(p => enTope.has(p.categoria))), 'var(--tint)'],
+    ['Casa y fijos', sum(g.filter(p => !enTope.has(p.categoria) && fijosCats.has(p.categoria))), '#22b8cf'],
+    ['Otros gastos', sum(g.filter(p => !enTope.has(p.categoria) && !fijosCats.has(p.categoria))), '#f472b6'],
+    ['Deudas', sum(mp.filter(p => p.tipo === 'Deuda' && p.importe > 0)), '#f5a524'],
+    ['A otras personas', Math.max(0, sum(mp.filter(p => p.tipo === 'Personas'))), '#a1a1aa'],
   ].filter(x => x[1] > 0.5);
-  const salio = parts.reduce((a,x) => a + x[1], 0), base = Math.max(entro, salio, 1), bal = entro - salio;
-  $('flujo').innerHTML = `<div class="fl-top"><div><span class="label">Entró</span><b class="num">${eur(entro)}</b></div><div><span class="label">Salió</span><b class="num">${eur(salio)}</b></div><div><span class="label">Balance</span><b class="num ${bal >= 0 ? 'pos-ok' : 'neg-bad'}">${bal >= 0 ? '+' : '−'}${eur(Math.abs(bal))}</b></div></div>
-    <div class="fl-bar in"><i style="width:${entro / base * 100}%"></i></div>
-    <div class="fl-bar">${parts.map(([,v,c]) => `<i style="width:${v / base * 100}%;background:${c}"></i>`).join('')}</div>
-    <div class="fl-leg">${parts.map(([k,v,c]) => `<div><i style="background:${c}"></i><span>${k}</span><b class="num">${eur(v)}</b><em class="num">${salio ? Math.round(v / salio * 100) : 0} %</em></div>`).join('')}</div>`;
+  const salio = parts.reduce((a,x) => a + x[1], 0), base = Math.max(salio, 1);
+  $('flujoNota').textContent = `entró ${eur(entro)} · salió ${eur(salio)}`;
+  $('flujo').innerHTML = `<div class="fl-bar">${parts.map(([,v,c]) => `<i style="width:${v / base * 100}%;background:${c}"></i>`).join('')}</div>
+    <div class="fl-leg">${parts.map(([k,v,c]) => `<div><i style="background:${c}"></i><span>${k}</span><b class="num">${eur(v)}</b></div>`).join('')}</div>`;
 }
 function editSaldos(){
   const cuentas = [...new Set([...D.saldos.map(s => s.cuenta), 'BBVA', 'Revolut', 'Efectivo'])];
@@ -944,6 +906,18 @@ function irAMes(m){
 }
 
 // ---------- análisis ----------
+function barras12(){
+  const all12 = []; for (let i = 11; i >= 0; i--) all12.push(addMonth(cur, -i));
+  const tot = all12.map(mm => sum(D.pagos.filter(p => p.mes === mm && p.tipo === 'Gasto')));
+  const max = Math.max(1, ...tot);
+  $('bars').innerHTML = all12.map((mm,i) => `<button class="bar ${mm === cur ? 'sel' : ''}" data-m="${mm}" aria-label="${monthName(mm)}: ${eur(tot[i])}">
+      <i style="height:${Math.max(2, tot[i]/max*100)}%">${mm === cur ? `<em class="num">${eur(tot[i])}</em>` : ''}</i>
+      <span>${cap(monthName(mm,{month:'short'}).replace('.','').slice(0,1))}</span></button>`).join('');
+  $('bars').querySelectorAll('.bar').forEach(b => b.onclick = () => irAMes(b.dataset.m));
+  const con = tot.filter(v => v > 0);
+  $('media').textContent = con.length ? `media ${eur(con.reduce((a,b)=>a+b,0)/con.length)}` : '';
+
+}
 const CAT_COLOR = {
   'Restaurantes':'#ff9500','Supermercado':'#34c759','Transporte':'#007aff','Compras':'#ff2d55','Viajes':'#32ade6',
   'Ocio':'#af52de','Salidas de noche':'#5856d6','Suscripciones':'#ff3b30','Vivienda':'#a2845e','Salud':'#ff6482',
@@ -960,6 +934,7 @@ let periodo = 1;
 document.querySelectorAll('input[name=periodo]').forEach(r => r.onchange = () => { periodo = +r.value; renderAnalisis(); });
 
 function renderAnalisis(){
+  barras12();
   const desde = addMonth(cur, -(periodo - 1));
   // Las devoluciones se restan de la compra a la que corresponden (mismo comercio, hasta 45 días antes).
   const per = D.pagos.filter(p => p.tipo === 'Gasto' && p.mes >= desde && p.mes <= cur);
@@ -981,10 +956,10 @@ function renderAnalisis(){
   const top = Object.entries(porDia).sort((a,b) => b[1] - a[1])[0];
   const kpi = (ic, col, label, val, sub='') => `<div class="kpi glass"><span class="ico sm" style="--c:${col}"><svg viewBox="0 0 24 24">${ic}</svg></span><span class="label">${label}</span><b class="num">${val}</b>${sub ? `<span class="sub">${sub}</span>` : ''}</div>`;
   $('kpis').innerHTML =
-    kpi('<path d="M4 19h16M7 16V9M12 16V5M17 16v-4"/>', '#007aff', 'Al día', eur(diasP.length ? total / diasP.length : 0), `${diasP.length} días`) +
-    kpi('<path d="M6 3h12l-1 18H7z"/><path d="M9 8h6"/>', '#ff9500', 'Por compra', eur(g.length ? total / g.length : 0, 2), `${g.length} compras`) +
-    kpi('<path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/>', '#ff2d55', 'Día más caro', top ? eur(top[1]) : '—', top ? cap(dayName(top[0])).replace(/ de \d{4}$/,'') : '') +
-    kpi('<circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/>', '#34c759', 'Sin gastar', `${sinGastar} ${sinGastar === 1 ? 'día' : 'días'}`, diasP.length ? `${Math.round(sinGastar / diasP.length * 100)} % del periodo` : '');
+    kpi('<path d="M4 19h16M7 16V9M12 16V5M17 16v-4"/>', 'var(--tint)', 'Al día', eur(diasP.length ? total / diasP.length : 0), `${diasP.length} días`) +
+    kpi('<path d="M6 3h12l-1 18H7z"/><path d="M9 8h6"/>', 'var(--tint)', 'Por compra', eur(g.length ? total / g.length : 0, 2), `${g.length} compras`) +
+    kpi('<path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/>', 'var(--tint)', 'Día más caro', top ? eur(top[1]) : '—', top ? cap(dayName(top[0])).replace(/ de \d{4}$/,'') : '') +
+    kpi('<circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/>', 'var(--tint)', 'Sin gastar', `${sinGastar} ${sinGastar === 1 ? 'día' : 'días'}`, diasP.length ? `${Math.round(sinGastar / diasP.length * 100)} % del periodo` : '');
 
   // día de la semana: media por cada lunes, martes...
   const wdTot = Array(7).fill(0), wdN = Array(7).fill(0);
@@ -993,7 +968,7 @@ function renderAnalisis(){
   const wdAvg = wdTot.map((t,i) => wdN[i] ? t / wdN[i] : 0);
   const wmax = Math.max(1, ...wdAvg), wi = wdAvg.indexOf(Math.max(...wdAvg));
   $('wdIns').innerHTML = total ? `Gastas más los <b>${WD[wi].toLowerCase()}${wi < 5 ? '' : 's'}</b>: ${eur(wdAvg[wi])} de media.` : 'Sin gastos en este periodo.';
-  $('wd').innerHTML = wdAvg.map((v,i) => `<div class="wb ${i === wi && total ? 'hi' : ''}"><em class="num">${v >= 1 ? eur(v) : ''}</em><i style="height:${Math.max(3, v / wmax * 100)}%"></i><span>${WD1[i]}</span></div>`).join('');
+  $('wd').innerHTML = wdAvg.map((v,i) => `<div class="wb ${i === wi && total ? 'hi' : ''}"><em class="num">${i === wi && total ? eur(v) : ''}</em><i style="height:${Math.max(3, v / wmax * 100)}%"></i><span>${WD1[i]}</span></div>`).join('');
 
   // hora (solo movimientos con hora: Apple Pay y Revolut)
   const h = g.filter(p => p.con_hora);
