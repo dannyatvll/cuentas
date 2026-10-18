@@ -204,6 +204,67 @@ footer .linkbtn{font-size:15px}
 .seg input:focus-visible + label{outline:2px solid var(--ink)}
 .check .c{white-space:normal!important;overflow:visible!important;line-height:1.25}
 .view{padding-bottom:40px}
+/* --- v3: estructura de app nativa --- */
+main{gap:20px}
+.view{gap:30px;padding-bottom:30px}
+header.top{display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding-top:14px}
+header.top h1{font-size:34px}
+.monthnav{background:none;padding:0;margin-left:-8px;gap:0}
+.monthnav button{width:30px;height:30px;font-size:22px;color:var(--muted)}
+.monthnav span{min-width:0;font-size:15px;font-weight:600;color:var(--muted);text-transform:none;padding:0 2px}
+.monthnav.flash span{animation:flash 1.1s ease}
+@keyframes flash{0%,100%{color:var(--muted)}20%,60%{color:var(--ink)}}
+
+.navbar{position:fixed;top:0;left:0;right:0;z-index:30;padding:calc(env(safe-area-inset-top,0px) + 10px) 16px 10px;text-align:center;
+  background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-bottom:.5px solid var(--glass-line);
+  display:flex;flex-direction:column;gap:0;opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .2s,transform .2s}
+.navbar.on{opacity:1;transform:none}
+.navbar span:first-child{font-weight:600;font-size:17px}
+.navsub{font-size:12px;color:var(--muted)}
+
+.hero{padding:6px 0 0;gap:2px}
+.hero .label{font-size:15px;color:var(--muted)}
+.hero .big{font-size:56px;margin-top:0}
+.status{font-size:15px;font-weight:500;color:var(--muted);margin-top:6px}
+.status.warn{color:var(--warn)} .status.bad{color:var(--bad)} .status.ok{color:var(--ink)}
+#pace{margin-top:18px}
+svg.pace{display:block;width:100%;height:120px;overflow:visible}
+svg.pace .budget{stroke:var(--soft);stroke-width:1.5;stroke-dasharray:4 5}
+svg.pace .cap{stroke:var(--soft);stroke-width:1}
+svg.pace .area{fill:var(--ink);opacity:.06}
+svg.pace .spent{fill:none;stroke:var(--ink);stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}
+.pacelegend{display:flex;gap:16px;font-size:12px;color:var(--muted);margin-top:8px}
+.pacelegend i{display:inline-block;width:14px;height:0;border-top:2.5px solid var(--ink);vertical-align:middle;margin-right:6px}
+.pacelegend i.k2{border-top:1.5px dashed var(--muted)}
+
+.group{display:flex;flex-direction:column;gap:10px}
+.ghrow{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:0 4px}
+.ghrow h2{font-size:22px}
+.ghrow.sm h3{margin:0;font-size:15px;font-weight:600;color:var(--ink)}
+.ghlink{background:none;border:0;padding:0;color:var(--muted);font-size:15px;font-weight:500}
+.ghnote{font-size:13px;color:var(--muted)}
+.card{background:var(--card);border-radius:18px;padding:0 16px;min-width:0}
+.card.pad{padding:18px 16px}
+.lrow{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:15px 0;border:0;border-top:.5px solid var(--line);background:none;width:100%;text-align:left;font-size:17px}
+.lrow:first-child{border-top:0}
+.lrow b{font-weight:500;color:var(--muted)}
+.lrow.go b::after{content:"›";margin-left:10px;color:var(--soft);font-size:22px;line-height:0;position:relative;top:2px}
+.item,.check,.debt{border-top:.5px solid var(--line)}
+.item:first-child,.check:first-child,.debt:first-child{border-top:0}
+.ico{width:36px;height:36px;border-radius:50%;background:var(--fill);display:grid;place-items:center;grid-row:span 2;flex:none}
+.ico svg{width:19px;height:19px;fill:none;stroke:var(--ink);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.item.mov,.item.catrow{grid-template-columns:auto 1fr auto;column-gap:13px}
+.item .s{font-size:13px}
+.empty{padding:16px 0;margin:0}
+.days{display:flex;flex-direction:column;gap:22px}
+#moreMovs{align-self:center}
+.chips{margin-top:2px}
+.rows{gap:18px}
+.row .val small{font-size:13px}
+.bars{height:150px;padding-top:24px}
+.debt .h{font-size:17px}
+.tick{width:26px;height:26px}
+.check{padding:14px 0}
 </style>
 </head>
 <body>
@@ -219,107 +280,107 @@ footer .linkbtn{font-size:15px}
   <p class="err" id="loginErr" hidden></p>
 </section>
 
+<div class="navbar" id="navbar" aria-hidden="true"><span id="navTitle"></span><span class="navsub" id="navSub"></span></div>
+
 <main id="app" hidden>
   <header class="top">
-    <h1 id="title">Resumen</h1>
     <div class="monthnav">
       <button id="prev" aria-label="Mes anterior">‹</button>
       <span id="mlabel" class="num"></span>
       <button id="next" aria-label="Mes siguiente">›</button>
     </div>
+    <h1 id="title">Resumen</h1>
   </header>
 
   <!-- RESUMEN -->
   <div id="v-resumen" class="view">
     <div class="hero">
-      <span class="label">Gastado para vivir este mes</span>
+      <span class="label">Gastado para vivir</span>
       <span class="big num" id="vidaGastado"></span>
-      <span class="muted num" id="vidaTope"></span>
-      <div class="meter" id="vidaMeter"><i></i></div>
       <span class="status" id="vidaPill"></span>
+      <div id="pace"></div>
     </div>
 
-    <div class="tiles">
-      <div class="tile"><span class="label">Gasto total</span><b class="num" id="sTotal"></b></div>
-      <div class="tile"><span class="label">Ingresos</span><b class="num" id="sIng"></b></div>
-      <button class="tile" id="mesMini"><span class="label">Pagados este mes</span><b class="num" id="mesMiniPill"></b><span class="sub" id="mesMiniTxt"></span></button>
-      <button class="tile" id="deudaTile"><span class="label">Deuda</span><b class="num" id="sDeuda"></b><span class="sub">Ver plan</span></button>
+    <div class="group">
+      <div class="card">
+        <div class="lrow"><span>Gasto total</span><b class="num" id="sTotal"></b></div>
+        <div class="lrow"><span>Ingresos</span><b class="num" id="sIng"></b></div>
+        <button class="lrow go" id="mesMini"><span>Fijos y cuotas</span><b class="num" id="mesMiniPill"></b></button>
+        <button class="lrow go" id="deudaTile"><span>Deuda</span><b class="num" id="sDeuda"></b></button>
+      </div>
     </div>
 
-    <section>
-      <h2>Topes</h2>
-      <div class="rows" id="topes"></div>
-      <button class="more" id="topesMore"></button>
-    </section>
+    <div class="group">
+      <div class="ghrow"><h2>Topes</h2><button class="ghlink" id="topesMore"></button></div>
+      <div class="card pad"><div class="rows" id="topes"></div></div>
+    </div>
 
-    <section>
-      <h2>Últimos 12 meses</h2>
-      <div class="bars" id="bars"></div>
-      <p class="small muted" id="media"></p>
-    </section>
+    <div class="group">
+      <div class="ghrow"><h2>Últimos 12 meses</h2><span class="ghnote num" id="media"></span></div>
+      <div class="card pad"><div class="bars" id="bars"></div></div>
+    </div>
 
-    <section>
-      <h2>Categorías</h2>
-      <div class="cats" id="cats"></div>
-      <button class="more" id="catsMore"></button>
-    </section>
+    <div class="group">
+      <div class="ghrow"><h2>Categorías</h2><button class="ghlink" id="catsMore"></button></div>
+      <div class="card"><div class="list" id="cats"></div></div>
+    </div>
   </div>
 
   <!-- MOVIMIENTOS -->
   <div id="v-movs" class="view" hidden>
-    <input id="search" type="search" placeholder="Buscar comercio o categoría">
-    <div class="chips" id="filters">
-      <button data-f="todos" aria-pressed="true">Todos</button>
-      <button data-f="gastos" aria-pressed="false">Gastos</button>
-      <button data-f="sin" aria-pressed="false">Sin categoría</button>
-      <button data-f="ingresos" aria-pressed="false">Ingresos</button>
-      <button data-f="otros" aria-pressed="false">Deuda y personas</button>
+    <div class="group">
+      <input id="search" type="search" placeholder="Buscar">
+      <div class="chips" id="filters">
+        <button data-f="todos" aria-pressed="true">Todos</button>
+        <button data-f="gastos" aria-pressed="false">Gastos</button>
+        <button data-f="sin" aria-pressed="false">Sin categoría</button>
+        <button data-f="ingresos" aria-pressed="false">Ingresos</button>
+        <button data-f="otros" aria-pressed="false">Deuda y personas</button>
+      </div>
     </div>
-    <p class="small muted" id="movsSum" style="padding:0 4px"></p>
-    <section class="flush">
-      <div class="list" id="movs"></div>
-    </section>
+    <div id="movs" class="days"></div>
   </div>
 
   <!-- MES -->
   <div id="v-mes" class="view" hidden>
-    <section>
-      <div class="progress"><h2>Este mes</h2><span class="num muted small" id="mesProg"></span></div>
-      <div class="meter"><i id="mesBar"></i></div>
-      <p class="small" id="mesFalta"></p>
-      <div class="cuentas" id="mesCuentas"></div>
-    </section>
-    <section>
-      <div class="progress"><h2>Gastos fijos</h2><button class="linkbtn" id="addFijo">+ Añadir</button></div>
-      <div class="list" id="fijos"></div>
-    </section>
-    <section>
-      <h2>Cuotas y pagos de deuda</h2>
-      <div class="list" id="cuotas"></div>
-    </section>
+    <div class="hero">
+      <span class="label" id="mesLabel">Pagado este mes</span>
+      <span class="big num" id="mesProg"></span>
+      <span class="status" id="mesFalta"></span>
+      <div class="meter" style="margin-top:14px"><i id="mesBar"></i></div>
+    </div>
+    <div class="group" id="cuentasGroup">
+      <div class="ghrow"><h2>Ten preparado</h2></div>
+      <div class="card" id="mesCuentas"></div>
+    </div>
+    <div class="group">
+      <div class="ghrow"><h2>Gastos fijos</h2><button class="ghlink" id="addFijo">Añadir</button></div>
+      <div class="card"><div class="list" id="fijos"></div></div>
+    </div>
+    <div class="group">
+      <div class="ghrow"><h2>Deudas</h2></div>
+      <div class="card"><div class="list" id="cuotas"></div></div>
+    </div>
   </div>
 
   <!-- DEUDAS -->
   <div id="v-deudas" class="view" hidden>
-    <section>
-      <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap">
-        <div style="display:flex;flex-direction:column;gap:2px">
-          <span class="label">Deuda pendiente</span>
-          <span class="num" style="font-family:var(--display);font-size:44px;font-weight:700;letter-spacing:-.04em;line-height:1.05" id="deudaHoy"></span>
-        </div>
-        <span class="pill" id="libre"></span>
-      </div>
-      <div id="debtChart"></div>
-      <p class="small muted" id="debtVsPlan"></p>
-    </section>
-    <section>
-      <div class="progress"><h2>Activas</h2><button class="linkbtn" id="addDeuda">+ Añadir</button></div>
-      <div class="list" id="debts"></div>
-    </section>
-    <section id="paidSec" hidden>
-      <h2>Liquidadas</h2>
-      <div class="list" id="debtsPaid"></div>
-    </section>
+    <div class="hero">
+      <span class="label">Debes hoy</span>
+      <span class="big num" id="deudaHoy"></span>
+      <span class="status" id="libre"></span>
+    </div>
+    <div class="group">
+      <div class="card pad"><div id="debtChart"></div><p class="small muted" id="debtVsPlan"></p></div>
+    </div>
+    <div class="group">
+      <div class="ghrow"><h2>Activas</h2><button class="ghlink" id="addDeuda">Añadir</button></div>
+      <div class="card"><div class="list" id="debts"></div></div>
+    </div>
+    <div class="group" id="paidSec" hidden>
+      <div class="ghrow"><h2>Liquidadas</h2></div>
+      <div class="card"><div class="list" id="debtsPaid"></div></div>
+    </div>
   </div>
 
   <footer>
@@ -472,10 +533,18 @@ function setView(v){
   $('title').textContent = TITLES[v];
   $('fab').hidden = v !== 'movs';
   document.querySelector('.monthnav').hidden = v === 'deudas';
-  scrollTo(0, 0);
+  scrollTo(0, 0); navbar();
   if (D) render();
 }
 $('tabs').querySelectorAll('button').forEach(b => b.onclick = () => setView(b.dataset.v));
+// Barra superior compacta al hacer scroll, como el título grande de iOS.
+function navbar(){
+  const on = scrollY > 64 && !$('app').hidden;
+  $('navbar').classList.toggle('on', on);
+  $('navTitle').textContent = TITLES[view];
+  $('navSub').textContent = view === 'deudas' ? '' : $('mlabel').textContent;
+}
+addEventListener('scroll', navbar, {passive: true});
 $('mesMini').onclick = () => setView('mes');
 $('deudaTile').onclick = () => setView('deudas');
 $('topesMore').onclick = () => { verTopes = !verTopes; render(); };
@@ -497,12 +566,45 @@ function render(){
 
 // ---------- resumen ----------
 function deudaActual(){ return D.deudas.filter(d => !d.pagada).reduce((s,d) => s + d.pendiente, 0); }
+// Iconos de categoría (trazos de 24 px, monocromo).
+const ICON_PATHS = {
+  'Restaurantes':'<path d="M7 3v8M5 3v4a2 2 0 0 0 4 0V3M7 11v10M17 21v-9c-2 0-3-1.5-3-4.5S15 3 17 3z"/>',
+  'Supermercado':'<path d="M3 4h2l2.2 11h10.6l2-8H6"/><circle cx="9" cy="19.5" r="1.3"/><circle cx="17" cy="19.5" r="1.3"/>',
+  'Transporte':'<rect x="5" y="3" width="14" height="14" rx="3"/><path d="M5 11h14M8 17v3M16 17v3"/><circle cx="8.5" cy="14" r=".6"/><circle cx="15.5" cy="14" r=".6"/>',
+  'Compras':'<path d="M5 8h14l-1.2 12H6.2z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/>',
+  'Viajes':'<rect x="3" y="7" width="18" height="13" rx="2.5"/><path d="M8.5 7V5.5A1.5 1.5 0 0 1 10 4h4a1.5 1.5 0 0 1 1.5 1.5V7M3 12.5h18"/>',
+  'Ocio':'<circle cx="12" cy="12" r="9"/><path d="M10 8.5l5 3.5-5 3.5z"/>',
+  'Salidas de noche':'<path d="M5 4h14l-7 8zM12 12v8M8 20h8"/>',
+  'Suscripciones':'<path d="M17 2.5l3.5 3.5L17 9.5"/><path d="M3.5 11.5V10a4 4 0 0 1 4-4h13"/><path d="M7 21.5L3.5 18 7 14.5"/><path d="M20.5 12.5V14a4 4 0 0 1-4 4h-13"/>',
+  'Vivienda':'<path d="M3 11l9-7.5 9 7.5"/><path d="M5.5 9.5V20h13V9.5M10 20v-5h4v5"/>',
+  'Salud':'<path d="M12 20.5s-7.5-4.6-9-9.6A4.8 4.8 0 0 1 12 6.6a4.8 4.8 0 0 1 9 4.3c-1.5 5-9 9.6-9 9.6z"/>',
+  'Deporte':'<path d="M6.5 7v10M17.5 7v10M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/>',
+  'Cuidado personal':'<circle cx="6" cy="6" r="2.8"/><circle cx="6" cy="18" r="2.8"/><path d="M20 4L8.2 15.8M14.5 14.5L20 20M8.2 8.2L12 12"/>',
+  'Teléfono e internet':'<rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/>',
+  'Impuestos':'<path d="M3 9.5L12 4l9 5.5M5.5 10v8M10 10v8M14 10v8M18.5 10v8M3 20.5h18"/>',
+  'Ingreso':'<path d="M12 3.5v11M7.5 10l4.5 4.5 4.5-4.5M4 20h16"/>',
+  'Movimiento interno':'<path d="M4 8h15l-3.5-3.5M20 16H5l3.5 3.5"/>',
+  'Pago de deuda':'<rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19M6.5 15h4"/>',
+  'Entre personas':'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.6a3.5 3.5 0 0 1 0 6.8M21.5 20a6.5 6.5 0 0 0-3.5-5.8"/>',
+  'Bizum':'<path d="M21 3L10.5 13.5M21 3l-6.5 18-4-7.5L3 9.5z"/>',
+  'Tabaco':'<path d="M2.5 15h15v4h-15zM20 15v4M20 12c0-2-2-2-2-4s2-2 2-4"/>',
+  'Apuestas':'<rect x="4" y="4" width="16" height="16" rx="3.5"/><circle cx="9" cy="9" r=".8"/><circle cx="15" cy="15" r=".8"/><circle cx="15" cy="9" r=".8"/><circle cx="9" cy="15" r=".8"/>',
+  'Comisiones':'<path d="M18.5 5.5l-13 13"/><circle cx="7" cy="7" r="2.3"/><circle cx="17" cy="17" r="2.3"/>',
+  'Educación':'<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5zM4 20.5V5.5"/>',
+  'Multas':'<path d="M12 3.5l9.5 16.5h-19z"/><path d="M12 10v4.5M12 17.2v.3"/>',
+  'Efectivo':'<rect x="2.5" y="6" width="19" height="12" rx="2.5"/><circle cx="12" cy="12" r="2.5"/>',
+  'Sin categoría':'<circle cx="12" cy="12" r="9"/><path d="M9.6 9.3a2.5 2.5 0 1 1 3.4 2.3c-.6.3-1 .8-1 1.6M12 16.8v.4"/>',
+  '_':'<circle cx="12" cy="12" r="9"/><circle cx="8" cy="12" r=".7"/><circle cx="12" cy="12" r=".7"/><circle cx="16" cy="12" r=".7"/>',
+};
+const icon = cat => `<span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24">${ICON_PATHS[cat] || ICON_PATHS['_']}</svg></span>`;
+
 function renderResumen(){
   const {pagos, topes, plan} = D;
   const mp = pagos.filter(p => p.mes === cur);
   const gastos = mp.filter(p => p.tipo === 'Gasto');
   const enTope = new Set(topes.flatMap(t => t.incluye));
-  const vidaG = sum(gastos.filter(p => enTope.has(p.categoria)));
+  const vida = gastos.filter(p => enTope.has(p.categoria));
+  const vidaG = sum(vida);
   const planMes = plan.find(p => p.mes === cur);
   const vidaT = planMes ? planMes.vida : topes.reduce((s,t) => s + t.tope, 0);
   const now = monthKey(new Date());
@@ -511,32 +613,28 @@ function renderResumen(){
   const ritmo = vidaT * hoy / dias;
   const lvl = vidaG > vidaT ? 'bad' : vidaG > ritmo * 1.1 ? 'warn' : '';
   $('vidaGastado').textContent = eur(vidaG);
-  $('vidaTope').textContent = `de ${eur(vidaT)} de presupuesto`;
-  $('vidaMeter').className = 'meter ' + lvl;
-  $('vidaMeter').firstElementChild.style.width = Math.min(100, vidaT ? vidaG / vidaT * 100 : 0) + '%';
   $('vidaPill').className = 'status ' + lvl;
-  $('vidaPill').textContent = vidaG > vidaT ? `Te has pasado ${eur(vidaG - vidaT)}`
-    : cur === now ? `Quedan ${eur(vidaT - vidaG)} · ${dias - hoy + 1} días`
-    : cur > now ? '' : `Sobraron ${eur(vidaT - vidaG)}`;
+  $('vidaPill').textContent = vidaG > vidaT ? `${eur(vidaG - vidaT)} por encima de tu presupuesto de ${eur(vidaT)}`
+    : cur === now ? `Te quedan ${eur(vidaT - vidaG)} de ${eur(vidaT)} para ${dias - hoy + 1} días`
+    : cur > now ? `Presupuesto: ${eur(vidaT)}` : `Te sobraron ${eur(vidaT - vidaG)} de ${eur(vidaT)}`;
+  $('pace').innerHTML = paceChart(vida, vidaT, dias, hoy);
+
   $('sTotal').textContent = eur(sum(gastos));
   $('sIng').textContent = eur(sum(mp.filter(p => p.tipo === 'Ingreso')));
   $('sDeuda').textContent = eur(deudaActual());
-
   const m = estadoMes();
-  $('mesMiniPill').textContent = m.items.length ? `${m.items.filter(i => i.done).length} de ${m.items.length}` : '—';
-  $('mesMiniTxt').textContent = m.total - m.pagado > 0.5 ? `Faltan ${eur(m.total - m.pagado)}` : m.items.length ? 'Todo pagado' : '';
+  $('mesMiniPill').textContent = m.items.length ? `${m.items.filter(i => i.done).length} de ${m.items.length} pagados` : '—';
 
   const tl = topes.map(t => ({t, g: sum(gastos.filter(p => t.incluye.includes(p.categoria)))}))
     .sort((a,b) => (b.g - b.t.tope) - (a.g - a.t.tope));
-  $('topesMore').hidden = tl.length <= 4; $('topesMore').textContent = verTopes ? 'Ver menos' : `Ver los ${tl.length}`;
+  $('topesMore').hidden = tl.length <= 4; $('topesMore').textContent = verTopes ? 'Menos' : 'Ver todos';
   $('topes').innerHTML = (verTopes ? tl : tl.slice(0, 4)).map(({t, g}) => {
-      const over = g > t.tope, near = !over && t.tope && g > t.tope * hoy / dias * 1.1;
-      const w = t.tope ? Math.min(100, g / t.tope * 100) : (g ? 100 : 0);
-      return `<div class="row"><span class="name">${esc(t.categoria)}</span>
-        <span class="val num ${over ? 'over' : ''}">${eur(g)} <small>/ ${eur(t.tope)}</small></span>
-        <div class="meter ${near ? 'warn' : ''}"><i style="width:${w}%"></i></div>
-        ${over ? `<span class="overby num">+${eur(g - t.tope)} por encima</span>` : ''}</div>`;
-    }).join('');
+    const over = g > t.tope, near = !over && t.tope && g > t.tope * hoy / dias * 1.1;
+    const w = t.tope ? Math.min(100, g / t.tope * 100) : (g ? 100 : 0);
+    return `<div class="row"><span class="name">${esc(t.categoria)}</span>
+      <span class="val num ${over ? 'over' : ''}">${eur(g)} <small>de ${eur(t.tope)}</small></span>
+      <div class="meter ${near ? 'warn' : ''}"><i style="width:${w}%"></i></div></div>`;
+  }).join('');
 
   const all12 = []; for (let i = 11; i >= 0; i--) all12.push(addMonth(cur, -i));
   const tot = all12.map(mm => sum(pagos.filter(p => p.mes === mm && p.tipo === 'Gasto')));
@@ -544,17 +642,44 @@ function renderResumen(){
   $('bars').innerHTML = all12.map((mm,i) => `<button class="bar ${mm === cur ? 'sel' : ''}" data-m="${mm}" aria-label="${monthName(mm)}: ${eur(tot[i])}">
       <i style="height:${Math.max(2, tot[i]/max*100)}%">${mm === cur ? `<em class="num">${eur(tot[i])}</em>` : ''}</i>
       <span>${cap(monthName(mm,{month:'short'}).replace('.','').slice(0,1))}</span></button>`).join('');
-  $('bars').querySelectorAll('.bar').forEach(b => b.onclick = () => { if (months().includes(b.dataset.m)) { cur = b.dataset.m; render(); } });
+  $('bars').querySelectorAll('.bar').forEach(b => b.onclick = () => irAMes(b.dataset.m));
   const con = tot.filter(v => v > 0);
-  $('media').textContent = con.length ? `Media: ${eur(con.reduce((a,b)=>a+b,0)/con.length)} al mes` : '';
+  $('media').textContent = con.length ? `media ${eur(con.reduce((a,b)=>a+b,0)/con.length)}` : '';
 
   const cats = {};
   gastos.forEach(p => cats[p.categoria] = (cats[p.categoria]||0) + p.importe);
   const cl = Object.entries(cats).filter(([,v]) => v > 0.5).sort((a,b) => b[1]-a[1]);
-  const cmax = cl.length ? cl[0][1] : 1;
-  $('catsMore').hidden = cl.length <= 5; $('catsMore').textContent = verCats ? 'Ver menos' : `Ver las ${cl.length}`;
-  $('cats').innerHTML = (verCats ? cl : cl.slice(0, 5)).map(([k,v]) => `<div class="cat"><span class="t">${esc(k)}</span>
-      <span class="track"><i style="width:${v/cmax*100}%"></i></span><span class="num">${eur(v)}</span></div>`).join('') || '<p class="muted">Sin gastos este mes.</p>';
+  const total = cl.reduce((s,[,v]) => s + v, 0) || 1;
+  $('catsMore').hidden = cl.length <= 5; $('catsMore').textContent = verCats ? 'Menos' : 'Ver todas';
+  $('cats').innerHTML = (verCats ? cl : cl.slice(0, 5)).map(([k,v]) => `<button class="item catrow" data-cat="${esc(k)}">${icon(k)}<span class="c">${esc(k)}</span>
+      <span class="a num">${eur(v)}</span><span class="s num">${Math.round(v/total*100)} % del gasto</span></button>`).join('') || '<p class="muted empty">Sin gastos este mes.</p>';
+  $('cats').querySelectorAll('.catrow').forEach(b => b.onclick = () => { busqueda = b.dataset.cat.toLowerCase(); $('search').value = b.dataset.cat; setView('movs'); });
+}
+
+// Curva del mes: gasto acumulado día a día frente al ritmo del presupuesto.
+function paceChart(vida, tope, dias, hoy){
+  const W = 360, H = 120, P = 4;
+  const porDia = Array(dias + 1).fill(0);
+  vida.forEach(p => { const d = +p.dia.slice(8, 10); porDia[d] += p.importe; });
+  const acc = []; let a = 0; for (let d = 1; d <= Math.max(hoy, 0); d++) { a += porDia[d]; acc.push([d, a]); }
+  const max = Math.max(tope, a, 1) * 1.08;
+  const x = d => P + (d - 1) / Math.max(1, dias - 1) * (W - 2 * P);
+  const y = v => H - P - v / max * (H - 2 * P);
+  const line = acc.map(([d,v],i) => `${i ? 'L' : 'M'}${x(d).toFixed(1)},${y(v).toFixed(1)}`).join('');
+  const last = acc[acc.length - 1];
+  return `<svg class="pace" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Gasto acumulado del mes frente al presupuesto">
+    <line x1="${x(1)}" y1="${y(0)}" x2="${x(dias)}" y2="${y(tope)}" class="budget" vector-effect="non-scaling-stroke"/>
+    <line x1="${x(1)}" y1="${y(tope)}" x2="${x(dias)}" y2="${y(tope)}" class="cap" vector-effect="non-scaling-stroke"/>
+    ${acc.length ? `<path d="${line}L${x(last[0])},${y(0)}L${x(1)},${y(0)}Z" class="area"/><path d="${line}" class="spent" vector-effect="non-scaling-stroke"/>` : ''}
+  </svg>${acc.length ? `<div class="pacelegend"><span><i class="k1"></i>Gastado</span><span><i class="k2"></i>Ritmo para no pasarte</span></div>` : ''}`;
+}
+
+// Cambiar de mes desde el gráfico: se nota arriba.
+function irAMes(m){
+  if (!months().includes(m) || m === cur) return;
+  cur = m; movLimit = 60; render();
+  scrollTo({top: 0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'});
+  const el = document.querySelector('.monthnav'); el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
 }
 
 // ---------- movimientos ----------
@@ -574,16 +699,14 @@ function renderMovs(){
   if (filtro === 'otros') list = list.filter(p => p.tipo === 'Deuda' || p.tipo === 'Personas' || p.tipo === 'Interno');
   if (busqueda) list = list.filter(p => (p.comercio + ' ' + p.categoria + ' ' + (p.cuenta||'')).toLowerCase().includes(busqueda));
   list.sort((a,b) => b.fecha.localeCompare(a.fecha));
-  $('movsSum').textContent = `${list.length} movimientos${global ? ' en todos los meses' : ''}`;
-  let html = '', lastDay = '';
-  for (const p of list.slice(0, movLimit)) {
-    if (p.dia !== lastDay) { html += `<div class="dayhead">${cap(dayName(p.dia))}</div>`; lastDay = p.dia; }
-    html += `<button class="item mov" data-id="${p.id}"><span class="mono">${esc((p.comercio.replace(/^(bizum|transferencia):\s*/i,'').match(/[\p{L}\p{N}]/u) || ['·'])[0].toUpperCase())}</span><span class="c">${esc(p.comercio)}</span>
+  const vis = list.slice(0, movLimit), byDay = [];
+  vis.forEach(p => { const g = byDay[byDay.length - 1]; if (g && g.dia === p.dia) g.items.push(p); else byDay.push({dia: p.dia, items: [p]}); });
+  let html = byDay.map(g => `<div class="group"><div class="ghrow sm"><h3>${cap(dayName(g.dia))}</h3><span class="ghnote num">${eur2(sum(g.items.filter(p => p.tipo === 'Gasto')))}</span></div>
+    <div class="card"><div class="list">${g.items.map(p => `<button class="item mov" data-id="${p.id}">${icon(p.categoria)}<span class="c">${esc(p.comercio)}</span>
       <span class="a num ${p.importe < 0 ? 'neg' : ''}">${p.importe < 0 ? '+' + eur2(-p.importe) : eur2(p.importe)}</span>
-      <span class="s">${p.categoria === 'Sin categoría' ? '<span class="tag">Sin categoría</span>' : esc(p.categoria)}</span></button>`;
-  }
-  if (list.length > movLimit) html += `<button class="linkbtn" id="moreMovs">Ver más (${list.length - movLimit})</button>`;
-  $('movs').innerHTML = html || '<p class="muted" style="padding:12px 0">Nada por aquí.</p>';
+      <span class="s">${p.categoria === 'Sin categoría' ? '<span class="tag">Sin categoría</span>' : esc(p.categoria)}</span></button>`).join('')}</div></div></div>`).join('');
+  if (list.length > movLimit) html += `<button class="ghost" id="moreMovs">Ver ${Math.min(200, list.length - movLimit)} más</button>`;
+  $('movs').innerHTML = html || '<p class="muted empty">Nada por aquí.</p>';
   $('movs').querySelectorAll('.item').forEach(b => b.onclick = () => editPago(D.pagos.find(p => p.id == b.dataset.id)));
   if ($('moreMovs')) $('moreMovs').onclick = () => { movLimit += 200; renderMovs(); };
 }
@@ -699,19 +822,22 @@ function visto(nombre, importe){
 }
 function renderMes(){
   if (cur < INICIO_SEGUIMIENTO) {
-    $('mesProg').textContent = ''; $('mesBar').style.width = '0';
-    $('mesFalta').textContent = `El seguimiento de fijos y cuotas empieza en ${monthName(INICIO_SEGUIMIENTO)}.`;
-    $('mesCuentas').innerHTML = ''; $('fijos').innerHTML = ''; $('cuotas').innerHTML = '';
+    $('mesProg').textContent = '—'; $('mesBar').style.width = '0'; $('mesLabel').textContent = 'Pagado este mes';
+    $('mesFalta').className = 'status'; $('mesFalta').textContent = `El seguimiento empieza en ${monthName(INICIO_SEGUIMIENTO)}.`;
+    $('cuentasGroup').hidden = true; $('fijos').innerHTML = ''; $('cuotas').innerHTML = '';
     return;
   }
   const m = estadoMes();
-  $('mesProg').textContent = `${eur(m.pagado)} / ${eur(m.total)}`;
+  $('mesProg').textContent = eur(m.pagado);
+  $('mesLabel').textContent = `Pagado de ${eur(m.total)}`;
   $('mesBar').style.width = (m.total ? m.pagado / m.total * 100 : 0) + '%';
   const falta = m.items.filter(i => !i.done);
-  $('mesFalta').textContent = falta.length ? `Faltan ${eur(m.total - m.pagado)}. Lo necesitas en:` : 'Todo pagado este mes.';
+  $('mesFalta').className = 'status' + (falta.length ? '' : ' ok');
+  $('mesFalta').textContent = falta.length ? `Faltan ${eur(m.total - m.pagado)} en ${falta.length} pagos` : 'Todo pagado este mes';
+  $('cuentasGroup').hidden = !falta.length;
   const porCuenta = {};
   falta.forEach(i => porCuenta[i.cuenta || "Sin cuenta"] = (porCuenta[i.cuenta || "Sin cuenta"] || 0) + i.importe);
-  $('mesCuentas').innerHTML = Object.entries(porCuenta).sort((a,b) => b[1]-a[1]).map(([k,v]) => `<span class="acct"><span>${esc(k)}</span><b class="num">${eur(v)}</b></span>`).join('');
+  $('mesCuentas').innerHTML = Object.entries(porCuenta).sort((a,b) => b[1]-a[1]).map(([k,v]) => `<div class="lrow"><span>${esc(k)}</span><b class="num">${eur(v)}</b></div>`).join('');
 
   const tickSvg = '<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
   $('fijos').innerHTML = fijosDelMes().map(f => {
