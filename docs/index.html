@@ -62,7 +62,7 @@ label.f{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--mu
 .linkbtn{background:none;border:0;color:var(--ink);font-weight:600;padding:6px 0}
 .err{color:var(--bad);font-size:15px}
 
-header.top{display:flex;align-items:center;justify-content:space-between;gap:14px 12px;padding-top:22px;flex-wrap:wrap}
+header.top{display:flex;flex-direction:column;align-items:flex-start;gap:12px;padding-top:22px}
 .monthnav{display:flex;align-items:center;gap:2px;background:var(--fill);border-radius:999px;padding:3px}
 .monthnav button{background:none;border:0;border-radius:999px;width:34px;height:32px;font-size:20px;line-height:1;color:var(--ink)}
 .monthnav button:disabled{opacity:.25;cursor:default}
@@ -193,6 +193,17 @@ footer .linkbtn{font-size:15px}
   .scrim:not([hidden]) .sheet{animation:up .32s cubic-bezier(.2,.9,.25,1)}
   @keyframes up{from{transform:translateY(40%);opacity:.4}to{transform:none;opacity:1}}
 }
+
+.val.over{color:var(--bad)}
+.overby{grid-column:1/-1;font-size:13px;color:var(--bad);margin-top:-2px}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--fill);border-radius:12px;padding:3px;gap:3px}
+.sheet .seg{background:var(--soft)}
+.seg input{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px}
+.seg label{text-align:center;padding:9px 6px;border-radius:9px;font-size:15px;font-weight:600;color:var(--ink);cursor:pointer}
+.seg input:checked + label{background:var(--card);box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.seg input:focus-visible + label{outline:2px solid var(--ink)}
+.check .c{white-space:normal!important;overflow:visible!important;line-height:1.25}
+.view{padding-bottom:40px}
 </style>
 </head>
 <body>
@@ -231,7 +242,7 @@ footer .linkbtn{font-size:15px}
     <div class="tiles">
       <div class="tile"><span class="label">Gasto total</span><b class="num" id="sTotal"></b></div>
       <div class="tile"><span class="label">Ingresos</span><b class="num" id="sIng"></b></div>
-      <button class="tile" id="mesMini"><span class="label">Fijos y cuotas</span><b class="num" id="mesMiniPill"></b><span class="sub" id="mesMiniTxt"></span></button>
+      <button class="tile" id="mesMini"><span class="label">Pagados este mes</span><b class="num" id="mesMiniPill"></b><span class="sub" id="mesMiniTxt"></span></button>
       <button class="tile" id="deudaTile"><span class="label">Deuda</span><b class="num" id="sDeuda"></b><span class="sub">Ver plan</span></button>
     </div>
 
@@ -314,7 +325,7 @@ footer .linkbtn{font-size:15px}
   <footer>
     <span id="updated"></span>
     <button class="linkbtn" id="reload">Actualizar</button>
-    <button class="linkbtn" id="logout" style="color:var(--muted)">Olvidar la clave en este iPhone</button>
+    <button class="linkbtn" id="logout" style="color:var(--muted);font-weight:400;font-size:13px">Olvidar la clave en este iPhone</button>
   </footer>
 </main>
 
@@ -460,7 +471,7 @@ function setView(v){
   $('tabs').querySelectorAll('button').forEach(b => b.setAttribute('aria-selected', b.dataset.v === v));
   $('title').textContent = TITLES[v];
   $('fab').hidden = v !== 'movs';
-  document.querySelector('.monthnav').style.visibility = v === 'deudas' ? 'hidden' : '';
+  document.querySelector('.monthnav').hidden = v === 'deudas';
   scrollTo(0, 0);
   if (D) render();
 }
@@ -500,7 +511,7 @@ function renderResumen(){
   const ritmo = vidaT * hoy / dias;
   const lvl = vidaG > vidaT ? 'bad' : vidaG > ritmo * 1.1 ? 'warn' : '';
   $('vidaGastado').textContent = eur(vidaG);
-  $('vidaTope').textContent = `de ${eur(vidaT)} previstos`;
+  $('vidaTope').textContent = `de ${eur(vidaT)} de presupuesto`;
   $('vidaMeter').className = 'meter ' + lvl;
   $('vidaMeter').firstElementChild.style.width = Math.min(100, vidaT ? vidaG / vidaT * 100 : 0) + '%';
   $('vidaPill').className = 'status ' + lvl;
@@ -512,7 +523,7 @@ function renderResumen(){
   $('sDeuda').textContent = eur(deudaActual());
 
   const m = estadoMes();
-  $('mesMiniPill').textContent = m.items.length ? `${m.items.filter(i => i.done).length}/${m.items.length}` : '—';
+  $('mesMiniPill').textContent = m.items.length ? `${m.items.filter(i => i.done).length} de ${m.items.length}` : '—';
   $('mesMiniTxt').textContent = m.total - m.pagado > 0.5 ? `Faltan ${eur(m.total - m.pagado)}` : m.items.length ? 'Todo pagado' : '';
 
   const tl = topes.map(t => ({t, g: sum(gastos.filter(p => t.incluye.includes(p.categoria)))}))
@@ -522,8 +533,9 @@ function renderResumen(){
       const over = g > t.tope, near = !over && t.tope && g > t.tope * hoy / dias * 1.1;
       const w = t.tope ? Math.min(100, g / t.tope * 100) : (g ? 100 : 0);
       return `<div class="row"><span class="name">${esc(t.categoria)}</span>
-        <span class="val num">${eur(g)} <small>/ ${eur(t.tope)}</small></span>
-        <div class="meter ${over ? 'bad' : near ? 'warn' : ''}"><i style="width:${w}%"></i></div></div>`;
+        <span class="val num ${over ? 'over' : ''}">${eur(g)} <small>/ ${eur(t.tope)}</small></span>
+        <div class="meter ${near ? 'warn' : ''}"><i style="width:${w}%"></i></div>
+        ${over ? `<span class="overby num">+${eur(g - t.tope)} por encima</span>` : ''}</div>`;
     }).join('');
 
   const all12 = []; for (let i = 11; i >= 0; i--) all12.push(addMonth(cur, -i));
@@ -607,7 +619,10 @@ function editPago(p){
         <label class="f">Importe (€)<input id="pi" inputmode="decimal" required value="${p ? String(p.importe).replace('.',',') : ''}" placeholder="12,50"></label>
         <label class="f">Fecha<input id="pf" type="datetime-local" required value="${toLocalInput(p?.fecha || new Date())}"></label>
       </div>
-      <div class="checkline"><input type="checkbox" id="pdev" ${p && p.importe < 0 ? 'checked' : ''}><label for="pdev">Es dinero que entra (devolución, ingreso, me pagan)</label></div>
+      <div class="seg" role="radiogroup" aria-label="Tipo">
+        <input type="radio" name="sentido" id="pgas" ${p && p.importe < 0 ? '' : 'checked'}><label for="pgas">Sale dinero</label>
+        <input type="radio" name="sentido" id="pdev" ${p && p.importe < 0 ? 'checked' : ''}><label for="pdev">Entra dinero</label>
+      </div>
       <label class="f">Categoría<select id="pcat">${opts(cats, p?.categoria || 'Sin categoría')}<option value="__nueva">Nueva categoría…</option></select></label>
       <input id="pcatN" placeholder="Nombre de la nueva categoría" hidden>
       <label class="f">Cuenta o tarjeta<select id="pcu"><option value="">—</option>${opts(cuentas, p?.cuenta || (nuevo ? 'BBVA' : ''))}</select></label>
@@ -677,9 +692,10 @@ function estadoMes(){
 }
 // Busca en los movimientos del mes algo que se parezca al fijo o a la deuda.
 function visto(nombre, importe){
-  const words = nombre.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').split(/[^a-z0-9]+/).filter(w => w.length > 3 && !['cuota','anual','prorrateada','devolver','pago'].includes(w));
+  const words = nombre.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').split(/[^a-z0-9]+/).filter(w => w.length > 3 && !['cuota','anual','prorrateada','devolver','pago','agua','casa','seguro','movil','abono','metro','gold','pago'].includes(w));
   const norm = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
-  return D.pagos.find(p => p.mes === cur && p.importe > 0 && (words.some(w => norm(p.comercio).includes(w)) || (importe && Math.abs(p.importe - importe) < 0.01 && p.tipo !== 'Gasto')));
+  // Solo cuenta si el nombre coincide y el importe se parece (±15 %), para no dar falsos "cobrado".
+  return D.pagos.find(p => p.mes === cur && p.importe > 0 && words.some(w => norm(p.comercio).includes(w)) && (!importe || Math.abs(p.importe - importe) <= importe * 0.15));
 }
 function renderMes(){
   if (cur < INICIO_SEGUIMIENTO) {
@@ -704,7 +720,7 @@ function renderMes(){
       <button class="tick" data-fijo="${f.id}" aria-label="${r ? 'Marcar como no pagado' : 'Marcar como pagado'}: ${esc(f.concepto)}">${tickSvg}</button>
       <span class="c">${esc(f.concepto)}</span><span class="num">${eur2(r?.importe ?? f.importe)}</span>
       <button class="edit" data-efijo="${f.id}" aria-label="Editar ${esc(f.concepto)}">⋯</button>
-      <span class="s">${[f.cuenta ? esc(f.cuenta) : 'Sin cuenta', f.dia ? 'día ' + f.dia : ''].filter(Boolean).join(' · ')}${v ? ' · <span class="seen">Visto en el banco</span>' : ''}</span>
+      <span class="s">${[f.cuenta ? esc(f.cuenta) : 'Sin cuenta', f.dia ? 'día ' + f.dia : ''].filter(Boolean).join(' · ')}${v ? ' · <span class="seen">Parece cobrado</span>' : ''}</span>
     </div>`;
   }).join('') || '<p class="muted">No hay fijos este mes.</p>';
 
@@ -714,7 +730,7 @@ function renderMes(){
       <button class="tick" data-deuda="${d.id}" aria-label="${r ? 'Marcar como no pagado' : 'Marcar como pagado'}: ${esc(d.nombre)}">${tickSvg}</button>
       <span class="c">${esc(d.nombre)}</span><span class="num">${eur2(imp)}</span>
       <button class="edit" data-edeuda="${d.id}" aria-label="Editar ${esc(d.nombre)}">⋯</button>
-      <span class="s">${[d.cuota ? 'Cuota' : 'Pago único', d.cuenta ? esc(d.cuenta) : ''].filter(Boolean).join(' · ')}${r && r.amortizado ? ` · baja ${eur(r.amortizado)}` : ''}${v ? ' · <span class="seen">Visto en el banco</span>' : ''}</span>
+      <span class="s">${[d.cuota ? 'Cuota' : 'Pago único', d.cuenta ? esc(d.cuenta) : ''].filter(Boolean).join(' · ')}${r && r.amortizado ? ` · baja ${eur(r.amortizado)}` : ''}${v ? ' · <span class="seen">Parece cobrado</span>' : ''}</span>
     </div>`;
   }).join('') || '<p class="muted">No hay cuotas este mes.</p>';
 
@@ -849,7 +865,7 @@ function renderDeudas(){
 function debtChart(start, plan, now, hoyV){
   const pts = [{mes: '2026-10', v: start}, ...plan.map(p => ({mes: p.mes, v: p.deuda_final}))];
   if (pts.length < 2) return '';
-  const W = 520, H = 190, L = 8, R = 8, T = 30, B = 32;
+  const W = 520, H = 200, L = 10, R = 10, T = 22, B = 34;
   const max = Math.max(start, hoyV, ...pts.map(p => p.v));
   const x = i => L + i * (W - L - R) / (pts.length - 1);
   const y = v => T + (1 - v / max) * (H - T - B);
@@ -862,9 +878,9 @@ function debtChart(start, plan, now, hoyV){
     <path d="${area}" fill="var(--fill)"/>
     <path d="${line}" fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-dasharray="7 6" stroke-linejoin="round"/>
     <circle cx="${x(ni)}" cy="${y(hoyV)}" r="8" fill="var(--ink)" stroke="var(--card)" stroke-width="3"/>
-    <text x="${Math.min(W-60, Math.max(L, x(ni)+12))}" y="${y(hoyV) + 6}">hoy</text>
     ${years.map(p => `<text x="${x(p.i)}" y="${H-6}" text-anchor="${p.i === 0 ? 'start' : 'middle'}">${p.i === 0 ? monthName(pts[0].mes,{month:'short'}).replace('.','') + ' ' + p.y : p.y}</text>`).join('')}
-    <text x="${W-R}" y="${y(0) - 6}" text-anchor="end">0 €</text>
+    <text x="${W-R}" y="${y(0) - 12}" text-anchor="end">0 €</text>
+    <text x="${L + 22}" y="${y(start) + 6}">${eur(start)}</text>
   </svg>`;
 }
 function editDeuda(d){
