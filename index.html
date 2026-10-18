@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Mis cuentas</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Cuentas">
 <meta name="theme-color" content="#f3f5f2" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#121614" media="(prefers-color-scheme: dark)">
@@ -12,42 +14,58 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&display=swap">
 <style>
-/* Una columna para el móvil: resumen del mes arriba, detalle debajo, deuda al final. */
+/* App de una columna con barra de pestañas abajo: Resumen, Movimientos, Mes, Deudas. */
 :root{
   --bg:#f3f5f2; --card:#ffffff; --ink:#18201c; --muted:#5f6b64; --line:#dfe5e0;
-  --accent:#1f6f5c; --accent-soft:#d6ebe3;
-  --ok:#2f8a4f; --warn:#c07a12; --bad:#c2412d;
+  --accent:#1f6f5c; --accent-soft:#d6ebe3; --on-accent:#ffffff;
+  --ok:#2f8a4f; --warn:#c07a12; --bad:#c2412d; --scrim:rgba(10,16,13,.45);
   --display:"Bricolage Grotesque",ui-rounded,system-ui,sans-serif;
   --body:"Figtree",system-ui,-apple-system,sans-serif;
 }
 @media (prefers-color-scheme: dark){:root{
   --bg:#121614; --card:#1b211e; --ink:#e9eeea; --muted:#9aa6a0; --line:#2b332f;
-  --accent:#5cc3a4; --accent-soft:#1f3a31;
-  --ok:#5ec27e; --warn:#e6a33a; --bad:#f07560; color-scheme:dark;
+  --accent:#5cc3a4; --accent-soft:#1f3a31; --on-accent:#0d1512;
+  --ok:#5ec27e; --warn:#e6a33a; --bad:#f07560; --scrim:rgba(0,0,0,.6); color-scheme:dark;
 }}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{margin:0}
-body{background:var(--bg);color:var(--ink);font:15px/1.45 var(--body);-webkit-font-smoothing:antialiased;
-  padding:env(safe-area-inset-top,0px) max(16px,env(safe-area-inset-right,0px)) calc(32px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+body{background:var(--bg);color:var(--ink);font:15px/1.45 var(--body);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;
+  padding:env(safe-area-inset-top,0px) max(16px,env(safe-area-inset-right,0px)) calc(96px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
 main{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
 h1,h2{font-family:var(--display);margin:0;text-wrap:balance}
-h1{font-size:26px;font-weight:700;letter-spacing:-.01em}
+h1{font-size:22px;font-weight:700;letter-spacing:-.01em}
 h2{font-size:17px;font-weight:700}
 .num{font-variant-numeric:tabular-nums}
 .muted{color:var(--muted)}
 .small{font-size:13px}
 .label{font-size:11.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600}
 section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+p{margin:0}
 button{font:inherit;color:inherit;cursor:pointer}
-button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+input,select,textarea{width:100%;font:inherit;font-size:16px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);min-width:0}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);font-weight:500;min-width:0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.primary{background:var(--accent);color:var(--on-accent);border:0;border-radius:10px;padding:12px 16px;font-weight:600;font-size:16px}
+.ghost{background:none;border:1px solid var(--line);border-radius:10px;padding:10px 14px;font-weight:600}
+.danger{background:none;border:1px solid var(--bad);color:var(--bad);border-radius:10px;padding:10px 14px;font-weight:600}
+.danger.sure{background:var(--bad);color:var(--card)}
+.linkbtn{background:none;border:0;color:var(--accent);font-weight:600;padding:6px 0}
+.err{color:var(--bad);font-size:14px}
 
 header.top{display:flex;align-items:center;justify-content:space-between;gap:8px 12px;padding-top:14px;flex-wrap:wrap}
-header.top h1{font-size:22px}
 .monthnav{display:flex;align-items:center;gap:4px}
 .monthnav button{background:var(--card);border:1px solid var(--line);border-radius:10px;width:38px;height:38px;font-size:18px}
 .monthnav button:disabled{opacity:.35;cursor:default}
 .monthnav span{min-width:112px;text-align:center;font-weight:600}
+
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--card);border-top:1px solid var(--line);
+  display:grid;grid-template-columns:repeat(4,1fr);padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
+.tabs button{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;font-size:11.5px;font-weight:600;color:var(--muted);position:relative}
+.tabs button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tabs button[aria-selected="true"]{color:var(--accent)}
+.tabs .dot{position:absolute;top:2px;left:calc(50% + 8px);min-width:16px;height:16px;border-radius:8px;background:var(--bad);color:var(--card);font-size:10px;line-height:16px;padding:0 4px}
 
 .hero{gap:6px}
 .hero .big{font-family:var(--display);font-size:40px;font-weight:700;line-height:1.05}
@@ -60,6 +78,7 @@ header.top h1{font-size:22px}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:6px}
 .stats div{display:flex;flex-direction:column;gap:2px;min-width:0}
 .stats b{font-size:16px}
+.banner{background:var(--accent-soft);border:0;color:var(--ink)}
 
 .rows{display:flex;flex-direction:column;gap:12px}
 .row{display:grid;grid-template-columns:1fr auto;gap:4px 10px;align-items:baseline}
@@ -72,7 +91,7 @@ header.top h1{font-size:22px}
 .bar{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;height:100%;justify-content:flex-end;background:none;border:0;padding:0;min-width:0}
 .bar i{display:block;width:100%;border-radius:5px 5px 2px 2px;background:var(--accent-soft);position:relative}
 .bar.sel i{background:var(--accent)}
-.bar span{font-size:10.5px;color:var(--muted);text-transform:capitalize}
+.bar span{font-size:10.5px;color:var(--muted)}
 .bar.sel span{color:var(--ink);font-weight:600}
 .bar i em{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);font-style:normal;font-size:10px;color:var(--ink);font-weight:600;white-space:nowrap;margin-bottom:3px}
 
@@ -83,46 +102,77 @@ header.top h1{font-size:22px}
 .cat .track{height:8px;border-radius:4px;background:var(--line);overflow:hidden}
 .cat .track i{display:block;height:100%;background:var(--accent);border-radius:4px}
 
-svg text{fill:var(--muted);font:20px var(--body)}
-.debt-top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
-.debts{display:flex;flex-direction:column}
-.debt{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:9px 0;border-top:1px solid var(--line)}
-.debt:first-child{border-top:0}
-.debt .sub{grid-column:1/-1;font-size:12.5px;color:var(--muted)}
+svg.chart text{fill:var(--muted);font:20px var(--body)}
 
-.tx{display:flex;flex-direction:column}
-.t1{display:grid;grid-template-columns:1fr auto;gap:1px 10px;padding:9px 0;border-top:1px solid var(--line)}
-.t1:first-child{border-top:0}
-.t1 .c{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
-.t1 .s{font-size:12.5px;color:var(--muted)}
-.t1 .a.neg{color:var(--ok)}
-.linkbtn{background:none;border:0;color:var(--accent);font-weight:600;padding:6px 0;align-self:flex-start}
+/* listas tocables */
+.list{display:flex;flex-direction:column}
+.item{display:grid;grid-template-columns:1fr auto;gap:1px 10px;padding:10px 0;border-top:1px solid var(--line);background:none;border-left:0;border-right:0;border-bottom:0;text-align:left;width:100%}
+.item:first-child{border-top:0}
+.item .c{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+.item .s{font-size:12.5px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item .a.neg{color:var(--ok)}
+.item .tag{color:var(--warn);font-weight:600}
+.dayhead{font-size:12px;font-weight:600;color:var(--muted);padding:12px 0 2px}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.chips button{flex:none;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:6px 12px;font-size:13.5px;font-weight:600}
+.chips button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+
+/* checklist del mes */
+.check{display:grid;grid-template-columns:auto 1fr auto auto;gap:2px 12px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.check:first-child{border-top:0}
+.tick{width:30px;height:30px;border-radius:50%;border:2px solid var(--line);background:none;display:grid;place-items:center;padding:0;grid-row:span 2}
+.tick svg{width:16px;height:16px;stroke:var(--on-accent);stroke-width:3;fill:none;opacity:0}
+.check.done .tick{background:var(--ok);border-color:var(--ok)}
+.check.done .tick svg{opacity:1}
+.check .c{font-weight:500;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.check.done .c{color:var(--muted)}
+.check .s{font-size:12.5px;color:var(--muted);grid-column:2/4;min-width:0}
+.check .s .seen{color:var(--ok)}
+.check .edit{background:none;border:0;color:var(--muted);padding:6px;grid-row:span 2;font-size:18px;line-height:1}
+.progress{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.cuentas{display:flex;flex-wrap:wrap;gap:6px}
+
+.debt{display:flex;flex-direction:column;gap:6px;padding:12px 0;border-top:1px solid var(--line);background:none;border-left:0;border-right:0;border-bottom:0;text-align:left;width:100%}
+.debt:first-child{border-top:0}
+.debt .h{display:flex;justify-content:space-between;gap:10px;font-weight:500}
+.debt .s{font-size:12.5px;color:var(--muted)}
+.debt .meter{height:6px}
+
+/* hoja inferior para editar */
+.scrim{position:fixed;inset:0;background:var(--scrim);z-index:40;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--card);width:100%;max-width:560px;max-height:92%;overflow:auto;border-radius:18px 18px 0 0;
+  padding:18px max(16px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:12px}
+.sheet .hd{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.sheet .x{background:none;border:0;font-size:26px;line-height:1;color:var(--muted);padding:4px 8px}
+.sheet .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px}
+.sheet .actions .primary{flex:1}
+.checkline{display:flex;gap:10px;align-items:flex-start;font-size:14px}
+.checkline input{width:22px;height:22px;flex:none;margin:0}
+.fab{position:fixed;right:max(18px,env(safe-area-inset-right,0px));bottom:calc(82px + env(safe-area-inset-bottom,0px));z-index:25;width:56px;height:56px;border-radius:50%;border:0;background:var(--accent);color:var(--on-accent);font-size:30px;line-height:1;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:60;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-weight:500;max-width:calc(100% - 32px)}
 
 #login{max-width:420px;margin:12vh auto 0;gap:14px}
-#login input{width:100%;font:inherit;font-size:17px;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
-.primary{background:var(--accent);color:var(--card);border:0;border-radius:10px;padding:12px 16px;font-weight:600;font-size:16px}
-.err{color:var(--bad);font-size:14px}
 footer{text-align:center;font-size:12.5px;color:var(--muted);display:flex;flex-direction:column;gap:4px;align-items:center}
-@media (prefers-reduced-motion:no-preference){.meter i,.cat .track i,.bar i{transition:width .4s,height .4s}}
+@media (prefers-reduced-motion:no-preference){.meter i,.cat .track i,.bar i{transition:width .4s,height .4s}.tick{transition:background .15s}}
 </style>
 </head>
 <body>
 
 <section id="login" hidden>
   <h1>Mis cuentas</h1>
-  <p class="muted" id="loginMsg" style="margin:0">Entra con tu email. Te llega un enlace; ábrelo en este mismo iPhone.</p>
-  <form id="fEmail" style="display:flex;flex-direction:column;gap:10px">
-    <input id="email" type="email" autocomplete="username" placeholder="tu@email.com" required>
-    <input id="pass" type="password" autocomplete="current-password" placeholder="Contraseña (si ya pusiste una)">
-    <button class="primary" type="submit" id="goBtn">Enviarme el enlace</button>
+  <p class="muted" id="loginMsg"></p>
+  <form id="fLogin" style="display:flex;flex-direction:column;gap:10px">
+    <input id="email" name="email" type="email" autocomplete="username" placeholder="tu@email.com" required>
+    <input id="pass" name="password" type="password" autocomplete="current-password" placeholder="Contraseña">
+    <button class="primary" type="submit" id="goBtn">Entrar</button>
   </form>
-  <button class="linkbtn" type="button" id="back" hidden>Usar otro email</button>
+  <button class="linkbtn" type="button" id="sendLink" style="align-self:flex-start">No tengo contraseña: mandarme un enlace</button>
   <p class="err" id="loginErr" hidden></p>
 </section>
 
 <main id="app" hidden>
   <header class="top">
-    <h1>Mis cuentas</h1>
+    <h1 id="title">Resumen</h1>
     <div class="monthnav">
       <button id="prev" aria-label="Mes anterior">‹</button>
       <span id="mlabel" class="num"></span>
@@ -130,119 +180,215 @@ footer{text-align:center;font-size:12.5px;color:var(--muted);display:flex;flex-d
     </div>
   </header>
 
-  <section class="hero">
-    <span class="label">Gasto de vida del mes</span>
-    <div><span class="big num" id="vidaGastado"></span> <span class="muted num" id="vidaTope"></span></div>
-    <div class="meter" id="vidaMeter"><i></i></div>
-    <div id="vidaPill"></div>
-    <div class="stats">
-      <div><span class="label">Gasto total</span><b class="num" id="sTotal"></b></div>
-      <div><span class="label">Ingresos</span><b class="num" id="sIng"></b></div>
-      <div><span class="label">Pagos deuda</span><b class="num" id="sDeuda"></b></div>
-    </div>
-  </section>
+  <!-- RESUMEN -->
+  <div id="v-resumen" style="display:flex;flex-direction:column;gap:14px">
+    <section class="banner" id="passBanner" hidden>
+      <h2>Entra sin correos</h2>
+      <p class="small">Ponte una contraseña. Desde el icono de la pantalla de inicio entras con email y contraseña, y el iPhone la rellena con Face ID.</p>
+      <form id="fPass1" style="display:flex;gap:8px">
+        <input type="email" name="email" autocomplete="username" id="pbEmail" hidden>
+        <input id="newpass1" name="new-password" type="password" autocomplete="new-password" placeholder="Nueva contraseña (8+)" style="flex:1">
+        <button class="primary" type="submit" style="padding:10px 14px">Guardar</button>
+      </form>
+    </section>
 
-  <section>
-    <h2>Frente a los topes</h2>
-    <div class="rows" id="topes"></div>
-    <p class="small muted" id="fuera" style="margin:0"></p>
-  </section>
-
-  <section>
-    <h2>Gasto por mes</h2>
-    <div class="bars" id="bars"></div>
-    <p class="small muted" id="media" style="margin:0"></p>
-  </section>
-
-  <section>
-    <h2>Por categoría</h2>
-    <div class="cats" id="cats"></div>
-  </section>
-
-  <section>
-    <div class="debt-top">
-      <div style="display:flex;flex-direction:column;gap:2px">
-        <span class="label">Deuda pendiente</span>
-        <span class="num" style="font-family:var(--display);font-size:30px;font-weight:700" id="deudaHoy"></span>
+    <section class="hero">
+      <span class="label">Gasto de vida del mes</span>
+      <div><span class="big num" id="vidaGastado"></span> <span class="muted num" id="vidaTope"></span></div>
+      <div class="meter" id="vidaMeter"><i></i></div>
+      <div id="vidaPill"></div>
+      <div class="stats">
+        <div><span class="label">Gasto total</span><b class="num" id="sTotal"></b></div>
+        <div><span class="label">Ingresos</span><b class="num" id="sIng"></b></div>
+        <div><span class="label">Deuda hoy</span><b class="num" id="sDeuda"></b></div>
       </div>
-      <span class="pill" id="libre"></span>
-    </div>
-    <div id="debtChart"></div>
-    <div class="debts" id="debts"></div>
-  </section>
+    </section>
 
-  <section>
-    <h2>Movimientos del mes</h2>
-    <div class="tx" id="tx"></div>
-    <button class="linkbtn" id="more" hidden>Ver todos</button>
-  </section>
+    <section id="mesMini" style="cursor:pointer">
+      <div class="progress"><h2>Fijos y cuotas</h2><span class="pill" id="mesMiniPill"></span></div>
+      <div class="meter"><i id="mesMiniBar"></i></div>
+      <p class="small muted" id="mesMiniTxt"></p>
+    </section>
+
+    <section>
+      <h2>Frente a los topes</h2>
+      <div class="rows" id="topes"></div>
+      <p class="small muted" id="fuera"></p>
+    </section>
+
+    <section>
+      <h2>Gasto por mes</h2>
+      <div class="bars" id="bars"></div>
+      <p class="small muted" id="media"></p>
+    </section>
+
+    <section>
+      <h2>Por categoría</h2>
+      <div class="cats" id="cats"></div>
+    </section>
+  </div>
+
+  <!-- MOVIMIENTOS -->
+  <div id="v-movs" hidden style="display:flex;flex-direction:column;gap:12px">
+    <input id="search" type="search" placeholder="Buscar comercio o categoría">
+    <div class="chips" id="filters">
+      <button data-f="todos" aria-pressed="true">Todos</button>
+      <button data-f="gastos" aria-pressed="false">Gastos</button>
+      <button data-f="sin" aria-pressed="false">Sin categoría</button>
+      <button data-f="ingresos" aria-pressed="false">Ingresos</button>
+      <button data-f="otros" aria-pressed="false">Deuda y personas</button>
+    </div>
+    <section style="padding-top:6px;padding-bottom:6px">
+      <p class="small muted" id="movsSum" style="padding-top:8px"></p>
+      <div class="list" id="movs"></div>
+    </section>
+  </div>
+
+  <!-- MES -->
+  <div id="v-mes" hidden style="display:flex;flex-direction:column;gap:14px">
+    <section>
+      <div class="progress"><h2>Este mes</h2><span class="num muted small" id="mesProg"></span></div>
+      <div class="meter"><i id="mesBar"></i></div>
+      <p class="small" id="mesFalta"></p>
+      <div class="cuentas" id="mesCuentas"></div>
+    </section>
+    <section>
+      <div class="progress"><h2>Gastos fijos</h2><button class="linkbtn" id="addFijo">+ Añadir</button></div>
+      <div class="list" id="fijos"></div>
+    </section>
+    <section>
+      <h2>Cuotas y pagos de deuda</h2>
+      <div class="list" id="cuotas"></div>
+    </section>
+  </div>
+
+  <!-- DEUDAS -->
+  <div id="v-deudas" hidden style="display:flex;flex-direction:column;gap:14px">
+    <section>
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap">
+        <div style="display:flex;flex-direction:column;gap:2px">
+          <span class="label">Deuda pendiente</span>
+          <span class="num" style="font-family:var(--display);font-size:32px;font-weight:700" id="deudaHoy"></span>
+        </div>
+        <span class="pill" id="libre"></span>
+      </div>
+      <div id="debtChart"></div>
+      <p class="small muted" id="debtVsPlan"></p>
+    </section>
+    <section>
+      <div class="progress"><h2>Activas</h2><button class="linkbtn" id="addDeuda">+ Añadir</button></div>
+      <div class="list" id="debts"></div>
+    </section>
+    <section id="paidSec" hidden>
+      <h2>Liquidadas</h2>
+      <div class="list" id="debtsPaid"></div>
+    </section>
+  </div>
 
   <footer>
     <span id="updated"></span>
-    <button class="linkbtn" id="reload" style="align-self:center">Actualizar</button>
-    <details style="width:100%;max-width:320px">
-      <summary class="small" style="cursor:pointer">Contraseña para entrar sin enlace</summary>
-      <div style="display:flex;gap:8px;margin-top:8px">
-        <input id="newpass" type="password" autocomplete="new-password" placeholder="Nueva contraseña" style="flex:1;min-width:0;font:inherit;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink)">
-        <button class="linkbtn" id="setpass" style="padding:6px 4px">Guardar</button>
-      </div>
-      <p class="small" id="passMsg" style="margin:6px 0 0"></p>
+    <button class="linkbtn" id="reload">Actualizar</button>
+    <details style="width:100%;max-width:340px">
+      <summary class="small" style="cursor:pointer">Contraseña</summary>
+      <form id="fPass2" style="display:flex;gap:8px;margin-top:8px">
+        <input type="email" name="email" autocomplete="username" id="pfEmail" hidden>
+        <input id="newpass2" name="new-password" type="password" autocomplete="new-password" placeholder="Nueva contraseña" style="flex:1">
+        <button class="linkbtn" type="submit">Guardar</button>
+      </form>
     </details>
-    <button class="linkbtn" id="logout" style="align-self:center;color:var(--muted)">Cerrar sesión</button>
+    <button class="linkbtn" id="logout" style="color:var(--muted)">Cerrar sesión</button>
   </footer>
 </main>
+
+<button class="fab" id="fab" hidden aria-label="Añadir movimiento">+</button>
+
+<nav class="tabs" id="tabs" hidden>
+  <button data-v="resumen" aria-selected="true"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Resumen</button>
+  <button data-v="movs" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Movimientos<span class="dot" id="sinDot" hidden></span></button>
+  <button data-v="mes" aria-selected="false"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M8.5 15l2 2 4-4"/></svg>Mes</button>
+  <button data-v="deudas" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M3 7h18v12H3zM3 11h18M7 15h4"/></svg>Deudas</button>
+</nav>
+
+<div class="scrim" id="scrim" hidden><div class="sheet" id="sheet" role="dialog" aria-modal="true"></div></div>
+<div class="toast" id="toast" hidden></div>
 
 <script src="supabase.js"></script>
 <script>
 const SUPABASE_URL = 'https://sscjejofqqgyhrzgjsdf.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_8arQCFyj2F-uAUeYQrN3WA_C7q8oood';
+const INICIO_SEGUIMIENTO = '2026-10';   // fijos y cuotas se marcan desde este mes
+const CUENTAS = ['BBVA','Revolut','Amex','Tarjeta crédito BBVA','Efectivo'];
 
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {auth:{persistSession:true, autoRefreshToken:true}});
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {auth:{persistSession:true, autoRefreshToken:true, detectSessionInUrl:true}});
 const $ = id => document.getElementById(id);
 const eur = (n, d=0) => new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR',maximumFractionDigits:d,minimumFractionDigits:d,useGrouping:'always'}).format(n);
+const eur2 = n => eur(n, 2);
 const monthKey = (() => { const f = new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Madrid',year:'numeric',month:'2-digit'}); return d => f.format(new Date(d)).slice(0,7); })();
+const dayKey = (() => { const f = new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Madrid',year:'numeric',month:'2-digit',day:'2-digit'}); return d => f.format(new Date(d)); })();
 const monthName = (k, opt={month:'long',year:'numeric'}) => new Date(k+'-15T12:00:00Z').toLocaleDateString('es-ES',{...opt,timeZone:'UTC'});
-const dayLabel = (() => { const f = new Intl.DateTimeFormat('es-ES',{timeZone:'Europe/Madrid',day:'numeric',month:'short'}); return d => f.format(new Date(d)); })();
+const dayName = k => new Date(k+'T12:00:00Z').toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long',timeZone:'UTC'});
 const addMonth = (k, n) => { let [y,m] = k.split('-').map(Number); m += n; y += Math.floor((m-1)/12); m = ((m-1)%12+12)%12+1; return `${y}-${String(m).padStart(2,'0')}`; };
 const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const today = () => dayKey(new Date());
+const toLocalInput = d => { const x = new Date(d); x.setMinutes(x.getMinutes() - x.getTimezoneOffset()); return x.toISOString().slice(0,16); };
+const parseNum = v => Number(String(v).replace(/\s|€/g,'').replace(/\.(?=\d{3}(\D|$))/g,'').replace(',','.'));
+const r2 = n => Math.round(n * 100) / 100;
+const sum = arr => arr.reduce((s,p) => s + p.importe, 0);
+const tipoDe = c => ({'Ingreso':'Ingreso','Movimiento interno':'Interno','Pago de deuda':'Deuda','Entre personas':'Personas'}[c] || 'Gasto');
 
-let D = null, cur = monthKey(new Date()), showAll = false;
+let D = null, cur = monthKey(new Date()), view = 'resumen', filtro = 'todos', busqueda = '', movLimit = 60;
+try { const v = localStorage.getItem('cuentas.view'); if (v) view = v; } catch {}
 
-// ---------- login ----------
-let pendingEmail = '';
+function toast(msg){ const t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 2600); }
+
+// ---------- entrar ----------
+const standalone = navigator.standalone || matchMedia('(display-mode: standalone)').matches;
+$('loginMsg').textContent = standalone
+  ? 'Entra con tu email y tu contraseña. Si aún no tienes, pulsa abajo: te llega un enlace que se abre en Safari, y allí te pones una.'
+  : 'Entra con tu email y tu contraseña, o pide un enlace por correo si aún no tienes contraseña.';
 function loginErr(msg){ $('loginErr').textContent = msg; $('loginErr').hidden = !msg; }
-$('pass').addEventListener('input', () => $('goBtn').textContent = $('pass').value ? 'Entrar' : 'Enviarme el enlace');
-$('fEmail').addEventListener('submit', async e => {
+$('fLogin').addEventListener('submit', async e => {
   e.preventDefault(); loginErr('');
-  pendingEmail = $('email').value.trim().toLowerCase();
-  if ($('pass').value) {
-    const {error} = await sb.auth.signInWithPassword({email: pendingEmail, password: $('pass').value});
-    if (error) loginErr('Email o contraseña incorrectos. Si aún no tienes contraseña, deja el campo vacío y entra con el enlace.');
-    return;
-  }
-  const {error} = await sb.auth.signInWithOtp({email: pendingEmail, options:{emailRedirectTo: location.href.split('#')[0].split('?')[0]}});
-  if (error) return loginErr(/rate|seconds|limit/i.test(error.message) ? 'Has pedido varios enlaces seguidos. Espera un rato y vuelve a probar.' : 'No se pudo enviar el enlace: ' + error.message);
-  $('fEmail').hidden = true; $('back').hidden = false;
-  $('loginMsg').textContent = `Te hemos mandado un enlace a ${pendingEmail}. Ábrelo en este iPhone y entrarás directamente.`;
+  const email = $('email').value.trim().toLowerCase();
+  if (!$('pass').value) return sendLink();
+  $('goBtn').disabled = true;
+  const {error} = await sb.auth.signInWithPassword({email, password: $('pass').value});
+  $('goBtn').disabled = false;
+  if (error) loginErr('Email o contraseña incorrectos. Si aún no tienes contraseña, pide el enlace.');
 });
-$('back').onclick = () => { $('back').hidden = true; $('fEmail').hidden = false; loginErr(''); };
-$('setpass').onclick = async () => {
-  const pw = $('newpass').value;
-  if (pw.length < 8) { $('passMsg').textContent = 'Mínimo 8 caracteres.'; return; }
-  const {error} = await sb.auth.updateUser({password: pw});
-  $('passMsg').textContent = error ? 'No se pudo guardar: ' + error.message : 'Guardada. La próxima vez puedes entrar con email y contraseña.';
-  if (!error) $('newpass').value = '';
-};
+async function sendLink(){
+  loginErr('');
+  const email = $('email').value.trim().toLowerCase();
+  if (!email) return loginErr('Escribe tu email primero.');
+  const {error} = await sb.auth.signInWithOtp({email, options:{emailRedirectTo: location.origin + location.pathname, shouldCreateUser:false}});
+  if (error) return loginErr(/rate|seconds|limit/i.test(error.message) ? 'Has pedido varios enlaces seguidos. Espera un rato y vuelve a probar.' : 'No se pudo enviar el enlace: ' + error.message);
+  $('loginMsg').textContent = `Enlace enviado a ${email}. Ábrelo en este iPhone; entrarás en Safari y allí podrás ponerte una contraseña.`;
+}
+$('sendLink').onclick = sendLink;
+async function savePass(input){
+  const pw = input.value;
+  if (pw.length < 8) return toast('La contraseña necesita 8 caracteres o más.');
+  const {error} = await sb.auth.updateUser({password: pw, data:{tiene_pass:true}});
+  if (error) return toast('No se pudo guardar: ' + error.message);
+  input.value = ''; $('passBanner').hidden = true;
+  toast('Contraseña guardada. Ya puedes entrar desde el icono.');
+}
+$('fPass1').addEventListener('submit', e => { e.preventDefault(); savePass($('newpass1')); });
+$('fPass2').addEventListener('submit', e => { e.preventDefault(); savePass($('newpass2')); });
 $('logout').onclick = () => sb.auth.signOut();
 $('reload').onclick = () => load();
 
-sb.auth.onAuthStateChange((_ev, session) => { session ? show(true) : show(false); });
-let shown = null;
+let shown = null, user = null;
+sb.auth.onAuthStateChange((_ev, session) => { user = session?.user || null; show(!!session); });
 function show(logged){
   if (shown === logged) return; shown = logged;
-  $('login').hidden = logged; $('app').hidden = !logged;
-  if (logged) load();
+  $('login').hidden = logged; $('app').hidden = !logged; $('tabs').hidden = !logged;
+  if (logged) {
+    $('passBanner').hidden = !!user?.user_metadata?.tiene_pass;
+    $('pbEmail').value = $('pfEmail').value = user?.email || '';
+    setView(view); load();
+  } else $('fab').hidden = true;
 }
 
 // ---------- datos ----------
@@ -258,154 +404,527 @@ async function all(table, select, order){
     from += 1000;
   }
 }
+function prepPago(p){ p.mes = monthKey(p.fecha); p.dia = dayKey(p.fecha); p.importe = Number(p.importe); return p; }
+function prepDeuda(d){ ['pendiente','tin','cuota'].forEach(k => d[k] = d[k] == null ? null : Number(d[k])); return d; }
 async function load(){
   $('updated').textContent = 'Cargando…';
   try {
-    const [pagos, topes, plan, deudas] = await Promise.all([
-      all('pagos', 'id,fecha,importe,comercio,categoria,tipo,cuenta,origen', 'fecha'),
+    const [pagos, topes, plan, deudas, fijos, pm] = await Promise.all([
+      all('pagos', 'id,fecha,con_hora,importe,comercio,categoria,tipo,cuenta,origen', 'fecha'),
       all('topes', 'categoria,tope,incluye'),
-      all('plan_mes', 'mes,vida,deuda_final,cuotas,extra_deuda,nota'),
-      all('deudas', 'nombre,pendiente,a_fecha,tin,cuota,cuotas_restantes,fin,notas'),
+      all('plan_mes', 'mes,vida,deuda_final,nota'),
+      all('deudas', '*'),
+      all('gastos_fijos', '*'),
+      all('pagos_mes', '*'),
     ]);
-    if (!pagos.length && !topes.length) {
-      $('updated').textContent = 'No veo datos. ¿Has entrado con el email correcto?';
-    }
-    pagos.forEach(p => { p.mes = monthKey(p.fecha); p.importe = Number(p.importe); });
+    pagos.forEach(prepPago);
     topes.forEach(t => t.tope = Number(t.tope));
     plan.forEach(p => { p.mes = p.mes.slice(0,7); p.deuda_final = Number(p.deuda_final); p.vida = Number(p.vida); });
     plan.sort((a,b) => a.mes.localeCompare(b.mes));
-    deudas.forEach(d => d.pendiente = Number(d.pendiente));
-    D = {pagos, topes, plan, deudas};
-    D.months = [...new Set(pagos.map(p => p.mes))].sort();
-    if (D.months.length && !D.months.includes(cur)) cur = D.months[D.months.length-1];
+    deudas.forEach(prepDeuda);
+    fijos.forEach(f => f.importe = Number(f.importe));
+    pm.forEach(r => { r.mes = r.mes.slice(0,7); r.amortizado = Number(r.amortizado); });
+    D = {pagos, topes, plan, deudas, fijos, pm};
     render();
     $('updated').textContent = `${pagos.length} movimientos · actualizado ${new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})}`;
   } catch (err) {
     $('updated').textContent = 'Error al cargar: ' + (err.message || err);
   }
 }
+// Escribe y comprueba que la fila existe (si la seguridad la bloquea, Supabase devuelve 0 filas sin error).
+async function write(q){
+  const {data, error} = await q.select();
+  if (error) { toast('No se guardó: ' + error.message); throw error; }
+  if (!data || !data.length) { toast('No se guardó. Cierra sesión y vuelve a entrar.'); throw new Error('0 filas'); }
+  return data;
+}
 
-// ---------- pintar ----------
+function months(){
+  const now = monthKey(new Date());
+  const first = D.pagos.length ? D.pagos[D.pagos.length-1].mes : now;
+  const out = []; for (let m = first; m <= addMonth(now, 1); m = addMonth(m, 1)) out.push(m);
+  return out;
+}
+function categorias(){
+  const s = new Set(D.pagos.map(p => p.categoria));
+  D.topes.forEach(t => t.incluye.forEach(c => s.add(c)));
+  ['Sin categoría','Ingreso','Movimiento interno','Pago de deuda','Entre personas'].forEach(c => s.add(c));
+  return [...s].sort((a,b) => a.localeCompare(b,'es'));
+}
+
+// ---------- navegación ----------
+const TITLES = {resumen:'Resumen', movs:'Movimientos', mes:'Fijos y cuotas', deudas:'Deudas'};
+function setView(v){
+  view = v; try { localStorage.setItem('cuentas.view', v); } catch {}
+  for (const k of Object.keys(TITLES)) $('v-'+k).hidden = k !== v;
+  $('tabs').querySelectorAll('button').forEach(b => b.setAttribute('aria-selected', b.dataset.v === v));
+  $('title').textContent = TITLES[v];
+  $('fab').hidden = v !== 'movs';
+  document.querySelector('.monthnav').style.visibility = v === 'deudas' ? 'hidden' : '';
+  scrollTo(0, 0);
+  if (D) render();
+}
+$('tabs').querySelectorAll('button').forEach(b => b.onclick = () => setView(b.dataset.v));
+$('mesMini').onclick = () => setView('mes');
+$('prev').onclick = () => { const ms = months(), i = ms.indexOf(cur); if (i > 0) { cur = ms[i-1]; movLimit = 60; render(); } };
+$('next').onclick = () => { const ms = months(), i = ms.indexOf(cur); if (i < ms.length-1) { cur = ms[i+1]; movLimit = 60; render(); } };
+document.addEventListener('visibilitychange', () => { if (!document.hidden && shown && $('scrim').hidden) load(); });
+
 function render(){
-  const {pagos, topes, plan, deudas, months} = D;
+  const ms = months();
+  if (!ms.includes(cur)) cur = ms[ms.length-1];
+  $('mlabel').textContent = cap(monthName(cur).replace(' de ', ' '));
+  $('prev').disabled = cur <= ms[0];
+  $('next').disabled = cur >= ms[ms.length-1];
+  const sinN = D.pagos.filter(p => p.categoria === 'Sin categoría').length;
+  $('sinDot').hidden = !sinN; $('sinDot').textContent = sinN;
+  ({resumen: renderResumen, movs: renderMovs, mes: renderMes, deudas: renderDeudas})[view]();
+}
+
+// ---------- resumen ----------
+function deudaActual(){ return D.deudas.filter(d => !d.pagada).reduce((s,d) => s + d.pendiente, 0); }
+function renderResumen(){
+  const {pagos, topes, plan} = D;
   const mp = pagos.filter(p => p.mes === cur);
   const gastos = mp.filter(p => p.tipo === 'Gasto');
-  const sum = arr => arr.reduce((s,p) => s + p.importe, 0);
-
-  $('mlabel').textContent = cap(monthName(cur).replace(' de ', ' '));
-  $('prev').disabled = !months.length || cur <= months[0];
-  $('next').disabled = !months.length || cur >= months[months.length-1];
-
-  // Hero: vida frente a topes
   const enTope = new Set(topes.flatMap(t => t.incluye));
   const vidaG = sum(gastos.filter(p => enTope.has(p.categoria)));
   const planMes = plan.find(p => p.mes === cur);
   const vidaT = planMes ? planMes.vida : topes.reduce((s,t) => s + t.tope, 0);
   const now = monthKey(new Date());
   const dias = new Date(Date.UTC(+cur.slice(0,4), +cur.slice(5,7), 0)).getUTCDate();
-  const hoy = cur === now ? Number(new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Madrid',day:'numeric'}).format(new Date())) : dias;
-  const ratio = vidaT ? vidaG / vidaT : 0;
+  const hoy = cur === now ? Number(new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Madrid',day:'numeric'}).format(new Date())) : (cur > now ? 0 : dias);
   const ritmo = vidaT * hoy / dias;
   const lvl = vidaG > vidaT ? 'bad' : vidaG > ritmo * 1.1 ? 'warn' : '';
   $('vidaGastado').textContent = eur(vidaG);
   $('vidaTope').textContent = `de ${eur(vidaT)}`;
   $('vidaMeter').className = 'meter ' + lvl;
-  $('vidaMeter').firstElementChild.style.width = Math.min(100, ratio*100) + '%';
+  $('vidaMeter').firstElementChild.style.width = Math.min(100, vidaT ? vidaG / vidaT * 100 : 0) + '%';
   $('vidaPill').innerHTML = vidaG > vidaT
     ? `<span class="pill bad">Te has pasado ${eur(vidaG - vidaT)}</span>`
     : cur === now
       ? `<span class="pill ${lvl}">Quedan ${eur(vidaT - vidaG)} para ${dias - hoy + 1} días${lvl ? ' · vas por encima del ritmo' : ''}</span>`
-      : `<span class="pill">Sobraron ${eur(vidaT - vidaG)}</span>`;
+      : cur > now ? '' : `<span class="pill">Sobraron ${eur(vidaT - vidaG)}</span>`;
   $('sTotal').textContent = eur(sum(gastos));
   $('sIng').textContent = eur(sum(mp.filter(p => p.tipo === 'Ingreso')));
-  $('sDeuda').textContent = eur(sum(mp.filter(p => p.tipo === 'Deuda' && p.importe > 0)));
+  $('sDeuda').textContent = eur(deudaActual());
 
-  // Topes
-  $('topes').innerHTML = topes.map(t => {
-    const g = sum(gastos.filter(p => t.incluye.includes(p.categoria)));
-    return {t, g};
-  }).sort((a,b) => (b.g - b.t.tope) - (a.g - a.t.tope)).map(({t, g}) => {
-    const over = g > t.tope, near = !over && t.tope && g > t.tope * hoy / dias * 1.1;
-    const w = t.tope ? Math.min(100, g / t.tope * 100) : (g ? 100 : 0);
-    return `<div class="row"><span class="name">${esc(t.categoria)}</span>
-      <span class="val num">${eur(g)} <small>/ ${eur(t.tope)}</small></span>
-      <div class="meter ${over ? 'bad' : near ? 'warn' : ''}"><i style="width:${w}%"></i></div></div>`;
-  }).join('');
+  const m = estadoMes();
+  $('mesMini').hidden = !m.items.length;
+  $('mesMiniBar').style.width = (m.total ? m.pagado / m.total * 100 : 0) + '%';
+  $('mesMiniPill').textContent = `${m.items.filter(i => i.done).length} de ${m.items.length} pagados`;
+  $('mesMiniPill').className = 'pill' + (m.items.every(i => i.done) ? '' : ' warn');
+  $('mesMiniTxt').textContent = m.total - m.pagado > 0.5 ? `Falta por pagar ${eur(m.total - m.pagado)}. Toca para marcar.` : 'Todo pagado este mes.';
+
+  $('topes').innerHTML = topes.map(t => ({t, g: sum(gastos.filter(p => t.incluye.includes(p.categoria)))}))
+    .sort((a,b) => (b.g - b.t.tope) - (a.g - a.t.tope)).map(({t, g}) => {
+      const over = g > t.tope, near = !over && t.tope && g > t.tope * hoy / dias * 1.1;
+      const w = t.tope ? Math.min(100, g / t.tope * 100) : (g ? 100 : 0);
+      return `<div class="row"><span class="name">${esc(t.categoria)}</span>
+        <span class="val num">${eur(g)} <small>/ ${eur(t.tope)}</small></span>
+        <div class="meter ${over ? 'bad' : near ? 'warn' : ''}"><i style="width:${w}%"></i></div></div>`;
+    }).join('');
   const fuera = {};
   gastos.filter(p => !enTope.has(p.categoria)).forEach(p => fuera[p.categoria] = (fuera[p.categoria]||0) + p.importe);
   const fl = Object.entries(fuera).filter(([,v]) => v > 0.5).sort((a,b) => b[1]-a[1]);
   $('fuera').textContent = fl.length ? 'Fuera de topes (fijos y otros): ' + fl.map(([k,v]) => `${k} ${eur(v)}`).join(' · ') : '';
 
-  // Barras por mes (12 meses hasta el seleccionado)
-  const ms = []; for (let i = 11; i >= 0; i--) ms.push(addMonth(cur, -i));
-  const tot = ms.map(m => sum(pagos.filter(p => p.mes === m && p.tipo === 'Gasto')));
+  const all12 = []; for (let i = 11; i >= 0; i--) all12.push(addMonth(cur, -i));
+  const tot = all12.map(mm => sum(pagos.filter(p => p.mes === mm && p.tipo === 'Gasto')));
   const max = Math.max(1, ...tot);
-  $('bars').innerHTML = ms.map((m,i) => `<button class="bar ${m === cur ? 'sel' : ''}" data-m="${m}" aria-label="${monthName(m)}: ${eur(tot[i])}">
-      <i style="height:${Math.max(2, tot[i]/max*100)}%">${m === cur ? `<em class="num">${eur(tot[i])}</em>` : ''}</i>
-      <span>${monthName(m,{month:'short'}).replace('.','').slice(0,3)}</span></button>`).join('');
-  $('bars').querySelectorAll('.bar').forEach(b => b.onclick = () => { if (months.includes(b.dataset.m)) { cur = b.dataset.m; showAll = false; render(); } });
+  $('bars').innerHTML = all12.map((mm,i) => `<button class="bar ${mm === cur ? 'sel' : ''}" data-m="${mm}" aria-label="${monthName(mm)}: ${eur(tot[i])}">
+      <i style="height:${Math.max(2, tot[i]/max*100)}%">${mm === cur ? `<em class="num">${eur(tot[i])}</em>` : ''}</i>
+      <span>${cap(monthName(mm,{month:'short'}).replace('.','').slice(0,3))}</span></button>`).join('');
+  $('bars').querySelectorAll('.bar').forEach(b => b.onclick = () => { if (months().includes(b.dataset.m)) { cur = b.dataset.m; render(); } });
   const con = tot.filter(v => v > 0);
   $('media').textContent = con.length ? `Media de ${con.length} meses: ${eur(con.reduce((a,b)=>a+b,0)/con.length)} al mes` : '';
 
-  // Categorías
   const cats = {};
   gastos.forEach(p => cats[p.categoria] = (cats[p.categoria]||0) + p.importe);
   const cl = Object.entries(cats).filter(([,v]) => v > 0.5).sort((a,b) => b[1]-a[1]);
   const cmax = cl.length ? cl[0][1] : 1;
   $('cats').innerHTML = cl.map(([k,v]) => `<div class="cat"><span class="t">${esc(k)}</span>
-      <span class="track"><i style="width:${v/cmax*100}%"></i></span><span class="num">${eur(v)}</span></div>`).join('') || '<p class="muted" style="margin:0">Sin gastos este mes.</p>';
-
-  // Deuda
-  const pend = deudas.reduce((s,d) => s + d.pendiente, 0);
-  const pasado = plan.filter(p => p.mes <= now);
-  const deudaHoy = pasado.length ? pasado[pasado.length-1].deuda_final : pend;
-  const fin = plan.find(p => p.deuda_final <= 0.5);
-  $('deudaHoy').textContent = eur(deudaHoy);
-  $('libre').textContent = fin ? `Sin deudas en ${monthName(fin.mes)}` : '';
-  $('debtChart').innerHTML = debtChart(pend, deudas[0]?.a_fecha, plan, now);
-  $('debts').innerHTML = deudas.slice().sort((a,b) => b.pendiente - a.pendiente).map(d => `<div class="debt">
-      <span style="font-weight:500">${esc(d.nombre)}</span><span class="num">${eur(d.pendiente)}</span>
-      <span class="sub">${d.cuota ? `${eur(Number(d.cuota),2)}/mes` : 'Pago único'}${Number(d.tin) ? ` · TIN ${String(d.tin).replace('.',',')} %` : ''}${d.fin ? ` · hasta ${monthName(d.fin.slice(0,7),{month:'short',year:'numeric'})}` : ''}</span></div>`).join('');
-
-  // Movimientos
-  const list = mp.slice().sort((a,b) => b.fecha.localeCompare(a.fecha));
-  const vis = showAll ? list : list.slice(0, 15);
-  $('tx').innerHTML = vis.map(p => `<div class="t1"><span class="c">${esc(p.comercio)}</span>
-      <span class="a num ${p.importe < 0 ? 'neg' : ''}">${p.importe < 0 ? '+' + eur(-p.importe,2) : eur(p.importe,2)}</span>
-      <span class="s">${dayLabel(p.fecha)} · ${esc(p.categoria)}${p.cuenta ? ' · ' + esc(p.cuenta) : ''}</span></div>`).join('') || '<p class="muted" style="margin:0">Nada este mes.</p>';
-  $('more').hidden = showAll || list.length <= 15;
-  $('more').textContent = `Ver los ${list.length}`;
+      <span class="track"><i style="width:${v/cmax*100}%"></i></span><span class="num">${eur(v)}</span></div>`).join('') || '<p class="muted">Sin gastos este mes.</p>';
 }
 
-function debtChart(start, startDate, plan, now){
-  const pts = [{mes: (startDate || plan[0]?.mes || now).slice(0,7), v: start}];
-  plan.forEach(p => { if (p.mes !== pts[0].mes) pts.push({mes: p.mes, v: p.deuda_final}); else pts[0].v = start; });
+// ---------- movimientos ----------
+$('search').addEventListener('input', e => { busqueda = e.target.value.trim().toLowerCase(); movLimit = 60; renderMovs(); });
+$('filters').querySelectorAll('button').forEach(b => b.onclick = () => {
+  filtro = b.dataset.f; movLimit = 60;
+  $('filters').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b));
+  renderMovs();
+});
+function renderMovs(){
+  // "Sin categoría" y la búsqueda miran todos los meses; el resto, el mes elegido.
+  const global = filtro === 'sin' || busqueda;
+  let list = D.pagos.filter(p => global || p.mes === cur);
+  if (filtro === 'gastos') list = list.filter(p => p.tipo === 'Gasto');
+  if (filtro === 'sin') list = list.filter(p => p.categoria === 'Sin categoría');
+  if (filtro === 'ingresos') list = list.filter(p => p.tipo === 'Ingreso');
+  if (filtro === 'otros') list = list.filter(p => p.tipo === 'Deuda' || p.tipo === 'Personas' || p.tipo === 'Interno');
+  if (busqueda) list = list.filter(p => (p.comercio + ' ' + p.categoria + ' ' + (p.cuenta||'')).toLowerCase().includes(busqueda));
+  list.sort((a,b) => b.fecha.localeCompare(a.fecha));
+  $('movsSum').textContent = `${list.length} movimientos${global ? ' (todos los meses)' : ''} · ${eur2(sum(list))}`;
+  let html = '', lastDay = '';
+  for (const p of list.slice(0, movLimit)) {
+    if (p.dia !== lastDay) { html += `<div class="dayhead">${cap(dayName(p.dia))}</div>`; lastDay = p.dia; }
+    html += `<button class="item" data-id="${p.id}"><span class="c">${esc(p.comercio)}</span>
+      <span class="a num ${p.importe < 0 ? 'neg' : ''}">${p.importe < 0 ? '+' + eur2(-p.importe) : eur2(p.importe)}</span>
+      <span class="s">${p.categoria === 'Sin categoría' ? '<span class="tag">Sin categoría</span>' : esc(p.categoria)}${p.cuenta ? ' · ' + esc(p.cuenta) : ''}${p.origen === 'Manual' ? ' · a mano' : ''}</span></button>`;
+  }
+  if (list.length > movLimit) html += `<button class="linkbtn" id="moreMovs">Ver más (${list.length - movLimit})</button>`;
+  $('movs').innerHTML = html || '<p class="muted" style="padding:12px 0">Nada por aquí.</p>';
+  $('movs').querySelectorAll('.item').forEach(b => b.onclick = () => editPago(D.pagos.find(p => p.id == b.dataset.id)));
+  if ($('moreMovs')) $('moreMovs').onclick = () => { movLimit += 200; renderMovs(); };
+}
+$('fab').onclick = () => editPago(null);
+
+// ---------- hoja de edición ----------
+function openSheet(html, onReady){
+  $('sheet').innerHTML = html; $('scrim').hidden = false; document.body.style.overflow = 'hidden';
+  $('sheet').querySelector('.x').onclick = closeSheet;
+  onReady && onReady($('sheet'));
+}
+function closeSheet(){ $('scrim').hidden = true; document.body.style.overflow = ''; $('sheet').innerHTML = ''; }
+$('scrim').addEventListener('click', e => { if (e.target === $('scrim')) closeSheet(); });
+const hd = t => `<div class="hd"><h2>${t}</h2><button class="x" aria-label="Cerrar">×</button></div>`;
+const opts = (arr, sel) => arr.map(v => `<option ${v === sel ? 'selected' : ''}>${esc(v)}</option>`).join('');
+function confirmBtn(btn, label, fn){
+  btn.onclick = () => {
+    if (!btn.classList.contains('sure')) { btn.classList.add('sure'); btn.textContent = label; setTimeout(() => { btn.classList.remove('sure'); btn.textContent = btn.dataset.l; }, 3500); return; }
+    fn();
+  };
+  btn.dataset.l = btn.textContent;
+}
+
+function editPago(p){
+  const nuevo = !p;
+  const cats = categorias();
+  const cuentas = [...new Set([...CUENTAS, ...D.pagos.map(x => x.cuenta).filter(Boolean)])];
+  const iguales = p ? D.pagos.filter(x => x.comercio === p.comercio && x.id !== p.id).length : 0;
+  openSheet(`${hd(nuevo ? 'Nuevo movimiento' : 'Editar movimiento')}
+    <form id="fp" style="display:flex;flex-direction:column;gap:10px">
+      <label class="f">Comercio o concepto<input id="pc" required value="${esc(p?.comercio || '')}" placeholder="Ej. Mercadona"></label>
+      <div class="grid2">
+        <label class="f">Importe (€)<input id="pi" inputmode="decimal" required value="${p ? String(p.importe).replace('.',',') : ''}" placeholder="12,50"></label>
+        <label class="f">Fecha<input id="pf" type="datetime-local" required value="${toLocalInput(p?.fecha || new Date())}"></label>
+      </div>
+      <div class="checkline"><input type="checkbox" id="pdev" ${p && p.importe < 0 ? 'checked' : ''}><label for="pdev">Es dinero que entra (devolución, ingreso, me pagan)</label></div>
+      <label class="f">Categoría<select id="pcat">${opts(cats, p?.categoria || 'Sin categoría')}<option value="__nueva">Nueva categoría…</option></select></label>
+      <input id="pcatN" placeholder="Nombre de la nueva categoría" hidden>
+      <label class="f">Cuenta o tarjeta<select id="pcu"><option value="">—</option>${opts(cuentas, p?.cuenta || (nuevo ? 'BBVA' : ''))}</select></label>
+      ${iguales ? `<div class="checkline"><input type="checkbox" id="pall"><label for="pall">Poner esta categoría también a los otros ${iguales} movimientos de “${esc(p.comercio)}” y recordarla para los nuevos</label></div>` : ''}
+      ${p ? `<p class="small muted">Origen: ${esc(p.origen)}${p.con_hora ? '' : ' · el banco solo da el día'}</p>` : ''}
+      <div class="actions">
+        <button class="primary" type="submit">${nuevo ? 'Añadir' : 'Guardar'}</button>
+        ${nuevo ? '' : '<button class="danger" type="button" id="pdel">Borrar</button>'}
+      </div>
+    </form>`, s => {
+      const sel = $('pcat');
+      sel.onchange = () => { $('pcatN').hidden = sel.value !== '__nueva'; if (!$('pcatN').hidden) $('pcatN').focus(); };
+      if (nuevo) $('pc').focus();
+      if (!nuevo) confirmBtn($('pdel'), 'Toca otra vez para borrar', async () => {
+        const {error} = await sb.from('pagos').delete().eq('id', p.id);
+        if (error) return toast('No se borró: ' + error.message);
+        D.pagos = D.pagos.filter(x => x.id !== p.id); closeSheet(); render(); toast('Borrado');
+      });
+      $('fp').addEventListener('submit', async e => {
+        e.preventDefault();
+        let imp = Math.abs(parseNum($('pi').value));
+        if (!isFinite(imp) || !imp) return toast('Revisa el importe.');
+        if ($('pdev').checked) imp = -imp;
+        const categoria = sel.value === '__nueva' ? $('pcatN').value.trim() : sel.value;
+        if (!categoria) return toast('Escribe la categoría nueva.');
+        const row = { comercio: $('pc').value.trim(), importe: r2(imp), fecha: new Date($('pf').value).toISOString(), categoria, cuenta: $('pcu').value || null };
+        try {
+          if (nuevo) {
+            const [r] = await write(sb.from('pagos').insert({...row, con_hora: true, origen: 'Manual'}));
+            D.pagos.unshift(prepPago(r));
+          } else {
+            const [r] = await write(sb.from('pagos').update(row).eq('id', p.id));
+            Object.assign(p, prepPago(r));
+            if ($('pall')?.checked) {
+              const rs = await write(sb.from('pagos').update({categoria}).eq('comercio', p.comercio));
+              rs.forEach(x => { const o = D.pagos.find(y => y.id === x.id); if (o) { o.categoria = x.categoria; o.tipo = x.tipo; } });
+              await sb.from('reglas').insert({contiene: p.comercio.toLowerCase(), categoria});
+            }
+          }
+          D.pagos.sort((a,b) => b.fecha.localeCompare(a.fecha));
+          closeSheet(); render(); toast(nuevo ? 'Añadido' : 'Guardado');
+        } catch {}
+      });
+    });
+}
+
+// ---------- mes: fijos y cuotas ----------
+const pmDe = (tipo, id, mes = cur) => D.pm.find(r => r.tipo === tipo && r.ref_id === id && r.mes === mes);
+const enMes = (desde, hasta) => (!desde || desde.slice(0,7) <= cur) && (!hasta || hasta.slice(0,7) >= cur);
+function fijosDelMes(){ return D.fijos.filter(f => f.activo && enMes(f.desde, f.hasta)); }
+function cuotasDelMes(){
+  return D.deudas.filter(d => {
+    const r = pmDe('deuda', d.id);
+    if (r) return true;                                     // pagada este mes: se queda en la lista
+    if (d.pagada) return false;
+    if (d.cuota) return !d.fin || d.fin.slice(0,7) >= cur;  // cuota mensual hasta el final
+    return d.fin && d.fin.slice(0,7) === cur;               // pago único: su mes
+  });
+}
+function estadoMes(){
+  if (cur < INICIO_SEGUIMIENTO) return {items:[], total:0, pagado:0};
+  const items = [
+    ...fijosDelMes().map(f => ({importe: (pmDe('fijo', f.id)?.importe ?? f.importe) * 1, cuenta: f.cuenta, done: !!pmDe('fijo', f.id)})),
+    ...cuotasDelMes().map(d => { const r = pmDe('deuda', d.id); return {importe: Number(r?.importe ?? (d.cuota || d.pendiente)), cuenta: d.cuenta, done: !!r}; }),
+  ];
+  return {items, total: items.reduce((s,i) => s + i.importe, 0), pagado: items.filter(i => i.done).reduce((s,i) => s + i.importe, 0)};
+}
+// Busca en los movimientos del mes algo que se parezca al fijo o a la deuda.
+function visto(nombre, importe){
+  const words = nombre.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').split(/[^a-z0-9]+/).filter(w => w.length > 3 && !['cuota','anual','prorrateada','devolver','pago'].includes(w));
+  const norm = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+  return D.pagos.find(p => p.mes === cur && p.importe > 0 && (words.some(w => norm(p.comercio).includes(w)) || (importe && Math.abs(p.importe - importe) < 0.01 && p.tipo !== 'Gasto')));
+}
+function renderMes(){
+  if (cur < INICIO_SEGUIMIENTO) {
+    $('mesProg').textContent = ''; $('mesBar').style.width = '0';
+    $('mesFalta').textContent = `El seguimiento de fijos y cuotas empieza en ${monthName(INICIO_SEGUIMIENTO)}.`;
+    $('mesCuentas').innerHTML = ''; $('fijos').innerHTML = ''; $('cuotas').innerHTML = '';
+    return;
+  }
+  const m = estadoMes();
+  $('mesProg').textContent = `${eur(m.pagado)} de ${eur(m.total)}`;
+  $('mesBar').style.width = (m.total ? m.pagado / m.total * 100 : 0) + '%';
+  const falta = m.items.filter(i => !i.done);
+  $('mesFalta').textContent = falta.length ? `Falta por pagar ${eur(m.total - m.pagado)}. Lo que tiene que haber en cada cuenta:` : 'Todo pagado este mes.';
+  const porCuenta = {};
+  falta.forEach(i => porCuenta[i.cuenta || "Sin cuenta asignada"] = (porCuenta[i.cuenta || "Sin cuenta asignada"] || 0) + i.importe);
+  $('mesCuentas').innerHTML = Object.entries(porCuenta).sort((a,b) => b[1]-a[1]).map(([k,v]) => `<span class="pill warn">${esc(k)} ${eur(v)}</span>`).join('');
+
+  const tickSvg = '<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+  $('fijos').innerHTML = fijosDelMes().map(f => {
+    const r = pmDe('fijo', f.id), v = !r && visto(f.concepto, f.importe);
+    return `<div class="check ${r ? 'done' : ''}">
+      <button class="tick" data-fijo="${f.id}" aria-label="${r ? 'Marcar como no pagado' : 'Marcar como pagado'}: ${esc(f.concepto)}">${tickSvg}</button>
+      <span class="c">${esc(f.concepto)}</span><span class="num">${eur2(r?.importe ?? f.importe)}</span>
+      <button class="edit" data-efijo="${f.id}" aria-label="Editar ${esc(f.concepto)}">⋯</button>
+      <span class="s">${r ? `Pagado${r.pagado_el ? ' el ' + new Date(r.pagado_el+'T12:00:00Z').toLocaleDateString('es-ES',{day:'numeric',month:'short',timeZone:'UTC'}) : ''}` : 'Sin pagar'}${f.cuenta ? ' · sale de ' + esc(f.cuenta) : ''}${f.dia ? ' · día ' + f.dia : ''}${v ? ` · <span class="seen">visto: ${esc(v.comercio)} ${eur2(v.importe)}</span>` : ''}</span>
+    </div>`;
+  }).join('') || '<p class="muted">No hay fijos este mes.</p>';
+
+  $('cuotas').innerHTML = cuotasDelMes().map(d => {
+    const r = pmDe('deuda', d.id), imp = Number(r?.importe ?? (d.cuota || d.pendiente)), v = !r && visto(d.nombre, imp);
+    return `<div class="check ${r ? 'done' : ''}">
+      <button class="tick" data-deuda="${d.id}" aria-label="${r ? 'Marcar como no pagado' : 'Marcar como pagado'}: ${esc(d.nombre)}">${tickSvg}</button>
+      <span class="c">${esc(d.nombre)}</span><span class="num">${eur2(imp)}</span>
+      <button class="edit" data-edeuda="${d.id}" aria-label="Editar ${esc(d.nombre)}">⋯</button>
+      <span class="s">${r ? 'Pagado' : d.cuota ? 'Cuota sin pagar' : 'Pago único sin hacer'}${d.cuenta ? ' · sale de ' + esc(d.cuenta) : ''}${r && r.amortizado ? ` · la deuda baja ${eur2(r.amortizado)}` : ''}${v ? ` · <span class="seen">visto: ${esc(v.comercio)} ${eur2(v.importe)}</span>` : ''}</span>
+    </div>`;
+  }).join('') || '<p class="muted">No hay cuotas este mes.</p>';
+
+  $('v-mes').querySelectorAll('[data-fijo]').forEach(b => b.onclick = () => toggleFijo(D.fijos.find(f => f.id == b.dataset.fijo), b));
+  $('v-mes').querySelectorAll('[data-deuda]').forEach(b => b.onclick = () => toggleDeuda(D.deudas.find(d => d.id == b.dataset.deuda), b));
+  $('v-mes').querySelectorAll('[data-efijo]').forEach(b => b.onclick = () => editFijo(D.fijos.find(f => f.id == b.dataset.efijo)));
+  $('v-mes').querySelectorAll('[data-edeuda]').forEach(b => b.onclick = () => editDeuda(D.deudas.find(d => d.id == b.dataset.edeuda)));
+}
+async function toggleFijo(f, btn){
+  btn.disabled = true;
+  try {
+    const r = pmDe('fijo', f.id);
+    if (r) {
+      const {error} = await sb.from('pagos_mes').delete().eq('id', r.id);
+      if (error) throw error;
+      D.pm = D.pm.filter(x => x !== r);
+    } else {
+      const [n] = await write(sb.from('pagos_mes').insert({mes: cur + '-01', tipo:'fijo', ref_id: f.id, importe: f.importe, cuenta: f.cuenta, pagado_el: today()}));
+      n.mes = n.mes.slice(0,7); n.amortizado = 0; D.pm.push(n);
+    }
+  } catch (e) { toast('No se guardó: ' + (e.message || e)); }
+  render();
+}
+// Marcar una cuota baja la deuda por el capital (cuota menos intereses del mes); desmarcar lo devuelve.
+async function toggleDeuda(d, btn){
+  btn.disabled = true;
+  try {
+    const r = pmDe('deuda', d.id);
+    if (r) {
+      const {error} = await sb.from('pagos_mes').delete().eq('id', r.id);
+      if (error) throw error;
+      D.pm = D.pm.filter(x => x !== r);
+      const upd = {pendiente: r2(d.pendiente + r.amortizado), pagada: false, pagada_el: null};
+      if (d.cuota && d.cuotas_restantes != null && r.amortizado) upd.cuotas_restantes = d.cuotas_restantes + 1;
+      if (r.amortizado) Object.assign(d, prepDeuda((await write(sb.from('deudas').update(upd).eq('id', d.id)))[0]));
+    } else {
+      // Antes del mes en que se apuntó el saldo, la cuota ya está descontada: solo se marca.
+      const cuenta = !d.a_fecha || cur >= d.a_fecha.slice(0,7);
+      let amort = 0, imp;
+      if (d.cuota) { imp = d.cuota; if (cuenta) amort = Math.max(0, Math.min(d.pendiente, d.cuota - d.pendiente * (d.tin || 0) / 1200)); }
+      else { imp = d.pendiente; amort = d.pendiente; }
+      amort = r2(amort);
+      const [n] = await write(sb.from('pagos_mes').insert({mes: cur + '-01', tipo:'deuda', ref_id: d.id, importe: imp, amortizado: amort, cuenta: d.cuenta, pagado_el: today()}));
+      n.mes = n.mes.slice(0,7); n.amortizado = Number(n.amortizado); D.pm.push(n);
+      if (amort) {
+        const pend = r2(d.pendiente - amort);
+        const upd = {pendiente: Math.max(0, pend)};
+        if (d.cuota && d.cuotas_restantes != null) upd.cuotas_restantes = Math.max(0, d.cuotas_restantes - 1);
+        if (pend <= 0.01) Object.assign(upd, {pagada: true, pagada_el: today()});
+        Object.assign(d, prepDeuda((await write(sb.from('deudas').update(upd).eq('id', d.id)))[0]));
+        if (d.pagada) toast(`${d.nombre}: ¡liquidada!`);
+      }
+    }
+  } catch (e) { toast('No se guardó: ' + (e.message || e)); }
+  render();
+}
+$('addFijo').onclick = () => editFijo(null);
+function editFijo(f){
+  const nuevo = !f;
+  openSheet(`${hd(nuevo ? 'Nuevo gasto fijo' : 'Gasto fijo')}
+    <form id="ff" style="display:flex;flex-direction:column;gap:10px">
+      <label class="f">Concepto<input id="fc" required value="${esc(f?.concepto || '')}" placeholder="Ej. Gimnasio"></label>
+      <div class="grid2">
+        <label class="f">Importe al mes (€)<input id="fi" inputmode="decimal" required value="${f ? String(f.importe).replace('.',',') : ''}"></label>
+        <label class="f">Día de cobro<input id="fd" inputmode="numeric" value="${f?.dia ?? ''}" placeholder="1–31"></label>
+      </div>
+      <label class="f">Sale de<select id="fcu"><option value="">—</option>${opts(CUENTAS, f?.cuenta || '')}</select></label>
+      <div class="grid2">
+        <label class="f">Desde<input id="fde" type="month" value="${f?.desde ? f.desde.slice(0,7) : ''}"></label>
+        <label class="f">Hasta<input id="fha" type="month" value="${f?.hasta ? f.hasta.slice(0,7) : ''}"></label>
+      </div>
+      ${!nuevo && pmDe('fijo', f.id) ? `<label class="f">Lo que pagaste en ${monthName(cur)}<input id="fpm" inputmode="decimal" value="${String(pmDe('fijo', f.id).importe).replace('.',',')}"></label>` : ''}
+      <div class="actions">
+        <button class="primary" type="submit">${nuevo ? 'Añadir' : 'Guardar'}</button>
+        ${nuevo ? '' : '<button class="danger" type="button" id="fdel">Ya no lo pago</button>'}
+      </div>
+    </form>`, () => {
+      if (!nuevo) confirmBtn($('fdel'), 'Toca otra vez para quitarlo', async () => {
+        // Se cierra en el mes anterior para no perder el historial.
+        try { Object.assign(f, (await write(sb.from('gastos_fijos').update({hasta: addMonth(cur, -1) + '-28'}).eq('id', f.id)))[0]); f.importe = Number(f.importe); closeSheet(); render(); toast('Quitado desde este mes'); } catch {}
+      });
+      $('ff').addEventListener('submit', async e => {
+        e.preventDefault();
+        const imp = parseNum($('fi').value);
+        if (!isFinite(imp) || imp <= 0) return toast('Revisa el importe.');
+        const dia = parseInt($('fd').value) || null;
+        const row = {concepto: $('fc').value.trim(), importe: r2(imp), dia: dia && dia >= 1 && dia <= 31 ? dia : null, cuenta: $('fcu').value || null,
+          desde: $('fde').value ? $('fde').value + '-01' : null, hasta: $('fha').value ? $('fha').value + '-28' : null, activo: true};
+        try {
+          if (nuevo) { const [n] = await write(sb.from('gastos_fijos').insert(row)); n.importe = Number(n.importe); D.fijos.push(n); }
+          else {
+            Object.assign(f, (await write(sb.from('gastos_fijos').update(row).eq('id', f.id)))[0]); f.importe = Number(f.importe);
+            const r = pmDe('fijo', f.id);
+            if (r && $('fpm')) { const v = parseNum($('fpm').value); if (isFinite(v) && v !== Number(r.importe)) { await write(sb.from('pagos_mes').update({importe: r2(v)}).eq('id', r.id)); r.importe = r2(v); } }
+          }
+          closeSheet(); render(); toast(nuevo ? 'Añadido' : 'Guardado');
+        } catch {}
+      });
+    });
+}
+
+// ---------- deudas ----------
+$('addDeuda').onclick = () => editDeuda(null);
+function renderDeudas(){
+  const {plan, deudas} = D;
+  const act = deudas.filter(d => !d.pagada).sort((a,b) => b.pendiente - a.pendiente);
+  const liq = deudas.filter(d => d.pagada).sort((a,b) => (b.pagada_el||'').localeCompare(a.pagada_el||''));
+  const total = deudaActual();
+  const now = monthKey(new Date());
+  $('deudaHoy').textContent = eur(total);
+  const fin = plan.find(p => p.deuda_final <= 0.5);
+  $('libre').textContent = fin ? `Plan: sin deudas en ${monthName(fin.mes)}` : '';
+  const start = deudas.reduce((s,d) => s + d.pendiente, 0) + D.pm.filter(r => r.tipo === 'deuda').reduce((s,r) => s + r.amortizado, 0);
+  $('debtChart').innerHTML = debtChart(start, plan, now, total);
+  const planHoy = plan.filter(p => p.mes < now).pop();
+  $('debtVsPlan').textContent = planHoy ? (total <= planHoy.deuda_final + 1 ? `Vas por delante del plan: tocaba ${eur(planHoy.deuda_final)} a final de ${monthName(planHoy.mes,{month:'long'})}.` : `Vas ${eur(total - planHoy.deuda_final)} por detrás del plan de ${monthName(planHoy.mes,{month:'long'})}.`) : 'La línea es el plan mes a mes; el punto, lo que debes hoy.';
+  const row = d => {
+    const pagado = D.pm.filter(r => r.tipo === 'deuda' && r.ref_id === d.id).reduce((s,r) => s + r.amortizado, 0);
+    const pct = d.pendiente + pagado ? pagado / (d.pendiente + pagado) * 100 : 100;
+    return `<button class="debt" data-id="${d.id}">
+      <span class="h"><span>${esc(d.nombre)}</span><span class="num">${d.pagada ? 'Liquidada' : eur2(d.pendiente)}</span></span>
+      <span class="s">${d.pagada ? (d.pagada_el ? 'El ' + new Date(d.pagada_el+'T12:00:00Z').toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'}) : '') :
+        [d.cuota ? `${eur2(d.cuota)}/mes${d.cuotas_restantes != null ? ` · quedan ${d.cuotas_restantes}` : ''}` : 'Pago único', d.tin ? `TIN ${String(d.tin).replace('.',',')} %` : '', d.fin ? `hasta ${monthName(d.fin.slice(0,7),{month:'short',year:'numeric'}).replace('.','')}` : '', d.cuenta ? `de ${esc(d.cuenta)}` : ''].filter(Boolean).join(' · ')}</span>
+      ${!d.pagada && pagado ? `<span class="meter"><i style="width:${pct}%"></i></span><span class="s">Pagado desde que usas la app: ${eur2(pagado)}</span>` : ''}
+      ${d.notas && !d.pagada ? `<span class="s">${esc(d.notas)}</span>` : ''}
+    </button>`;
+  };
+  $('debts').innerHTML = act.map(row).join('') || '<p class="muted">Sin deudas. 🎉</p>';
+  $('paidSec').hidden = !liq.length;
+  $('debtsPaid').innerHTML = liq.map(row).join('');
+  $('v-deudas').querySelectorAll('.debt').forEach(b => b.onclick = () => editDeuda(D.deudas.find(d => d.id == b.dataset.id)));
+}
+function debtChart(start, plan, now, hoyV){
+  const pts = [{mes: '2026-10', v: start}, ...plan.map(p => ({mes: p.mes, v: p.deuda_final}))];
   if (pts.length < 2) return '';
   const W = 520, H = 190, L = 8, R = 8, T = 30, B = 32;
-  const max = Math.max(...pts.map(p => p.v));
+  const max = Math.max(start, hoyV, ...pts.map(p => p.v));
   const x = i => L + i * (W - L - R) / (pts.length - 1);
   const y = v => T + (1 - v / max) * (H - T - B);
   const line = pts.map((p,i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(p.v).toFixed(1)}`).join('');
   const area = `${line}L${x(pts.length-1)},${H-B}L${x(0)},${H-B}Z`;
   let ni = pts.findIndex(p => p.mes >= now); if (ni < 0) ni = pts.length - 1;
   const years = pts.map((p,i) => ({i, y: p.mes.slice(0,4), m: p.mes.slice(5)})).filter(p => p.i === 0 || (p.m === '01' && p.i > 3));
-  return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Plan de deuda hasta cero">
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Plan de deuda hasta cero y deuda de hoy">
     <line x1="${L}" x2="${W-R}" y1="${H-B}" y2="${H-B}" stroke="var(--line)"/>
     <path d="${area}" fill="var(--accent-soft)" opacity=".7"/>
     <path d="${line}" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round"/>
-    <circle cx="${x(ni)}" cy="${y(pts[ni].v)}" r="5" fill="var(--accent)" stroke="var(--card)" stroke-width="2"/>
-    <text x="${Math.min(W-60, Math.max(L, x(ni)+10))}" y="${y(pts[ni].v) - 10}">hoy</text>
+    <circle cx="${x(ni)}" cy="${y(hoyV)}" r="6" fill="var(--ink)" stroke="var(--card)" stroke-width="2"/>
+    <text x="${Math.min(W-60, Math.max(L, x(ni)+12))}" y="${y(hoyV) + 6}">hoy</text>
     ${years.map(p => `<text x="${x(p.i)}" y="${H-6}" text-anchor="${p.i === 0 ? 'start' : 'middle'}">${p.i === 0 ? monthName(pts[0].mes,{month:'short'}).replace('.','') + ' ' + p.y : p.y}</text>`).join('')}
     <text x="${W-R}" y="${y(0) - 6}" text-anchor="end">0 €</text>
   </svg>`;
 }
+function editDeuda(d){
+  const nuevo = !d;
+  const pagos = d ? D.pm.filter(r => r.tipo === 'deuda' && r.ref_id === d.id).sort((a,b) => b.mes.localeCompare(a.mes)) : [];
+  openSheet(`${hd(nuevo ? 'Nueva deuda' : esc(d.nombre))}
+    <form id="fdd" style="display:flex;flex-direction:column;gap:10px">
+      <label class="f">Nombre<input id="dn" required value="${esc(d?.nombre || '')}" placeholder="Ej. Préstamo coche"></label>
+      <div class="grid2">
+        <label class="f">Pendiente hoy (€)<input id="dp" inputmode="decimal" required value="${d ? String(d.pendiente).replace('.',',') : ''}"></label>
+        <label class="f">TIN (%)<input id="dt" inputmode="decimal" value="${d?.tin ? String(d.tin).replace('.',',') : ''}" placeholder="0"></label>
+        <label class="f">Cuota al mes (€)<input id="dc" inputmode="decimal" value="${d?.cuota ? String(d.cuota).replace('.',',') : ''}" placeholder="Vacío = pago único"></label>
+        <label class="f">Cuotas que quedan<input id="dr" inputmode="numeric" value="${d?.cuotas_restantes ?? ''}"></label>
+        <label class="f">Termina / se paga en<input id="df" type="month" value="${d?.fin ? d.fin.slice(0,7) : ''}"></label>
+        <label class="f">Sale de<select id="dcu"><option value="">—</option>${opts(CUENTAS, d?.cuenta || '')}</select></label>
+      </div>
+      <label class="f">Notas<input id="dno" value="${esc(d?.notas || '')}"></label>
+      ${!nuevo ? '<p class="small muted">Si el banco te da otro saldo, cámbialo en "Pendiente hoy": manda el dato del banco.</p>' : ''}
+      ${pagos.length ? `<div class="small muted">Pagos marcados: ${pagos.map(r => `${monthName(r.mes,{month:'short',year:'2-digit'}).replace('.','')} ${eur2(Number(r.importe))}`).join(' · ')}</div>` : ''}
+      <div class="actions">
+        <button class="primary" type="submit">${nuevo ? 'Añadir' : 'Guardar'}</button>
+        ${nuevo ? '' : d.pagada ? '<button class="ghost" type="button" id="dre">Reabrir</button>' : '<button class="ghost" type="button" id="dliq">Liquidada</button>'}
+      </div>
+      ${nuevo ? '' : '<button class="linkbtn" type="button" id="ddel" style="color:var(--bad);align-self:flex-start">Borrar esta deuda</button>'}
+    </form>`, () => {
+      if (!nuevo && $('dliq')) confirmBtn($('dliq'), 'Toca otra vez: queda a 0 €', async () => {
+        try { Object.assign(d, prepDeuda((await write(sb.from('deudas').update({pagada: true, pagada_el: today(), pendiente: 0, cuotas_restantes: d.cuota ? 0 : null}).eq('id', d.id)))[0])); closeSheet(); render(); toast(`${d.nombre}: ¡liquidada!`); } catch {}
+      });
+      if (!nuevo && $('dre')) $('dre').onclick = async () => {
+        try { Object.assign(d, prepDeuda((await write(sb.from('deudas').update({pagada: false, pagada_el: null}).eq('id', d.id)))[0])); closeSheet(); render(); toast('Reabierta: pon el pendiente real'); editDeuda(d); } catch {}
+      };
+      if (!nuevo) confirmBtn($('ddel'), 'Toca otra vez para borrarla del todo', async () => {
+        const {error} = await sb.from('deudas').delete().eq('id', d.id);
+        if (error) return toast('No se borró: ' + error.message);
+        await sb.from('pagos_mes').delete().eq('tipo','deuda').eq('ref_id', d.id);
+        D.deudas = D.deudas.filter(x => x !== d); D.pm = D.pm.filter(r => !(r.tipo === 'deuda' && r.ref_id === d.id));
+        closeSheet(); render(); toast('Borrada');
+      });
+      $('fdd').addEventListener('submit', async e => {
+        e.preventDefault();
+        const pend = parseNum($('dp').value), cuota = $('dc').value ? parseNum($('dc').value) : null, tin = $('dt').value ? parseNum($('dt').value) : 0;
+        if (!isFinite(pend) || pend < 0) return toast('Revisa el pendiente.');
+        if (cuota != null && !(cuota > 0)) return toast('Revisa la cuota.');
+        const row = {nombre: $('dn').value.trim(), pendiente: r2(pend), tin: isFinite(tin) ? tin : 0, cuota: cuota == null ? null : r2(cuota),
+          cuotas_restantes: $('dr').value ? parseInt($('dr').value) : null, fin: $('df').value ? $('df').value + '-01' : null,
+          cuenta: $('dcu').value || null, notas: $('dno').value.trim() || null};
+        if (nuevo || Math.abs(row.pendiente - d.pendiente) > 0.005) row.a_fecha = today();
+        try {
+          if (nuevo) D.deudas.push(prepDeuda((await write(sb.from('deudas').insert(row)))[0]));
+          else Object.assign(d, prepDeuda((await write(sb.from('deudas').update(row).eq('id', d.id)))[0]));
+          closeSheet(); render(); toast(nuevo ? 'Añadida' : 'Guardada');
+        } catch {}
+      });
+    });
+}
 
-$('prev').onclick = () => { const i = D.months.indexOf(cur); if (i > 0) { cur = D.months[i-1]; showAll = false; render(); } };
-$('next').onclick = () => { const i = D.months.indexOf(cur); if (i < D.months.length-1) { cur = D.months[i+1]; showAll = false; render(); } };
-$('more').onclick = () => { showAll = true; render(); };
-document.addEventListener('visibilitychange', () => { if (!document.hidden && shown) load(); });
-
-sb.auth.getSession().then(({data}) => show(!!data.session));
+sb.auth.getSession().then(({data}) => { user = data.session?.user || null; show(!!data.session); });
 </script>
 </body>
 </html>
