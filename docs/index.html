@@ -433,6 +433,21 @@ body::before{opacity:.32;height:55vh}
 .anhero .l{font-size:14px;opacity:.85} .anhero b{display:block;font-size:42px;font-weight:800;letter-spacing:-1px;margin:4px 0 6px}
 .anhero .s{font-size:14px;opacity:.9}
 .item.tope .a small{font-size:13px;font-weight:500;color:var(--muted)} .item.tope .a.neg-bad small{color:inherit}
+/* --- v7: revisión de diseño. Solo Resumen lleva la tarjeta de color; las demás pestañas abren con la cifra grande sobre el fondo. --- */
+.view > .hero.lead{background:none;border:0;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;padding:2px 4px 0;border-radius:0}
+.hero.lead .label{font-size:15px;font-weight:600;color:var(--muted)}
+.hero.lead .big{font-size:52px;font-weight:800;color:var(--ink)}
+.hero.lead .big.txt{font-size:40px;letter-spacing:-.03em}
+.hero.lead .status{color:var(--muted);font-weight:500} .hero.lead .status.ok{color:var(--tint);font-weight:600}
+.hero.lead .meter{height:6px;margin-top:14px}
+.psub .ghlink,.ghrow .ghlink{color:var(--tint);font-weight:600}
+.check{grid-template-columns:auto 1fr}
+.check .tick{grid-row:auto}
+.check .ebody{display:grid;grid-template-columns:1fr auto;gap:3px 12px;align-items:baseline;background:none;border:0;padding:0;text-align:left;min-width:0;width:100%}
+.check .ebody .s{grid-column:1/-1}
+.check .ebody .num{font-weight:600}
+.check.done .ebody .num{color:var(--muted)}
+.item.tope .a.free{color:var(--muted);font-weight:600;font-size:17px}
 </style>
 </head>
 <body>
@@ -546,7 +561,7 @@ body::before{opacity:.32;height:55vh}
 
   <!-- MES -->
   <div id="v-mes" class="view" hidden>
-    <div class="hero vivid">
+    <div class="hero lead">
       <span class="label" id="mesLabel">Pagado este mes</span>
       <span class="big num" id="mesProg"></span>
       <span class="status" id="mesFalta"></span>
@@ -568,7 +583,7 @@ body::before{opacity:.32;height:55vh}
 
   <!-- DEUDAS -->
   <div id="v-deudas" class="view" hidden>
-    <div class="hero vivid">
+    <div class="hero lead">
       <span class="label">Debes hoy</span>
       <span class="big num" id="deudaHoy"></span>
       <span class="status" id="libre"></span>
@@ -619,6 +634,7 @@ let sb = cliente('');
 const $ = id => document.getElementById(id);
 const eur = (n, d=0) => new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR',maximumFractionDigits:d,minimumFractionDigits:d,useGrouping:'always'}).format(n);
 const eur2 = n => eur(n, 2);
+const eurC = n => eur(n, Math.abs(n - Math.round(n)) < 0.005 ? 0 : 2);   // céntimos solo si los hay
 const monthKey = (() => { const f = new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Madrid',year:'numeric',month:'2-digit'}); return d => f.format(new Date(d)).slice(0,7); })();
 const dayKey = (() => { const f = new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Madrid',year:'numeric',month:'2-digit',day:'2-digit'}); return d => f.format(new Date(d)); })();
 const monthName = (k, opt={month:'long',year:'numeric'}) => new Date(k+'-15T12:00:00Z').toLocaleDateString('es-ES',{...opt,timeZone:'UTC'});
@@ -829,6 +845,8 @@ function renderResumen(){
   // Cuánto queda en cada tope, en el orden del plan. Los topes a 0 solo salen si hay gasto.
   $('topes').innerHTML = topes.map(t => ({t, g: sum(gastos.filter(p => t.incluye.includes(p.categoria)))}))
     .filter(({t, g}) => t.tope > 0 || g > 0.5).map(({t, g}) => {
+      if (!t.tope) return `<button class="item tope" data-cat="${esc(t.incluye[0])}">${icon(t.incluye[0])}<span class="c">${esc(t.categoria)}</span>
+        <span class="a num free">${eur(g)}</span><span class="s">Sin presupuesto este mes</span></button>`;
       const q = t.tope - g, over = q < 0, near = !over && t.tope && g > t.tope * hoy / dias * 1.1;
       const w = t.tope ? Math.min(100, g / t.tope * 100) : 100;
       return `<button class="item tope" data-cat="${esc(t.incluye[0])}">${icon(t.incluye[0])}<span class="c">${esc(t.categoria)}</span>
@@ -992,7 +1010,7 @@ function renderAnalisis(){
       .sort((a,b) => b.fecha.localeCompare(a.fecha)).forEach(p => { const d = Math.min(left, net.get(p)); net.set(p, net.get(p) - d); left -= d; });
   });
   const g = [...net].filter(([,v]) => v > 0.005).map(([p,v]) => ({...p, importe: v}));
-  const total = sum(g);
+  const total = sum(g), gastado = sum(per);   // gastado: neto de todas las devoluciones, igual que en Movimientos
   // días del periodo (hasta hoy si es el mes en curso)
   const hoyK = today(), ini = desde + '-01';
   const finMes = new Date(Date.UTC(+cur.slice(0,4), +cur.slice(5,7), 0)).toISOString().slice(0,10);
@@ -1004,8 +1022,8 @@ function renderAnalisis(){
   const kpi = (ic, col, label, val, sub='') => `<div class="kpi glass"><span class="ico sm" style="--c:${col}"><svg viewBox="0 0 24 24">${ic}</svg></span><span class="label">${label}</span><b class="num">${val}</b>${sub ? `<span class="sub">${sub}</span>` : ''}</div>`;
   const perLbl = periodo === 1 ? 'en ' + monthName(cur, {month: 'long'}) : `en ${periodo} meses`;
   $('kpis').className = 'kpis one';
-  $('kpis').innerHTML = `<div class="anhero"><span class="l">Has gastado ${perLbl}</span><b class="num">${eur(total)}</b>
-    <span class="s num">${eur(diasP.length ? total / diasP.length : 0)} al día · ${sinGastar} ${sinGastar === 1 ? 'día' : 'días'} sin gastar</span></div>`;
+  $('kpis').innerHTML = `<div class="hero lead"><span class="label">Has gastado ${perLbl}</span><span class="big num">${eur(gastado)}</span>
+    <span class="status num">${eur(diasP.length ? gastado / diasP.length : 0)} al día${sinGastar ? ` · ${sinGastar} ${sinGastar === 1 ? 'día' : 'días'} sin gastar` : ''}</span></div>`;
 
   // día de la semana: media por cada lunes, martes...
   const wdTot = Array(7).fill(0), wdN = Array(7).fill(0);
@@ -1044,8 +1062,7 @@ function renderAnalisis(){
     const d = `M${p(R,a0)}A${R},${R} 0 ${large} 1 ${p(R,a1 - 0.012)}L${p(r,a1 - 0.012)}A${r},${r} 0 ${large} 0 ${p(r,a0)}Z`;
     a0 = a1; return `<path d="${d}" fill="${k === 'Resto' ? 'var(--soft)' : colorDe(k)}"/>`;
   }).join('');
-  $('donut').innerHTML = total ? `<svg viewBox="0 0 180 180" class="donut" role="img" aria-label="Reparto del gasto por categoría">${arcs}
-      <text x="90" y="86" text-anchor="middle" class="dt1">${eur(total)}</text><text x="90" y="106" text-anchor="middle" class="dt2">en total</text></svg>
+  $('donut').innerHTML = total ? `<svg viewBox="0 0 180 180" class="donut" role="img" aria-label="Reparto del gasto por categoría">${arcs}</svg>
     <div class="legend">${big.map(([k,v]) => `<span><i style="background:${k === 'Resto' ? 'var(--soft)' : colorDe(k)}"></i><span class="lk">${esc(k)}</span><b class="num">${Math.round(v / total * 100)} %</b></span>`).join('')}</div>` : '<p class="muted empty">Sin gastos.</p>';
 
   // comercios
@@ -1208,11 +1225,11 @@ function renderProximo(){
   const entra = ent.reduce((a,i) => a + i.v, 0), sale = sal.reduce((a,i) => a + i.v, 0), queda = entra - sale;
   $('proxT').textContent = cap(monthName(m, {month: 'long'}));
   $('proxTot').textContent = '';
-  const ico = t => t === 'in' ? ['#34c759', '<path d="M12 4v12M6 10l6 6 6-6M5 20h14"/>'] : t === 'Fijo' ? ['var(--tint)', '<path d="M4 7h16v12H4zM4 7l2-3h12l2 3"/>'] : [t === 'Cuota' ? '#f5a524' : '#ff3b30', '<rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/>'];
+  const ico = t => t === 'in' ? ['#34c759', '<path d="M12 4v12M6 10l6 6 6-6M5 20h14"/>'] : t === 'Fijo' ? ['var(--tint)', '<path d="M4 7h16v12H4zM4 7l2-3h12l2 3"/>'] : ['#f5a524', '<rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/>'];
   const fila = (i, k, t) => { const [col, svg] = ico(t); return `<button class="item mov" data-k="${k}"><span class="ico" style="--c:${col}"><svg viewBox="0 0 24 24">${svg}</svg></span>
     <span class="c">${esc(i.n)}</span><span class="a num ${t === 'in' ? 'pos-ok' : ''}">${t === 'in' ? '+' : ''}${eur(i.v)}</span><span class="s">${t === 'in' ? esc(i.c || 'Ingreso') : i.t + (i.c ? ' · ' + esc(i.c) : '')}</span></button>`; };
   const all = [...ent, ...sal];
-  $('prox').innerHTML = `<div class="proxsum"><div><span>Entra</span><b class="num pos-ok">${eur(entra)}</b></div><div><span>Sale</span><b class="num">${eur(sale)}</b></div><div><span>Te queda</span><b class="num ${queda < 0 ? 'neg-bad' : ''}">${eur(queda)}</b></div></div>
+  $('prox').innerHTML = `<div class="proxsum"><div><span>Entra</span><b class="num pos-ok">${eur(entra)}</b></div><div><span>Sale</span><b class="num">${eur(sale)}</b></div><div><span>${queda < 0 ? 'Falta' : 'Sobra'}</span><b class="num ${queda < 0 ? 'neg-bad' : ''}">${eur(Math.abs(queda))}</b></div></div>
     <div class="psub"><span>Entra</span><button class="ghlink" id="proxAddIn">+ Ingreso</button></div>` +
     (ent.map((i, k) => fila(i, k, 'in')).join('') || '<p class="muted empty sm">Apunta lo que te va a entrar.</p>') +
     `<div class="psub"><span>Sale</span><button class="ghlink" id="proxAdd">+ Gasto fijo</button></div>` +
@@ -1276,18 +1293,20 @@ function visto(nombre, importe){
 }
 function renderMes(){
   if (cur < INICIO_SEGUIMIENTO) {
-    $('mesProg').textContent = '—'; $('mesBar').style.width = '0'; $('mesLabel').textContent = 'Pagado este mes';
+    $('mesProg').textContent = '—'; $('mesProg').className = 'big num'; $('mesBar').style.width = '0'; $('mesLabel').textContent = 'Pagado este mes';
     $('mesFalta').className = 'status'; $('mesFalta').textContent = `El seguimiento empieza en ${monthName(INICIO_SEGUIMIENTO)}.`;
     $('cuentasGroup').hidden = true; $('fijos').innerHTML = ''; $('cuotas').innerHTML = '';
     return;
   }
   const m = estadoMes();
-  $('mesProg').textContent = eur(m.pagado);
-  $('mesLabel').textContent = `Pagado de ${eur(m.total)}`;
-  $('mesBar').style.width = (m.total ? m.pagado / m.total * 100 : 0) + '%';
   const falta = m.items.filter(i => !i.done);
+  // Una cifra: lo que falta. Si no falta nada, lo dice en palabras.
+  $('mesLabel').textContent = falta.length ? 'Te falta por pagar' : cap(monthName(cur, {month: 'long'}));
+  $('mesProg').textContent = falta.length ? eur(m.total - m.pagado) : 'Todo pagado';
+  $('mesProg').className = 'big num' + (falta.length ? '' : ' txt');
+  $('mesBar').style.width = (m.total ? m.pagado / m.total * 100 : 0) + '%';
   $('mesFalta').className = 'status' + (falta.length ? '' : ' ok');
-  $('mesFalta').textContent = falta.length ? `Faltan ${eur(m.total - m.pagado)} en ${falta.length} pagos` : 'Todo pagado este mes';
+  $('mesFalta').textContent = falta.length ? `${falta.length} ${falta.length === 1 ? 'pago' : 'pagos'} · llevas ${eur(m.pagado)} de ${eur(m.total)}` : `${m.items.length} pagos, ${eur(m.total)} en total`;
   $('cuentasGroup').hidden = !falta.length;
   const porCuenta = {};
   falta.forEach(i => porCuenta[i.cuenta || "Sin cuenta"] = (porCuenta[i.cuenta || "Sin cuenta"] || 0) + i.importe);
@@ -1298,9 +1317,8 @@ function renderMes(){
     const r = pmDe('fijo', f.id), v = !r && visto(f.concepto, f.importe);
     return `<div class="check ${r ? 'done' : ''}">
       <button class="tick" data-fijo="${f.id}" aria-label="${r ? 'Marcar como no pagado' : 'Marcar como pagado'}: ${esc(f.concepto)}">${tickSvg}</button>
-      <span class="c">${esc(f.concepto)}</span><span class="num">${eur2(r?.importe ?? f.importe)}</span>
-      <button class="edit" data-efijo="${f.id}" aria-label="Editar ${esc(f.concepto)}">⋯</button>
-      <span class="s">${[f.cuenta ? esc(f.cuenta) : 'Sin cuenta', f.dia ? 'día ' + f.dia : ''].filter(Boolean).join(' · ')}${v ? ' · <span class="seen">Parece cobrado</span>' : ''}</span>
+      <button class="ebody" data-efijo="${f.id}" aria-label="Editar ${esc(f.concepto)}"><span class="c">${esc(f.concepto)}</span><span class="num">${eurC(r?.importe ?? f.importe)}</span>
+      <span class="s">${[f.cuenta ? esc(f.cuenta) : 'Sin cuenta', f.dia ? 'día ' + f.dia : ''].filter(Boolean).join(' · ')}${v ? ' · <span class="seen">Parece cobrado</span>' : ''}</span></button>
     </div>`;
   }).join('') || '<p class="muted">No hay fijos este mes.</p>';
 
@@ -1308,9 +1326,8 @@ function renderMes(){
     const r = pmDe('deuda', d.id), imp = Number(r?.importe ?? (d.cuota || d.pendiente)), v = !r && visto(d.nombre, imp);
     return `<div class="check ${r ? 'done' : ''}">
       <button class="tick" data-deuda="${d.id}" aria-label="${r ? 'Marcar como no pagado' : 'Marcar como pagado'}: ${esc(d.nombre)}">${tickSvg}</button>
-      <span class="c">${esc(d.nombre)}</span><span class="num">${eur2(imp)}</span>
-      <button class="edit" data-edeuda="${d.id}" aria-label="Editar ${esc(d.nombre)}">⋯</button>
-      <span class="s">${[d.cuota ? 'Cuota' : 'Pago único', d.cuenta ? esc(d.cuenta) : ''].filter(Boolean).join(' · ')}${r && r.amortizado ? ` · baja ${eur(r.amortizado)}` : ''}${v ? ' · <span class="seen">Parece cobrado</span>' : ''}</span>
+      <button class="ebody" data-edeuda="${d.id}" aria-label="Editar ${esc(d.nombre)}"><span class="c">${esc(d.nombre)}</span><span class="num">${eurC(imp)}</span>
+      <span class="s">${[d.cuota ? 'Cuota' : 'Pago único', d.cuenta ? esc(d.cuenta) : ''].filter(Boolean).join(' · ')}${r && r.amortizado ? ` · baja ${eur(r.amortizado)}` : ''}${v ? ' · <span class="seen">Parece cobrado</span>' : ''}</span></button>
     </div>`;
   }).join('') || '<p class="muted">No hay cuotas este mes.</p>';
 
@@ -1431,13 +1448,13 @@ function renderDeudas(){
     const pagado = D.pm.filter(r => r.tipo === 'deuda' && r.ref_id === d.id).reduce((s,r) => s + r.amortizado, 0);
     const pct = d.pendiente + pagado ? pagado / (d.pendiente + pagado) * 100 : 100;
     return `<button class="debt" data-id="${d.id}">
-      <span class="h"><span>${esc(d.nombre)}</span><span class="num">${d.pagada ? 'Liquidada' : eur2(d.pendiente)}</span></span>
+      <span class="h"><span>${esc(d.nombre)}</span><span class="num">${d.pagada ? 'Liquidada' : eur(d.pendiente)}</span></span>
       <span class="s">${d.pagada ? (d.pagada_el ? 'El ' + new Date(d.pagada_el+'T12:00:00Z').toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'}) : '') :
         [d.cuota ? `${eur(d.cuota)}/mes` : 'Pago único', d.fin ? `hasta ${monthName(d.fin.slice(0,7),{month:'short',year:'numeric'}).replace('.','')}` : ''].filter(Boolean).join(' · ')}</span>
       ${!d.pagada && pagado ? `<span class="meter"><i style="width:${pct}%"></i></span>` : ''}
     </button>`;
   };
-  $('debts').innerHTML = act.map(row).join('') || '<p class="muted">Sin deudas. 🎉</p>';
+  $('debts').innerHTML = act.map(row).join('') || '<p class="muted empty">Sin deudas.</p>';
   $('paidSec').hidden = !liq.length;
   $('debtsPaid').innerHTML = liq.map(row).join('');
   $('v-deudas').querySelectorAll('.debt').forEach(b => b.onclick = () => editDeuda(D.deudas.find(d => d.id == b.dataset.id)));
@@ -1460,7 +1477,6 @@ function debtChart(start, plan, now, hoyV){
     <circle cx="${x(ni)}" cy="${y(hoyV)}" r="8" fill="var(--ink)" stroke="var(--card)" stroke-width="3"/>
     ${years.map(p => `<text x="${x(p.i)}" y="${H-6}" text-anchor="${p.i === 0 ? 'start' : 'middle'}">${p.i === 0 ? monthName(pts[0].mes,{month:'short'}).replace('.','') + ' ' + p.y : p.y}</text>`).join('')}
     <text x="${W-R}" y="${y(0) - 12}" text-anchor="end">0 €</text>
-    <text x="${L + 22}" y="${y(start) + 6}">${eur(start)}</text>
   </svg>`;
 }
 function editDeuda(d){
