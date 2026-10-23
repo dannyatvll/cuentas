@@ -425,6 +425,8 @@ body::before{opacity:.32;height:55vh}
 .mchips button[aria-selected="true"] b{font-weight:800}
 .mchips button[aria-selected="true"]::after{background:var(--tint)}
 .desc{font-size:17px;margin:4px 0 12px;line-height:1.4} .desc b{font-size:22px;font-weight:800} .desc .muted{display:block;font-size:14px}
+.proxsum{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:14px 16px 12px;border-bottom:1px solid var(--sep, rgba(127,127,127,.18))}
+.proxsum span{display:block;font-size:12px;color:var(--muted)} .proxsum b{font-size:19px;font-weight:700}
 .anhero{padding:22px 20px;border-radius:24px;background:var(--grad);color:#fff}
 .anhero .l{font-size:14px;opacity:.85} .anhero b{display:block;font-size:42px;font-weight:800;letter-spacing:-1px;margin:4px 0 6px}
 .anhero .s{font-size:14px;opacity:.9}
@@ -686,7 +688,7 @@ async function load(){
     const [pagos, topes, plan, deudas, fijos, pm, saldos] = await Promise.all([
       all('pagos', 'id,fecha,con_hora,importe,comercio,categoria,tipo,cuenta,origen,creado', 'fecha'),
       all('topes', 'categoria,tope,incluye'),
-      all('plan_mes', 'mes,vida,deuda_final,nota'),
+      all('plan_mes', 'mes,ingresos,vida,deuda_final,nota'),
       all('deudas', '*'),
       all('gastos_fijos', '*'),
       all('pagos_mes', '*'),
@@ -694,7 +696,7 @@ async function load(){
     ]);
     pagos.forEach(prepPago);
     topes.forEach(t => t.tope = Number(t.tope));
-    plan.forEach(p => { p.mes = p.mes.slice(0,7); p.deuda_final = Number(p.deuda_final); p.vida = Number(p.vida); });
+    plan.forEach(p => { p.mes = p.mes.slice(0,7); p.deuda_final = Number(p.deuda_final); p.vida = Number(p.vida); p.ingresos = Number(p.ingresos); });
     plan.sort((a,b) => a.mes.localeCompare(b.mes));
     deudas.forEach(prepDeuda);
     fijos.forEach(f => f.importe = Number(f.importe));
@@ -1189,21 +1191,49 @@ function cuotasDelMes(m = cur){
     return d.fin && d.fin.slice(0,7) === m;                 // pago único: su mes
   });
 }
-// Lo que toca pagar el mes que viene: fijos, cuotas y la tarjeta Amex (los demás pagos únicos son opcionales y no salen).
+// El mes que viene: lo que entra (editable) y lo que toca pagar (fijos, cuotas y Amex; los demás pagos únicos son opcionales y no salen).
+// Todo se toca para editarlo.
 function renderProximo(){
   const m = addMonth(monthKey(new Date()), 1);
   const items = [
-    ...fijosDelMes(m).map(f => ({n: f.concepto, c: f.cuenta, v: f.importe, t: 'Fijo'})),
-    ...cuotasDelMes(m).filter(d => d.cuota || /amex/i.test(d.nombre)).map(d => ({n: d.nombre, c: d.cuenta, v: d.cuota || d.pendiente, t: d.cuota ? 'Cuota' : 'Tarjeta'})),
+    ...fijosDelMes(m).map(f => ({n: f.concepto, c: f.cuenta, v: f.importe, t: 'Fijo', ed: () => editFijo(f, m)})),
+    ...cuotasDelMes(m).filter(d => d.cuota || /amex/i.test(d.nombre)).map(d => ({n: d.nombre, c: d.cuenta, v: d.cuota || d.pendiente, t: d.cuota ? 'Cuota' : 'Tarjeta', ed: () => editDeuda(d)})),
   ].sort((a,b) => b.v - a.v);
-  const tot = items.reduce((a,i) => a + i.v, 0);
+  const sale = items.reduce((a,i) => a + i.v, 0);
+  const pl = D.plan.find(p => p.mes === m), entra = pl?.ingresos || 0, queda = entra - sale;
   $('proxT').textContent = cap(monthName(m, {month: 'long'}));
-  $('proxTot').textContent = `${eur(tot)} en ${items.length} pagos`;
-  const fila = i => `<div class="item mov"><span class="ico" style="--c:${i.t === 'Fijo' ? 'var(--tint)' : i.t === 'Cuota' ? '#f5a524' : '#ff3b30'}"><svg viewBox="0 0 24 24">${i.t === 'Fijo' ? '<path d="M4 7h16v12H4zM4 7l2-3h12l2 3"/>' : '<rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/>'}</svg></span>
-    <span class="c">${esc(i.n)}</span><span class="a num">${eur(i.v)}</span><span class="s">${i.t}${i.c ? ' · ' + esc(i.c) : ''}</span></div>`;
-  $('prox').innerHTML = (verProx ? items : items.slice(0, 6)).map(fila).join('') +
-    (items.length > 6 ? `<button class="lrow go" id="proxMore"><span>${verProx ? 'Ver menos' : `Ver los ${items.length}`}</span><b></b></button>` : '');
+  $('proxTot').textContent = '';
+  const fila = (i, k) => `<button class="item mov" data-k="${k}"><span class="ico" style="--c:${i.t === 'Fijo' ? 'var(--tint)' : i.t === 'Cuota' ? '#f5a524' : '#ff3b30'}"><svg viewBox="0 0 24 24">${i.t === 'Fijo' ? '<path d="M4 7h16v12H4zM4 7l2-3h12l2 3"/>' : '<rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/>'}</svg></span>
+    <span class="c">${esc(i.n)}</span><span class="a num">${eur(i.v)}</span><span class="s">${i.t}${i.c ? ' · ' + esc(i.c) : ''}</span></button>`;
+  $('prox').innerHTML = `<div class="proxsum"><div><span>Entra</span><b class="num pos-ok">${eur(entra)}</b></div><div><span>Sale</span><b class="num">${eur(sale)}</b></div><div><span>Te queda</span><b class="num ${queda < 0 ? 'neg-bad' : ''}">${eur(queda)}</b></div></div>
+    <button class="item mov" id="proxIng"><span class="ico" style="--c:#34c759"><svg viewBox="0 0 24 24"><path d="M12 4v12M6 10l6 6 6-6M5 20h14"/></svg></span><span class="c">Ingresos</span><span class="a num pos-ok">+${eur(entra)}</span><span class="s">${pl ? 'Toca para cambiarlo' : 'Toca para ponerlo'}</span></button>` +
+    (verProx ? items : items.slice(0, 6)).map(fila).join('') +
+    (items.length > 6 ? `<button class="lrow go" id="proxMore"><span>${verProx ? 'Ver menos' : `Ver los ${items.length} pagos`}</span><b></b></button>` : '') +
+    `<button class="lrow go" id="proxAdd"><span>+ Añadir gasto fijo</span><b></b></button>`;
+  $('prox').querySelectorAll('[data-k]').forEach(b => b.onclick = () => items[b.dataset.k].ed());
   if ($('proxMore')) $('proxMore').onclick = () => { verProx = !verProx; renderProximo(); };
+  $('proxAdd').onclick = () => editFijo(null);
+  $('proxIng').onclick = () => editIngresos(m);
+}
+function editIngresos(m){
+  const pl = D.plan.find(p => p.mes === m);
+  openSheet(`${hd('Ingresos de ' + monthName(m, {month: 'long'}))}
+    <form id="fing" style="display:flex;flex-direction:column;gap:10px">
+      <label class="f">Lo que te entra ese mes (€)<input id="ing" inputmode="decimal" required value="${pl ? String(pl.ingresos).replace('.', ',') : ''}" placeholder="Ej. 2.100,00"></label>
+      <p class="small muted">Nómina, paro, lo que te devuelvan... todo junto.</p>
+      <button class="primary" type="submit">Guardar</button>
+    </form>`, sh => {
+    sh.querySelector('#fing').onsubmit = async e => {
+      e.preventDefault();
+      const n = Number($('ing').value.trim().replace(/\./g, '').replace(',', '.'));
+      if (isNaN(n)) return;
+      try {
+        const [r] = await write(pl ? sb.from('plan_mes').update({ingresos: n}).eq('mes', m + '-01') : sb.from('plan_mes').insert({mes: m + '-01', ingresos: n, fijos: 0, cuotas: 0, vida: 0, deuda_final: 0}));
+        if (pl) pl.ingresos = Number(r.ingresos); else D.plan.push({mes: m, ingresos: Number(r.ingresos), vida: Number(r.vida) || 0, deuda_final: Number(r.deuda_final) || 0, nota: r.nota});
+        closeSheet(); render(); toast('Guardado');
+      } catch {}
+    };
+  });
 }
 let verProx = false;
 function estadoMes(){
@@ -1315,7 +1345,7 @@ async function toggleDeuda(d, btn){
   render();
 }
 $('addFijo').onclick = () => editFijo(null);
-function editFijo(f){
+function editFijo(f, mesQuitar = cur){
   const nuevo = !f;
   openSheet(`${hd(nuevo ? 'Nuevo gasto fijo' : 'Gasto fijo')}
     <form id="ff" style="display:flex;flex-direction:column;gap:10px">
@@ -1337,7 +1367,7 @@ function editFijo(f){
     </form>`, () => {
       if (!nuevo) confirmBtn($('fdel'), 'Toca otra vez para quitarlo', async () => {
         // Se cierra en el mes anterior para no perder el historial.
-        try { Object.assign(f, (await write(sb.from('gastos_fijos').update({hasta: addMonth(cur, -1) + '-28'}).eq('id', f.id)))[0]); f.importe = Number(f.importe); closeSheet(); render(); toast('Quitado desde este mes'); } catch {}
+        try { Object.assign(f, (await write(sb.from('gastos_fijos').update({hasta: addMonth(mesQuitar, -1) + '-28'}).eq('id', f.id)))[0]); f.importe = Number(f.importe); closeSheet(); render(); toast(mesQuitar === cur ? 'Quitado desde este mes' : 'Quitado desde ' + monthName(mesQuitar, {month: 'long'})); } catch {}
       });
       $('ff').addEventListener('submit', async e => {
         e.preventDefault();
