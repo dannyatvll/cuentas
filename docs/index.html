@@ -8,8 +8,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Cuentas">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#f6f1e9" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#151311" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f3f3f1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#121110" media="(prefers-color-scheme: dark)">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (prefers-color-scheme: light)" href="arranque-375x812.png">
@@ -34,16 +34,16 @@
 <link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (prefers-color-scheme: dark)" href="arranque-oscuro-375x667@2x.png">
 <style>
 /* Mis cuentas: una web para el móvil que se maneja como una app de iPhone.
-   Un solo sistema: los tokens de :root. Luz cálida (crema), un color de acción (salvia), uno de detalle
-   (naranja: el mes elegido y la pestaña activa) y color de estado solo para avisar. */
+   Un solo sistema: los tokens de :root. Tinta sobre gris apenas cálido, un color de acción (cobalto), una nota de sol (--pop: el mes elegido,
+   las iniciales de cuenta, el punto de hoy, el sello de todo pagado) y color de estado solo para avisar. */
 :root{
   /* color */
-  --bg:#f6f1e9; --surface:#fffcf7; --surface-2:#efe8dd; --field:#efe8dd; --raised:#fffcf7;
-  --ink:#22201c; --muted:#6b645a; --soft:#c9bfb1; --line:rgba(34,32,28,.1);
-  --accent:#2f6b4f; --accent-soft:rgba(47,107,79,.11); --on-accent:#ffffff;
-  --pop:#ef7d3c; --pop-soft:rgba(239,125,60,.18);
-  --good:#17803f; --warn:#a85600; --bad:#d92d20; --on-bad:#ffffff;
-  --glass:rgba(255,252,247,.84); --scrim:rgba(20,18,15,.36); --shadow:0 8px 24px rgba(34,32,28,.08);
+  --bg:#f3f3f1; --surface:#fefefd; --surface-2:#ebebe8; --field:#ebebe8; --raised:#fefefd;
+  --ink:#1c1b19; --muted:#6b6863; --soft:#8f8b85; --line:rgba(28,27,25,.1);
+  --accent:#1f5bd6; --accent-soft:rgba(31,91,214,.1); --on-accent:#ffffff;
+  --pop:#f2a71b; --pop-soft:rgba(242,167,27,.2);
+  --good:#1b7a43; --warn:#9a5b00; --bad:#c8321e; --on-bad:#ffffff;
+  --glass:rgba(254,254,253,.86); --scrim:rgba(18,17,16,.36); --shadow:0 8px 24px rgba(28,27,25,.07);
   /* tipo: crece con el tamaño de texto del iPhone (rem sobre el estilo de texto del sistema) */
   --font:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,"Helvetica Neue",sans-serif;
   --t-display:2.824rem; --t-large:1.647rem; --t-title:1.294rem; --t-body:1rem; --t-sub:.882rem; --t-foot:.765rem; --t-cap:.706rem; --t-tab:11px; /* la barra de pestañas no crece, como en iOS */
@@ -53,20 +53,20 @@
   --r-s:12px; --r-l:20px; --r-full:999px;
   --gutter-l:max(16px,env(safe-area-inset-left,0px)); --gutter-r:max(16px,env(safe-area-inset-right,0px));
   --ease:cubic-bezier(.2,.8,.2,1);
-  --brand:#365f4b; --on-brand:#ffffff;
+  --brand:#1c1b19; --on-brand:#fbf8f2;
   accent-color:var(--accent); caret-color:var(--accent);
 }
 @media (prefers-color-scheme: dark){:root{
-  --bg:#151311; --surface:#211e1a; --surface-2:#2d2924; --field:#35302a; --raised:#28241f;
-  --ink:#f5efe6; --muted:#aea493; --soft:#5a5248; --line:rgba(245,239,230,.1);
-  --accent:#7fcca5; --accent-soft:rgba(127,204,165,.15); --on-accent:#151311;
-  --pop:#ff9a5c; --pop-soft:rgba(255,154,92,.18); --brand:#3d6b55; --on-brand:#ffffff;
-  --good:#3dd68c; --warn:#ffb340; --bad:#ff6b5e; --on-bad:#0e0e12;
-  --glass:rgba(40,36,31,.84); --scrim:rgba(0,0,0,.55); --shadow:0 8px 24px rgba(0,0,0,.35);
+  --bg:#121110; --surface:#1d1b19; --surface-2:#292623; --field:#312e2a; --raised:#24221f;
+  --ink:#f3efe8; --muted:#a8a197; --soft:#77716a; --line:rgba(243,239,232,.1);
+  --accent:#7ea6ff; --accent-soft:rgba(126,166,255,.16); --on-accent:#0f1420;
+  --pop:#ffc24d; --pop-soft:rgba(255,194,77,.18); --brand:#2b2825; --on-brand:#f7f3ec;
+  --good:#4fcf8b; --warn:#f5b04a; --bad:#ff7b67; --on-bad:#1a0d0a;
+  --glass:rgba(36,34,31,.86); --scrim:rgba(0,0,0,.55); --shadow:0 8px 24px rgba(0,0,0,.35);
   color-scheme:dark;
 }}
-@media (prefers-contrast: more){:root{--line:rgba(34,32,28,.32); --muted:#4d473f; --glass:var(--surface)}}
-@media (prefers-contrast: more) and (prefers-color-scheme: dark){:root{--line:rgba(245,239,230,.32); --muted:#cfc6b8}}
+@media (prefers-contrast: more){:root{--line:rgba(28,27,25,.32); --muted:#55524d; --soft:#7a766f; --glass:var(--surface)}}
+@media (prefers-contrast: more) and (prefers-color-scheme: dark){:root{--line:rgba(243,239,232,.32); --muted:#c6bfb4}}
 
 *{box-sizing:border-box}
 [hidden]{display:none!important}
@@ -144,7 +144,7 @@ header.top{display:flex;flex-direction:column;gap:var(--s1);padding-top:var(--s3
 .tabs button{background:none;border:0;border-radius:var(--r-full);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:52px;padding:4px 0;font-size:var(--t-tab);font-weight:600;color:var(--muted);position:relative;min-width:0}
 .tabs button span.l{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px}
 .tabs button svg.i{width:24px;height:24px}
-.tabs button[aria-current="page"]{color:var(--accent);background:var(--pop-soft,var(--accent-soft))}
+.tabs button[aria-current="page"]{color:var(--accent);background:var(--accent-soft)}
 .tabs .dot{position:absolute;top:4px;left:calc(50% + 6px);min-width:18px;height:18px;border-radius:9px;background:var(--bad);color:var(--on-bad);font-size:var(--t-tab);line-height:18px;padding:0 5px;font-weight:700}
 @media (prefers-reduced-transparency: reduce){.tabs,.navbar{background:var(--surface);-webkit-backdrop-filter:none;backdrop-filter:none}}
 
@@ -173,7 +173,6 @@ header.top{display:flex;flex-direction:column;gap:var(--s1);padding-top:var(--s3
 .item .tag{color:var(--warn);font-weight:600}
 .item .meter{grid-column:2/-1;margin-top:6px}
 .ico{--c:var(--muted);width:36px;height:36px;border-radius:var(--r-s);background:var(--surface-2);color:var(--c);display:grid;place-items:center;flex:none}
-@media (prefers-color-scheme: dark){.ico{color:color-mix(in srgb,var(--c) 45%,#fff)}}
 .empty{padding:var(--s4) 0;color:var(--muted)}
 .empty .linkbtn{display:block}
 .lrow{display:flex;justify-content:space-between;align-items:center;gap:var(--s3);min-height:48px;padding:10px 0;border:0;border-top:.5px solid var(--line);background:none;width:100%;text-align:left}
@@ -186,6 +185,7 @@ header.top{display:flex;flex-direction:column;gap:var(--s1);padding-top:var(--s3
 
 /* Resumen: la única tarjeta de color */
 .wallet{--on-brand-2:color-mix(in srgb,var(--on-brand) 86%,transparent);--on-brand-f:color-mix(in srgb,var(--on-brand) 16%,transparent);background:var(--brand);color:var(--on-brand);border-radius:var(--r-l);padding:var(--s5) var(--s4) var(--s4);display:flex;flex-direction:column;box-shadow:var(--shadow)}
+@media (prefers-color-scheme: dark){.wallet{box-shadow:inset 0 0 0 .5px var(--line),var(--shadow)}}
 .wlabel{font-size:var(--t-sub);font-weight:600;color:var(--on-brand-2)}
 .wbig{font-size:var(--t-num);font-weight:700;letter-spacing:-.02em;line-height:1.05;margin:2px 0 4px}
 .wsub{font-size:var(--t-sub);color:var(--on-brand-2);margin-bottom:var(--s3)}
@@ -193,7 +193,7 @@ header.top{display:flex;flex-direction:column;gap:var(--s1);padding-top:var(--s3
 .wacc{display:flex;gap:var(--s2);overflow-x:auto;scrollbar-width:none;margin:var(--s2) calc(-1 * var(--s4)) 0;padding:0 var(--s4)}
 .wacc::-webkit-scrollbar{display:none}
 .chip-acc{flex:none;display:flex;align-items:center;gap:var(--s2);border:0;border-radius:var(--r-full);min-height:44px;padding:0 14px 0 6px;color:var(--on-brand);font-size:var(--t-sub);background:var(--on-brand-f)}
-.chip-acc i{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-weight:700;font-size:var(--t-foot);background:var(--on-brand-f)}
+.chip-acc i{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-weight:700;font-size:var(--t-foot);background:var(--on-brand-f);box-shadow:inset 0 0 0 1.5px var(--pop)}
 .chip-acc span{font-weight:600} .chip-acc b{font-weight:500}
 .wact{display:grid;grid-template-columns:repeat(auto-fit,minmax(8rem,1fr));gap:var(--s2);margin-top:var(--s4)}
 .wact button{border:0;display:flex;align-items:center;justify-content:center;gap:var(--s2);min-height:48px;padding:6px 14px;border-radius:var(--r-full);font-size:var(--t-sub);font-weight:600;color:var(--on-brand);background:var(--on-brand-f)}
@@ -206,7 +206,8 @@ header.top{display:flex;flex-direction:column;gap:var(--s1);padding-top:var(--s3
 .hero .big{font-size:var(--t-num);font-weight:700;letter-spacing:-.02em;line-height:1.05}
 .hero .big.txt{font-size:calc(var(--t-num) * .8)}
 .hero .status{font-size:var(--t-sub);color:var(--muted);margin-top:2px}
-.hero .status.ok{color:var(--accent);font-weight:600}
+.hero .status.ok{align-self:flex-start;background:var(--pop-soft);color:var(--ink);font-weight:600;padding:4px 10px;border-radius:var(--r-full)}
+.meter.ok i{background:var(--good)}
 .hero .meter{margin-top:var(--s3)}
 
 /* El mes que viene */
@@ -747,12 +748,8 @@ function render(){
 
 // ---------- resumen ----------
 function deudaActual(){ return D.deudas.filter(d => !d.pagada).reduce((s,d) => s + d.pendiente, 0); }
-// Cada categoría con su tono: el icono en color sobre un fondo suave del mismo color.
-const TONO = {'Restaurantes':'#ea580c','Supermercado':'#16a34a','Transporte':'#2563eb','Compras':'#db2777','Viajes':'#0891b2','Ocio':'#9333ea',
-  'Salidas de noche':'#7c3aed','Suscripciones':'#e11d48','Vivienda':'#b45309','Salud':'#dc2626','Deporte':'#0d9488','Cuidado personal':'#c026d3',
-  'Teléfono e internet':'#0284c7','Impuestos':'#57534e','Ingreso':'#15803d','Movimiento interno':'#64748b','Pago de deuda':'#c2410c','Entre personas':'#6d5bd0',
-  'Bizum':'#0e7490','Tabaco':'#78716c','Apuestas':'#a16207','Comisiones':'#64748b','Educación':'#1d4ed8','Multas':'#b91c1c','Efectivo':'#15803d'};
-const tono = cat => TONO[cat] || '#64748b';
+// Iconos en un solo color: la categoría se distingue por la forma. Solo llevan color el ingreso (entra) y lo que está sin categoría (pide que lo mires).
+const tono = cat => cat === 'Ingreso' ? 'var(--good)' : cat === 'Sin categoría' ? 'var(--warn)' : 'var(--muted)';
 const icon = cat => `<span class="ico" style="--c:${tono(cat)}" aria-hidden="true">${svg(cat)}</span>`;
 
 function renderResumen(){
@@ -1235,7 +1232,7 @@ function renderMes(){
   $('mesProg').textContent = falta.length ? eur(m.total - m.pagado) : 'Todo pagado';
   $('mesProg').className = 'big num' + (falta.length ? '' : ' txt');
   const pct = m.total ? Math.round(m.pagado / m.total * 100) : 0;
-  $('mesBar').style.width = pct + '%';
+  $('mesBar').style.width = pct + '%'; $('mesMeter').classList.toggle('ok', pct >= 100);
   $('mesMeter').setAttribute('role', 'img'); $('mesMeter').setAttribute('aria-label', `Pagado el ${pct} %`);
   $('mesFalta').className = 'status' + (falta.length ? '' : ' ok');
   $('mesFalta').textContent = falta.length ? `${falta.length} ${falta.length === 1 ? 'pago' : 'pagos'} · llevas ${eur(m.pagado)} de ${eur(m.total)}` : `${m.items.length} pagos, ${eur(m.total)} en total`;
@@ -1446,7 +1443,7 @@ function debtChart(start, plan, now, hoyV){
     <line x1="${L}" x2="${W-R}" y1="${H-B}" y2="${H-B}" stroke="var(--line)"/>
     <path d="${area}" fill="var(--accent-soft)"/>
     <path d="${line}" fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-dasharray="7 6" stroke-linejoin="round"/>
-    <circle cx="${x(ni)}" cy="${y(hoyV)}" r="8" fill="var(--accent)" stroke="var(--surface)" stroke-width="3"/>
+    <circle cx="${x(ni)}" cy="${y(hoyV)}" r="8" fill="var(--pop)" stroke="var(--ink)" stroke-width="2"/>
     ${years.map(p => `<text x="${x(p.i)}" y="${H-6}" text-anchor="${p.i === 0 ? 'start' : 'middle'}">${p.i === 0 ? monthName(pts[0].mes,{month:'short'}).replace('.','') + ' ' + p.y : p.y}</text>`).join('')}
     <text x="${W-R}" y="${y(0) - 12}" text-anchor="end">0 €</text>
   </svg>`;
