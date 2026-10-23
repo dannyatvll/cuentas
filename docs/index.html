@@ -172,10 +172,8 @@ header.top{display:flex;flex-direction:column;gap:var(--s1);padding-top:var(--s3
 .item .s{grid-column:2/-1;font-size:var(--t-foot);color:var(--muted);min-width:0;overflow-wrap:anywhere}
 .item .tag{color:var(--warn);font-weight:600}
 .item .meter{grid-column:2/-1;margin-top:6px}
-.ico{--c:var(--muted);width:36px;height:36px;border-radius:var(--r-s);background:color-mix(in srgb,var(--c) 14%,var(--surface));color:var(--c);display:grid;place-items:center;flex:none}
-.rk .meter i{background:var(--c,var(--accent))}
-@media (prefers-color-scheme: dark){.ico{background:color-mix(in srgb,var(--c) 28%,var(--surface));color:color-mix(in srgb,var(--c) 50%,#fff)}
-  .rk .meter i{background:color-mix(in srgb,var(--c) 70%,#fff)}}
+.ico{--c:var(--muted);width:36px;height:36px;border-radius:var(--r-s);background:var(--surface-2);color:var(--c);display:grid;place-items:center;flex:none}
+@media (prefers-color-scheme: dark){.ico{color:color-mix(in srgb,var(--c) 45%,#fff)}}
 .empty{padding:var(--s4) 0;color:var(--muted)}
 .empty .linkbtn{display:block}
 .lrow{display:flex;justify-content:space-between;align-items:center;gap:var(--s3);min-height:48px;padding:10px 0;border:0;border-top:.5px solid var(--line);background:none;width:100%;text-align:left}
@@ -240,6 +238,8 @@ header.top{display:flex;flex-direction:column;gap:var(--s1);padding-top:var(--s3
 .cusub{display:flex;flex-direction:column;gap:6px;padding:0 0 12px 12px;font-size:var(--t-sub);color:var(--muted)}
 .cusub div{display:flex;justify-content:space-between;gap:var(--s3)}
 .check.entar .ebody .num{color:var(--muted);font-weight:500}
+.proxres{display:flex;justify-content:space-between;align-items:baseline;gap:var(--s3);padding:var(--s4) 0;border-top:.5px solid var(--line);font-weight:600}
+.proxres b{font-size:var(--t-title);font-weight:700}
 .gtot{font-weight:600;color:var(--muted);margin-left:6px}
 .gnote{font-size:var(--t-foot);color:var(--muted);padding:0 4px;margin-top:calc(-1 * var(--s1))}
 .opt{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px var(--s3);align-items:center;padding:10px 0;min-height:60px;border-top:.5px solid var(--line)}
@@ -910,7 +910,7 @@ function renderAnalisis(){
   const big = cl.slice(0, 7), rest = cl.slice(7).reduce((s,[,v]) => s + v, 0);
   if (rest > 0) big.push(['Resto', rest]);
   const cmax = Math.max(1, ...big.map(x => x[1]));
-  $('cats').innerHTML = total ? big.map(([k,v]) => `<div class="rk" style="--c:${tono(k)}"><span class="c">${esc(k)}</span><b class="num">${eur(v)}<small>${Math.round(v / total * 100)} %</small></b>
+  $('cats').innerHTML = total ? big.map(([k,v]) => `<div class="rk"><span class="c">${esc(k)}</span><b class="num">${eur(v)}<small>${Math.round(v / total * 100)} %</small></b>
     <span class="meter" aria-hidden="true"><i style="width:${v / cmax * 100}%"></i></span></div>`).join('') : '<p class="empty">No hay gastos en este periodo.</p>';
 
   // comercios
@@ -1143,30 +1143,28 @@ const tarjetaDe = f => D.deudas.find(d => d.cada_mes && d.cierre && !d.pagada &&
 function ingresosDelMes(m = cur){ return D.ingresos.filter(i => i.activo && enMes(i.desde, i.hasta, m)); }
 function renderProximo(){
   const m = addMonth(monthKey(new Date()), 1);
-  const sal = [
-    ...fijosDelMes(m).filter(f => !tarjetaDe(f)).map(f => ({n: f.concepto, c: f.cuenta, v: f.importe, t: 'Fijo', ed: () => editFijo(f, m)})),
-    ...cuotasDelMes(m).map(d => ({n: d.nombre, c: d.cuenta, v: importeDeuda(d, m), t: d.cuota ? 'Cuota' : d.cada_mes ? 'Tarjeta' : 'Pago', ed: () => editDeuda(d, m)})),
-  ].sort((a,b) => b.v - a.v);
+  const fm = fijosDelMes(m).filter(f => !tarjetaDe(f)), cm = cuotasDelMes(m);
+  const sale = fm.reduce((a, f) => a + Number(f.importe), 0) + cm.reduce((a, d) => a + importeDeuda(d, m), 0);
   const ins = ingresosDelMes(m);
   const pl = D.plan.find(p => p.mes === m);
   // Sin ingresos apuntados, se usa la cifra del plan como una sola línea sin detallar.
   const ent = ins.length ? ins.map(i => ({n: i.concepto, c: i.cuenta, v: i.importe, ed: () => editIngreso(i)}))
-    : pl?.ingresos ? [{n: 'Sin detallar', c: 'Toca para decir de dónde sale', v: pl.ingresos, ed: () => editIngreso(null, pl.ingresos)}] : [];
-  const entra = ent.reduce((a,i) => a + i.v, 0), sale = sal.reduce((a,i) => a + i.v, 0), queda = entra - sale;
-  $('proxT').textContent = cap(monthName(m, {month: 'long'}));
-  const ico = t => svg(t === 'in' ? 'Ingreso' : t === 'Fijo' ? 'ui-fijo' : 'Pago de deuda');
-  const fila = (i, k, t) => { return `<button class="item mov" data-k="${k}"><span class="ico" style="--c:${t === 'in' ? tono('Ingreso') : t === 'Fijo' ? '#2563eb' : tono('Pago de deuda')}">${ico(t)}</span>
-    <span class="c">${esc(i.n)}</span><span class="a num ${t === 'in' ? 'pos-ok' : ''}">${t === 'in' ? '+' : ''}${eur(i.v)}</span><span class="s">${t === 'in' ? esc(i.c || 'Ingreso') : i.t + (i.c ? ' · ' + esc(i.c) : '')}</span></button>`; };
-  const all = [...ent, ...sal];
-  $('prox').innerHTML = `<div class="proxsum"><div><span>Entra</span><b class="num pos-ok">${eur(entra)}</b></div><div><span>Sale</span><b class="num">${eur(sale)}</b></div><div><span>${queda < 0 ? 'Falta' : 'Sobra'}</span><b class="num ${queda < 0 ? 'neg-bad' : ''}">${eur(Math.abs(queda))}</b></div></div>
-    <div class="psub"><h3>Entra</h3><button class="ghlink" id="proxAddIn">Añadir ingreso</button></div>` +
-    (ent.map((i, k) => fila(i, k, 'in')).join('') || '<p class="empty">Aún no has apuntado lo que te va a entrar.</p>') +
-    `<div class="psub"><h3>Sale</h3><button class="ghlink" id="proxAdd">Añadir gasto fijo</button></div>` +
-    (verProx ? sal : sal.slice(0, 6)).map((i, k) => fila(i, ent.length + k, i.t)).join('') +
-    (sal.length > 6 ? `<button class="lrow go" id="proxMore"><span>${verProx ? 'Ver menos' : `Ver los ${sal.length} pagos`}</span><b></b></button>` : '');
-  $('prox').querySelectorAll('[data-k]').forEach(b => b.onclick = () => all[b.dataset.k].ed());
-  if ($('proxMore')) $('proxMore').onclick = () => { verProx = !verProx; renderProximo(); };
-  $('proxAdd').onclick = () => editFijo(null);
+    : pl?.ingresos ? [{n: 'Ingresos del plan', c: null, sin: true, v: pl.ingresos, ed: () => editIngreso(null, pl.ingresos)}] : [];
+  const entra = ent.reduce((a,i) => a + i.v, 0), queda = entra - sale;
+  $('proxT').textContent = `${cap(mesCorto(m))}: lo que viene`;
+  // Tres pasos que se leen de arriba abajo: lo que te entra, lo que pagas (el detalle está en Pagos) y lo que queda.
+  $('prox').innerHTML = `<div class="psub"><h3>Te entra</h3><button class="ghlink" id="proxAddIn">Añadir ingreso</button></div>` +
+    (ent.map((i, k) => `<button class="item mov" data-k="${k}"><span class="ico" style="--c:${tono('Ingreso')}">${svg('Ingreso')}</span>
+      <span class="c">${esc(i.n)}</span><span class="a num pos-ok">+${eur(i.v)}</span>
+      <span class="s">${i.sin ? 'Toca para decir de dónde sale' : i.c ? 'Entra en ' + esc(i.c) : 'Sin cuenta'}</span></button>`).join('')
+      || '<p class="empty">Aún no has apuntado lo que te va a entrar.</p>') +
+    `<div class="psub"><h3>Tienes que pagar</h3></div>
+    <button class="item mov" id="proxPagos"><span class="ico">${svg('ui-pagos')}</span>
+      <span class="c">${fm.length + cm.length} pagos</span><span class="a num">${eur(sale)}</span>
+      <span class="s">Fijos, cuotas y Amex · ver en Pagos</span></button>
+    <div class="proxres"><span>${queda < 0 ? 'Te faltan' : 'Te sobran'}</span><b class="num ${queda < 0 ? 'neg-bad' : ''}">${eur(Math.abs(queda))}</b></div>`;
+  $('prox').querySelectorAll('[data-k]').forEach(b => b.onclick = () => ent[b.dataset.k].ed());
+  $('proxPagos').onclick = () => { cur = m; setView('mes'); };
   $('proxAddIn').onclick = () => editIngreso(null);
 }
 function editIngreso(i, sugerido){
@@ -1207,7 +1205,6 @@ function editIngreso(i, sugerido){
     };
   });
 }
-let verProx = false;
 const cuentasAbiertas = new Set();
 function estadoMes(){
   if (cur < INICIO_SEGUIMIENTO) return {items:[], total:0, pagado:0};
