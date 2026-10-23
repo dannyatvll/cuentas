@@ -371,11 +371,12 @@ body::before{opacity:.55;height:70vh}
   background:rgba(255,255,255,.18);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.3)}
 .chip-acc i{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-weight:700;font-size:13px;color:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.5)}
 .chip-acc span{font-weight:600} .chip-acc b{font-weight:500;opacity:.85}
-.wact{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:20px}
-.wact button{background:none;border:0;color:#fff;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12.5px;font-weight:600;transition:transform .14s}
+.wact{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}
+.wact button{border:0;color:#fff;display:flex;align-items:center;justify-content:center;gap:8px;height:46px;border-radius:999px;font-size:15px;font-weight:600;background:rgba(255,255,255,.2);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.35);transition:transform .14s}
+.wact button:first-child{background:#fff;color:#3a2fc0;box-shadow:none} .wact button:first-child svg{stroke:#3a2fc0}
 .wact button:active{transform:scale(.9);opacity:1}
 .wact span{width:50px;height:50px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.2);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.35)}
-.wact svg{width:22px;height:22px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.wact svg{width:19px;height:19px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .pos-ok{color:#30d158!important} .neg-bad{color:var(--bad)!important}
 .fl-top{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
 .fl-top div{display:flex;flex-direction:column;gap:2px}
@@ -427,6 +428,7 @@ body::before{opacity:.32;height:55vh}
 .desc{font-size:17px;margin:4px 0 12px;line-height:1.4} .desc b{font-size:22px;font-weight:800} .desc .muted{display:block;font-size:14px}
 .proxsum{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:14px 16px 12px;border-bottom:1px solid var(--sep, rgba(127,127,127,.18))}
 .proxsum span{display:block;font-size:12px;color:var(--muted)} .proxsum b{font-size:19px;font-weight:700}
+.psub{display:flex;justify-content:space-between;align-items:center;padding:14px 16px 2px} .psub span{font-size:13px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--muted)} .psub .ghlink{padding:0}
 .anhero{padding:22px 20px;border-radius:24px;background:var(--grad);color:#fff}
 .anhero .l{font-size:14px;opacity:.85} .anhero b{display:block;font-size:42px;font-weight:800;letter-spacing:-1px;margin:4px 0 6px}
 .anhero .s{font-size:14px;opacity:.9}
@@ -467,10 +469,8 @@ body::before{opacity:.32;height:55vh}
       <span class="wsub num" id="wSub"></span>
       <div class="wacc" id="wAcc"></div>
       <div class="wact">
-        <button id="aAdd"><span><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span>Añadir</button>
-        <button id="aSaldo"><span><svg viewBox="0 0 24 24"><path d="M4 7h16v12H4zM4 7l2-3h12l2 3M15 13h2"/></svg></span>Saldos</button>
-        <button id="aMes"><span><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M8 3v4M16 3v4M9 15l2 2 4-4"/></svg></span>Pagos</button>
-        <button id="aAna"><span><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9h-9z"/><path d="M15 3.5A9 9 0 0 1 20.5 9H15z"/></svg></span>Análisis</button>
+        <button id="aAdd"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Añadir gasto</button>
+        <button id="aSaldo"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 14-5.3M20 12a8 8 0 0 1-14 5.3M18 3v4h-4M6 21v-4h4"/></svg>Poner saldos</button>
       </div>
     </div>
 
@@ -685,7 +685,7 @@ function prepDeuda(d){ ['pendiente','tin','cuota'].forEach(k => d[k] = d[k] == n
 async function load(){
   $('updated').textContent = 'Cargando…';
   try {
-    const [pagos, topes, plan, deudas, fijos, pm, saldos] = await Promise.all([
+    const [pagos, topes, plan, deudas, fijos, pm, saldos, ingresos] = await Promise.all([
       all('pagos', 'id,fecha,con_hora,importe,comercio,categoria,tipo,cuenta,origen,creado', 'fecha'),
       all('topes', 'categoria,tope,incluye'),
       all('plan_mes', 'mes,ingresos,vida,deuda_final,nota'),
@@ -693,6 +693,7 @@ async function load(){
       all('gastos_fijos', '*'),
       all('pagos_mes', '*'),
       all('saldos', '*').catch(() => []),
+      all('ingresos_fijos', '*').catch(() => []),
     ]);
     pagos.forEach(prepPago);
     topes.forEach(t => t.tope = Number(t.tope));
@@ -702,7 +703,8 @@ async function load(){
     fijos.forEach(f => f.importe = Number(f.importe));
     pm.forEach(r => { r.mes = r.mes.slice(0,7); r.amortizado = Number(r.amortizado); });
     saldos.forEach(x => x.saldo = Number(x.saldo)); saldos.sort((a,b) => a.orden - b.orden);
-    D = {pagos, topes, plan, deudas, fijos, pm, saldos};
+    ingresos.forEach(i => i.importe = Number(i.importe));
+    D = {pagos, topes, plan, deudas, fijos, pm, saldos, ingresos};
     render();
     $('updated').textContent = `${pagos.length} movimientos · actualizado ${new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})}`;
   } catch (err) {
@@ -941,8 +943,6 @@ function descuadre(desc){
 }
 $('aAdd').onclick = () => editPago(null);
 $('aSaldo').onclick = editSaldos;
-$('aMes').onclick = () => setView('mes');
-$('aAna').onclick = () => setView('analisis');
 
 // Cambiar de mes desde el gráfico: se nota arriba.
 function irAMes(m){
@@ -1191,46 +1191,69 @@ function cuotasDelMes(m = cur){
     return d.fin && d.fin.slice(0,7) === m;                 // pago único: su mes
   });
 }
-// El mes que viene: lo que entra (editable) y lo que toca pagar (fijos, cuotas y Amex; los demás pagos únicos son opcionales y no salen).
-// Todo se toca para editarlo.
+// El mes que viene, en un solo bloque: lo que entra (con su origen) y lo que toca pagar (fijos, cuotas y Amex;
+// los demás pagos únicos son opcionales y no salen). Todo se toca para editarlo.
+function ingresosDelMes(m = cur){ return D.ingresos.filter(i => i.activo && enMes(i.desde, i.hasta, m)); }
 function renderProximo(){
   const m = addMonth(monthKey(new Date()), 1);
-  const items = [
+  const sal = [
     ...fijosDelMes(m).map(f => ({n: f.concepto, c: f.cuenta, v: f.importe, t: 'Fijo', ed: () => editFijo(f, m)})),
     ...cuotasDelMes(m).filter(d => d.cuota || /amex/i.test(d.nombre)).map(d => ({n: d.nombre, c: d.cuenta, v: d.cuota || d.pendiente, t: d.cuota ? 'Cuota' : 'Tarjeta', ed: () => editDeuda(d)})),
   ].sort((a,b) => b.v - a.v);
-  const sale = items.reduce((a,i) => a + i.v, 0);
-  const pl = D.plan.find(p => p.mes === m), entra = pl?.ingresos || 0, queda = entra - sale;
+  const ins = ingresosDelMes(m);
+  const pl = D.plan.find(p => p.mes === m);
+  // Sin ingresos apuntados, se usa la cifra del plan como una sola línea sin detallar.
+  const ent = ins.length ? ins.map(i => ({n: i.concepto, c: i.cuenta, v: i.importe, ed: () => editIngreso(i)}))
+    : pl?.ingresos ? [{n: 'Sin detallar', c: 'Toca para decir de dónde sale', v: pl.ingresos, ed: () => editIngreso(null, pl.ingresos)}] : [];
+  const entra = ent.reduce((a,i) => a + i.v, 0), sale = sal.reduce((a,i) => a + i.v, 0), queda = entra - sale;
   $('proxT').textContent = cap(monthName(m, {month: 'long'}));
   $('proxTot').textContent = '';
-  const fila = (i, k) => `<button class="item mov" data-k="${k}"><span class="ico" style="--c:${i.t === 'Fijo' ? 'var(--tint)' : i.t === 'Cuota' ? '#f5a524' : '#ff3b30'}"><svg viewBox="0 0 24 24">${i.t === 'Fijo' ? '<path d="M4 7h16v12H4zM4 7l2-3h12l2 3"/>' : '<rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/>'}</svg></span>
-    <span class="c">${esc(i.n)}</span><span class="a num">${eur(i.v)}</span><span class="s">${i.t}${i.c ? ' · ' + esc(i.c) : ''}</span></button>`;
+  const ico = t => t === 'in' ? ['#34c759', '<path d="M12 4v12M6 10l6 6 6-6M5 20h14"/>'] : t === 'Fijo' ? ['var(--tint)', '<path d="M4 7h16v12H4zM4 7l2-3h12l2 3"/>'] : [t === 'Cuota' ? '#f5a524' : '#ff3b30', '<rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/>'];
+  const fila = (i, k, t) => { const [col, svg] = ico(t); return `<button class="item mov" data-k="${k}"><span class="ico" style="--c:${col}"><svg viewBox="0 0 24 24">${svg}</svg></span>
+    <span class="c">${esc(i.n)}</span><span class="a num ${t === 'in' ? 'pos-ok' : ''}">${t === 'in' ? '+' : ''}${eur(i.v)}</span><span class="s">${t === 'in' ? esc(i.c || 'Ingreso') : i.t + (i.c ? ' · ' + esc(i.c) : '')}</span></button>`; };
+  const all = [...ent, ...sal];
   $('prox').innerHTML = `<div class="proxsum"><div><span>Entra</span><b class="num pos-ok">${eur(entra)}</b></div><div><span>Sale</span><b class="num">${eur(sale)}</b></div><div><span>Te queda</span><b class="num ${queda < 0 ? 'neg-bad' : ''}">${eur(queda)}</b></div></div>
-    <button class="item mov" id="proxIng"><span class="ico" style="--c:#34c759"><svg viewBox="0 0 24 24"><path d="M12 4v12M6 10l6 6 6-6M5 20h14"/></svg></span><span class="c">Ingresos</span><span class="a num pos-ok">+${eur(entra)}</span><span class="s">${pl ? 'Toca para cambiarlo' : 'Toca para ponerlo'}</span></button>` +
-    (verProx ? items : items.slice(0, 6)).map(fila).join('') +
-    (items.length > 6 ? `<button class="lrow go" id="proxMore"><span>${verProx ? 'Ver menos' : `Ver los ${items.length} pagos`}</span><b></b></button>` : '') +
-    `<button class="lrow go" id="proxAdd"><span>+ Añadir gasto fijo</span><b></b></button>`;
-  $('prox').querySelectorAll('[data-k]').forEach(b => b.onclick = () => items[b.dataset.k].ed());
+    <div class="psub"><span>Entra</span><button class="ghlink" id="proxAddIn">+ Ingreso</button></div>` +
+    (ent.map((i, k) => fila(i, k, 'in')).join('') || '<p class="muted empty sm">Apunta lo que te va a entrar.</p>') +
+    `<div class="psub"><span>Sale</span><button class="ghlink" id="proxAdd">+ Gasto fijo</button></div>` +
+    (verProx ? sal : sal.slice(0, 6)).map((i, k) => fila(i, ent.length + k, i.t)).join('') +
+    (sal.length > 6 ? `<button class="lrow go" id="proxMore"><span>${verProx ? 'Ver menos' : `Ver los ${sal.length} pagos`}</span><b></b></button>` : '');
+  $('prox').querySelectorAll('[data-k]').forEach(b => b.onclick = () => all[b.dataset.k].ed());
   if ($('proxMore')) $('proxMore').onclick = () => { verProx = !verProx; renderProximo(); };
   $('proxAdd').onclick = () => editFijo(null);
-  $('proxIng').onclick = () => editIngresos(m);
+  $('proxAddIn').onclick = () => editIngreso(null);
 }
-function editIngresos(m){
-  const pl = D.plan.find(p => p.mes === m);
-  openSheet(`${hd('Ingresos de ' + monthName(m, {month: 'long'}))}
-    <form id="fing" style="display:flex;flex-direction:column;gap:10px">
-      <label class="f">Lo que te entra ese mes (€)<input id="ing" inputmode="decimal" required value="${pl ? String(pl.ingresos).replace('.', ',') : ''}" placeholder="Ej. 2.100,00"></label>
-      <p class="small muted">Nómina, paro, lo que te devuelvan... todo junto.</p>
+function editIngreso(i, sugerido){
+  const nuevo = !i;
+  openSheet(`${hd(nuevo ? 'Nuevo ingreso' : 'Ingreso')}
+    <form id="fin" style="display:flex;flex-direction:column;gap:10px">
+      <label class="f">De dónde sale<input id="inc" required value="${esc(i?.concepto || '')}" placeholder="Ej. Nómina, paro..."></label>
+      <div class="grid2">
+        <label class="f">Importe al mes (€)<input id="ini" inputmode="decimal" required value="${i ? String(i.importe).replace('.', ',') : sugerido ? String(sugerido).replace('.', ',') : ''}"></label>
+        <label class="f">Entra en<select id="incu"><option value="">—</option>${opts(CUENTAS, i?.cuenta || 'BBVA')}</select></label>
+      </div>
+      <div class="grid2">
+        <label class="f">Desde<input id="inde" type="month" value="${i?.desde ? i.desde.slice(0,7) : ''}"></label>
+        <label class="f">Hasta<input id="inha" type="month" value="${i?.hasta ? i.hasta.slice(0,7) : ''}"></label>
+      </div>
+      <p class="small muted">Sin fechas cuenta todos los meses. Si solo es un mes (una paga extra), pon el mismo mes en las dos.</p>
       <button class="primary" type="submit">Guardar</button>
-    </form>`, sh => {
-    sh.querySelector('#fing').onsubmit = async e => {
+      ${nuevo ? '' : '<button class="danger" type="button" id="indel">Quitar</button>'}
+    </form>`, () => {
+    if (!nuevo) confirmBtn($('indel'), 'Toca otra vez para quitarlo', async () => {
+      try { await write(sb.from('ingresos_fijos').delete().eq('id', i.id)); D.ingresos = D.ingresos.filter(x => x !== i); closeSheet(); render(); toast('Quitado'); } catch {}
+    });
+    $('fin').onsubmit = async e => {
       e.preventDefault();
-      const n = Number($('ing').value.trim().replace(/\./g, '').replace(',', '.'));
+      const n = Number($('ini').value.trim().replace(/\./g, '').replace(',', '.'));
       if (isNaN(n)) return;
+      const row = {concepto: $('inc').value.trim(), importe: n, cuenta: $('incu').value || null,
+        desde: $('inde').value ? $('inde').value + '-01' : null, hasta: $('inha').value ? $('inha').value + '-28' : null, activo: true};
       try {
-        const [r] = await write(pl ? sb.from('plan_mes').update({ingresos: n}).eq('mes', m + '-01') : sb.from('plan_mes').insert({mes: m + '-01', ingresos: n, fijos: 0, cuotas: 0, vida: 0, deuda_final: 0}));
-        if (pl) pl.ingresos = Number(r.ingresos); else D.plan.push({mes: m, ingresos: Number(r.ingresos), vida: Number(r.vida) || 0, deuda_final: Number(r.deuda_final) || 0, nota: r.nota});
-        closeSheet(); render(); toast('Guardado');
+        const [r] = await write(nuevo ? sb.from('ingresos_fijos').insert(row) : sb.from('ingresos_fijos').update(row).eq('id', i.id));
+        r.importe = Number(r.importe);
+        if (nuevo) D.ingresos.push(r); else Object.assign(i, r);
+        closeSheet(); render(); toast(nuevo ? 'Añadido' : 'Guardado');
       } catch {}
     };
   });
