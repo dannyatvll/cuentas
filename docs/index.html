@@ -410,6 +410,9 @@ body::before{opacity:.32;height:55vh}
 .item.tope{grid-template-columns:auto 1fr auto;column-gap:13px}
 .item.tope .meter{grid-column:2/-1;height:4px;margin-top:6px}
 .item.tope .a{font-weight:700;font-size:18px}
+.movtot{display:flex;flex-direction:column;gap:2px;padding:16px 18px;margin-bottom:14px}
+.movtot .l{font-size:13px;color:var(--muted)} .movtot b{font-size:30px;font-weight:700;letter-spacing:-.5px}
+.movtot .ghlink{align-self:flex-start;margin-top:6px;padding:0}
 .item.tope .a small{font-size:13px;font-weight:500;color:var(--muted)} .item.tope .a.neg-bad small{color:inherit}
 </style>
 </head>
@@ -477,6 +480,7 @@ body::before{opacity:.32;height:55vh}
         <button data-f="otros" aria-pressed="false">Deuda y personas</button>
       </div>
     </div>
+    <div id="movsTot"></div>
     <div id="movs" class="days"></div>
   </div>
 
@@ -612,7 +616,7 @@ const sum = arr => arr.reduce((s,p) => s + p.importe, 0);
 const tipoDe = c => ({'Ingreso':'Ingreso','Movimiento interno':'Interno','Pago de deuda':'Deuda','Entre personas':'Personas'}[c] || 'Gasto');
 
 let verTopes = false, verCats = false;
-let D = null, cur = monthKey(new Date()), view = 'resumen', filtro = 'todos', busqueda = '', movLimit = 60;
+let D = null, cur = monthKey(new Date()), view = 'resumen', filtro = 'todos', busqueda = '', catSel = null, movLimit = 60;
 try { const v = localStorage.getItem('cuentas.view'); if (v) view = v; } catch {}
 
 function toast(msg){ const t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 2600); }
@@ -721,7 +725,7 @@ function setView(v){
   scrollTo(0, 0); navbar();
   if (D) render();
 }
-$('tabs').querySelectorAll('button').forEach(b => b.onclick = () => setView(b.dataset.v));
+$('tabs').querySelectorAll('button').forEach(b => b.onclick = () => { catSel = null; setView(b.dataset.v); });
 // Barra superior compacta al hacer scroll, como el título grande de iOS.
 function navbar(){
   const on = scrollY > 64 && !$('app').hidden;
@@ -806,7 +810,7 @@ function renderResumen(){
         <span class="s num">Gastado ${eur(g)} de ${eur(t.tope)}</span>
         <div class="meter ${over ? 'bad' : near ? 'warn' : ''}"><i style="width:${w}%"></i></div></button>`;
     }).join('');
-  $('topes').querySelectorAll('.tope').forEach(b => b.onclick = () => { busqueda = b.dataset.cat.toLowerCase(); $('search').value = b.dataset.cat; setView('movs'); });
+  $('topes').querySelectorAll('.tope').forEach(b => b.onclick = () => { const t = topes.find(x => x.incluye[0] === b.dataset.cat); catSel = {nombre: t.categoria, incluye: t.incluye}; busqueda = ''; $('search').value = ''; movLimit = 60; setView('movs'); });
 }
 
 // Curva del mes: gasto acumulado día a día frente al ritmo del presupuesto.
@@ -1019,8 +1023,19 @@ function renderMovs(){
   if (filtro === 'sin') list = list.filter(p => p.categoria === 'Sin categoría');
   if (filtro === 'ingresos') list = list.filter(p => p.tipo === 'Ingreso');
   if (filtro === 'otros') list = list.filter(p => p.tipo === 'Deuda' || p.tipo === 'Personas' || p.tipo === 'Interno');
+  if (catSel && !global) list = list.filter(p => p.tipo === 'Gasto' && catSel.incluye.includes(p.categoria));
   if (busqueda) list = list.filter(p => (p.comercio + ' ' + p.categoria + ' ' + (p.cuenta||'')).toLowerCase().includes(busqueda));
   list.sort((a,b) => b.fecha.localeCompare(a.fecha));
+  // Cabecera: lo gastado en el mes (o en la categoría) y la media por día.
+  if (global) $('movsTot').innerHTML = '';
+  else {
+    const g = sum(list.filter(p => p.tipo === 'Gasto')), now = monthKey(new Date());
+    const dias = cur === now ? Number(new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Madrid',day:'numeric'}).format(new Date())) : new Date(Date.UTC(+cur.slice(0,4), +cur.slice(5,7), 0)).getUTCDate();
+    $('movsTot').innerHTML = `<div class="card movtot"><span class="l">${catSel ? esc(catSel.nombre) + ' en ' : 'Gastado en '}${monthName(cur, {month: 'long'})}</span>
+      <b class="num">${eur(g)}</b><span class="l num">${eur(g / dias)} al día de media</span>
+      ${catSel ? '<button class="ghlink" id="catClr">Ver todo el mes</button>' : ''}</div>`;
+    if ($('catClr')) $('catClr').onclick = () => { catSel = null; renderMovs(); };
+  }
   const vis = list.slice(0, movLimit), byDay = [];
   vis.forEach(p => { const g = byDay[byDay.length - 1]; if (g && g.dia === p.dia) g.items.push(p); else byDay.push({dia: p.dia, items: [p]}); });
   let html = byDay.map(g => `<div class="group"><div class="ghrow sm"><h3>${cap(dayName(g.dia))}</h3><span class="ghnote num">${eur2(sum(g.items.filter(p => p.tipo === 'Gasto')))}</span></div>
