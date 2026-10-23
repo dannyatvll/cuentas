@@ -111,7 +111,7 @@ label.f{display:flex;flex-direction:column;gap:6px;font-size:var(--t-foot);color
 .ibtn.acc{color:var(--accent)}
 .ibtn svg.i{width:24px;height:24px}
 .item,.lrow,.debt,.ebody,.primary,.ghost,.chips button,.wact button,.tabs button,.chip-acc,.mchips button{transition:transform .12s var(--ease)}
-.item:active,.lrow:active,.debt:active,.ebody:active,.primary:active,.ghost:active,.chips button:active,.wact button:active,.tabs button:active,.chip-acc:active,.mchips button:active{transform:scale(.97)}
+.item:active,.pill:active,.lrow:active,.debt:active,.ebody:active,.primary:active,.ghost:active,.chips button:active,.wact button:active,.tabs button:active,.chip-acc:active,.mchips button:active{transform:scale(.97)}
 
 /* cabecera */
 header.top{display:flex;flex-direction:column;gap:var(--s1);padding-top:var(--s3)}
@@ -170,7 +170,10 @@ header.top{display:flex;flex-direction:column;gap:var(--s1);padding-top:var(--s3
 .item .s{grid-column:2/-1;font-size:var(--t-foot);color:var(--muted);min-width:0;overflow-wrap:anywhere}
 .item .tag{color:var(--warn);font-weight:600}
 .item .meter{grid-column:2/-1;margin-top:6px}
-.ico{width:36px;height:36px;border-radius:10px;background:var(--surface-2);color:var(--muted);display:grid;place-items:center;flex:none}
+.ico{--c:var(--muted);width:36px;height:36px;border-radius:var(--r-s);background:color-mix(in srgb,var(--c) 14%,var(--surface));color:var(--c);display:grid;place-items:center;flex:none}
+.rk .meter i{background:var(--c,var(--accent))}
+@media (prefers-color-scheme: dark){.ico{background:color-mix(in srgb,var(--c) 28%,var(--surface));color:color-mix(in srgb,var(--c) 50%,#fff)}
+  .rk .meter i{background:color-mix(in srgb,var(--c) 70%,#fff)}}
 .empty{padding:var(--s4) 0;color:var(--muted)}
 .empty .linkbtn{display:block}
 .lrow{display:flex;justify-content:space-between;align-items:center;gap:var(--s3);min-height:48px;padding:10px 0;border:0;border-top:.5px solid var(--line);background:none;width:100%;text-align:left}
@@ -228,6 +231,20 @@ header.top{display:flex;flex-direction:column;gap:var(--s1);padding-top:var(--s3
 .ebody .seen{color:var(--ink);font-weight:500}
 .check.done .c,.check.done .ebody .num{color:var(--muted)}
 .lrow > span:first-child{min-width:0}
+/* opcionales y saltados del mes */
+.gnote{font-size:var(--t-foot);color:var(--muted);padding:0 4px;margin-top:calc(-1 * var(--s1))}
+.opt{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px var(--s3);align-items:center;padding:10px 0;min-height:60px;border-top:.5px solid var(--line)}
+.list > .opt:first-child{border-top:0}
+.opt .c{overflow-wrap:break-word}
+.opt .s{grid-column:1;font-size:var(--t-foot);color:var(--muted)}
+.opt button{grid-row:1/3;grid-column:2}
+.opt.off .c{color:var(--muted)}
+.pill{border:0;border-radius:var(--r-full);min-height:44px;padding:0 16px;display:inline-flex;align-items:center;gap:6px;background:var(--accent-soft);color:var(--accent);font-weight:600;font-size:var(--t-sub)}
+.pill svg.i{width:18px;height:18px}
+.pill.ghost{background:var(--surface-2);color:var(--ink)}
+.sheet .mesbox{display:flex;flex-direction:column;gap:var(--s2);background:var(--field);border-radius:var(--r-l);padding:var(--s4)}
+.sheet .mesbox p{font-size:var(--t-sub);color:var(--muted)}
+.sheet .mesbox .ghost{background:var(--surface);align-self:stretch}
 
 /* deudas */
 .debt{display:flex;flex-direction:column;gap:4px;padding:12px 0;min-height:60px;border:0;border-top:.5px solid var(--line);background:none;text-align:left;width:100%}
@@ -311,7 +328,7 @@ svg.chart text{fill:var(--muted);font:500 26px var(--font)}
 .desc{font-size:var(--t-body);line-height:1.4}
 .desc b{font-size:var(--t-title);font-weight:700}
 .desc .muted{display:block;font-size:var(--t-sub)}
-.toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:60;transform:translate(-50%,8px);background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:var(--r-full);font-weight:600;font-size:var(--t-sub);max-width:calc(100% - 32px);box-shadow:var(--shadow);opacity:0;visibility:hidden;transition:opacity .2s,transform .2s,visibility 0s .2s}
+.toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:60;transform:translate(-50%,8px);background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:var(--r-l);font-weight:600;font-size:var(--t-sub);max-width:calc(100% - 32px);text-align:center;box-shadow:var(--shadow);opacity:0;visibility:hidden;transition:opacity .2s,transform .2s,visibility 0s .2s}
 .toast.on{opacity:1;visibility:visible;transform:translate(-50%,0);transition:opacity .2s,transform .2s}
 .toast.err{background:var(--bad);color:var(--on-bad)}
 
@@ -440,6 +457,15 @@ svg.chart text{fill:var(--muted);font:500 26px var(--font)}
     <section class="group" aria-labelledby="hCuotas">
       <div class="ghrow"><h2 id="hCuotas">Deudas</h2></div>
       <div class="card"><div class="list" id="cuotas"></div></div>
+    </section>
+    <section class="group" id="optGroup" aria-labelledby="hOpt" aria-describedby="optNota" hidden>
+      <div class="ghrow"><h2 id="hOpt">Puedes pagar también</h2></div>
+      <p class="gnote" id="optNota">No cuentan en el total hasta que los añades.</p>
+      <div class="card"><div class="list" id="opcionales"></div></div>
+    </section>
+    <section class="group" id="saltGroup" aria-labelledby="hSalt" hidden>
+      <div class="ghrow"><h2 id="hSalt">Este mes no</h2></div>
+      <div class="card"><div class="list" id="saltados"></div></div>
     </section>
   </div>
 
@@ -587,7 +613,7 @@ async function load(){
   $('app').setAttribute('aria-busy', 'true');
   $('estadoBtn').disabled = true;
   try {
-    const [pagos, topes, plan, deudas, fijos, pm, saldos, ingresos] = await Promise.all([
+    const [pagos, topes, plan, deudas, fijos, pm, saldos, ingresos, dec] = await Promise.all([
       all('pagos', COLS_PAGOS, 'fecha'),
       all('topes', 'categoria,tope,incluye'),
       all('plan_mes', 'mes,ingresos,vida,deuda_final,nota'),
@@ -596,6 +622,7 @@ async function load(){
       all('pagos_mes', '*'),
       all('saldos', '*').catch(() => []),
       all('ingresos_fijos', '*').catch(() => []),
+      all('mes_decision', '*').catch(() => []),
     ]);
     pagos.forEach(prepPago);
     topes.forEach(t => t.tope = Number(t.tope));
@@ -608,7 +635,8 @@ async function load(){
     ingresos.forEach(i => i.importe = Number(i.importe));
     // Con una clave que ya no vale, la base de datos devuelve todo vacío.
     if (!topes.length) { olvidar(); return loginErr('La clave guardada ya no vale. Pégala otra vez.'); }
-    D = {pagos, topes, plan, deudas, fijos, pm, saldos, ingresos};
+    dec.forEach(r => { r.mes = r.mes.slice(0,7); r.importe = r.importe == null ? null : Number(r.importe); });
+    D = {pagos, topes, plan, deudas, fijos, pm, saldos, ingresos, dec};
     cargadoEn = Date.now(); estado(''); $('app').classList.remove('sindatos');
     render();
   } catch (err) {
@@ -709,7 +737,13 @@ function render(){
 
 // ---------- resumen ----------
 function deudaActual(){ return D.deudas.filter(d => !d.pagada).reduce((s,d) => s + d.pendiente, 0); }
-const icon = cat => `<span class="ico" aria-hidden="true">${svg(cat)}</span>`;
+// Cada categoría con su tono: el icono en color sobre un fondo suave del mismo color.
+const TONO = {'Restaurantes':'#ea580c','Supermercado':'#16a34a','Transporte':'#2563eb','Compras':'#db2777','Viajes':'#0891b2','Ocio':'#9333ea',
+  'Salidas de noche':'#7c3aed','Suscripciones':'#e11d48','Vivienda':'#b45309','Salud':'#dc2626','Deporte':'#0d9488','Cuidado personal':'#c026d3',
+  'Teléfono e internet':'#0284c7','Impuestos':'#57534e','Ingreso':'#15803d','Movimiento interno':'#64748b','Pago de deuda':'#c2410c','Entre personas':'#4f46e5',
+  'Bizum':'#0e7490','Tabaco':'#78716c','Apuestas':'#a16207','Comisiones':'#64748b','Educación':'#1d4ed8','Multas':'#b91c1c','Efectivo':'#15803d'};
+const tono = cat => TONO[cat] || '#64748b';
+const icon = cat => `<span class="ico" style="--c:${tono(cat)}" aria-hidden="true">${svg(cat)}</span>`;
 
 function renderResumen(){
   renderDinero(); renderProximo();
@@ -866,7 +900,7 @@ function renderAnalisis(){
   const big = cl.slice(0, 7), rest = cl.slice(7).reduce((s,[,v]) => s + v, 0);
   if (rest > 0) big.push(['Resto', rest]);
   const cmax = Math.max(1, ...big.map(x => x[1]));
-  $('cats').innerHTML = total ? big.map(([k,v]) => `<div class="rk"><span class="c">${esc(k)}</span><b class="num">${eur(v)}<small>${Math.round(v / total * 100)} %</small></b>
+  $('cats').innerHTML = total ? big.map(([k,v]) => `<div class="rk" style="--c:${tono(k)}"><span class="c">${esc(k)}</span><b class="num">${eur(v)}<small>${Math.round(v / total * 100)} %</small></b>
     <span class="meter" aria-hidden="true"><i style="width:${v / cmax * 100}%"></i></span></div>`).join('') : '<p class="empty">No hay gastos en este periodo.</p>';
 
   // comercios
@@ -1046,24 +1080,49 @@ function editPago(p){
 // ---------- mes: fijos y cuotas ----------
 const pmDe = (tipo, id, mes = cur) => D.pm.find(r => r.tipo === tipo && r.ref_id === id && r.mes === mes);
 const enMes = (desde, hasta, m = cur) => (!desde || desde.slice(0,7) <= m) && (!hasta || hasta.slice(0,7) >= m);
-function fijosDelMes(m = cur){ return D.fijos.filter(f => f.activo && enMes(f.desde, f.hasta, m)); }
+// Cada mes cuentan los fijos, las cuotas y las deudas que se pagan enteras cada mes (Amex).
+// Danny puede quitar una de un mes ('saltar') o sumar una deuda sin cuota ('sumar', con su importe).
+const decDe = (tipo, id, m = cur) => D.dec.find(r => r.tipo === tipo && r.ref_id === id && r.mes === m);
+const fijosBase = (m = cur) => D.fijos.filter(f => f.activo && enMes(f.desde, f.hasta, m));
+const deudaBase = (d, m = cur) => !d.pagada && (d.cuota ? !d.fin || d.fin.slice(0,7) >= m : d.cada_mes);
+function fijosDelMes(m = cur){ return fijosBase(m).filter(f => pmDe('fijo', f.id, m) || decDe('fijo', f.id, m)?.accion !== 'saltar'); }
 function cuotasDelMes(m = cur){
   return D.deudas.filter(d => {
-    const r = pmDe('deuda', d.id, m);
-    if (r) return true;                                     // pagada este mes: se queda en la lista
+    if (pmDe('deuda', d.id, m)) return true;                // pagada este mes: se queda en la lista
     if (d.pagada) return false;
-    if (d.cuota) return !d.fin || d.fin.slice(0,7) >= m;    // cuota mensual hasta el final
-    return d.fin && d.fin.slice(0,7) === m;                 // pago único: su mes
+    const dc = decDe('deuda', d.id, m);
+    return dc ? dc.accion === 'sumar' : deudaBase(d, m);
   });
 }
-// El mes que viene, en un solo bloque: lo que entra (con su origen) y lo que toca pagar (fijos, cuotas y Amex;
-// los demás pagos únicos son opcionales y no salen). Todo se toca para editarlo.
+function saltadosDelMes(m = cur){
+  return [
+    ...fijosBase(m).filter(f => !pmDe('fijo', f.id, m) && decDe('fijo', f.id, m)?.accion === 'saltar').map(f => ({tipo: 'fijo', id: f.id, n: f.concepto, v: f.importe})),
+    ...D.deudas.filter(d => deudaBase(d, m) && !pmDe('deuda', d.id, m) && decDe('deuda', d.id, m)?.accion === 'saltar').map(d => ({tipo: 'deuda', id: d.id, n: d.nombre, v: d.cuota || d.pendiente})),
+  ];
+}
+const opcionalesDelMes = (m = cur) => D.deudas.filter(d => !d.pagada && !deudaBase(d, m) && !pmDe('deuda', d.id, m) && !decDe('deuda', d.id, m)).sort((a,b) => b.pendiente - a.pendiente);
+const importeDeuda = (d, m = cur) => Number(pmDe('deuda', d.id, m)?.importe ?? decDe('deuda', d.id, m)?.importe ?? (d.cuota || d.pendiente));
+// Guarda (o borra, con accion null) lo que se decide para un mes.
+async function decidir(tipo, id, m, accion, importe = null){
+  const r = decDe(tipo, id, m);
+  if (r && accion && r.accion === accion) {
+    const [n] = await write(sb.from('mes_decision').update({importe}).eq('id', r.id)); r.importe = n.importe == null ? null : Number(n.importe); return;
+  }
+  if (r) { await write(sb.from('mes_decision').delete().eq('id', r.id)); D.dec = D.dec.filter(x => x !== r); }
+  if (accion) {
+    const [n] = await write(sb.from('mes_decision').insert({mes: m + '-01', tipo, ref_id: id, accion, importe}));
+    n.mes = n.mes.slice(0,7); n.importe = n.importe == null ? null : Number(n.importe); D.dec.push(n);
+  }
+}
+const mesCorto = m => monthName(m, {month: 'long'});
+// El mes que viene, en un solo bloque: lo que entra (con su origen) y lo que toca pagar, con lo que Danny
+// haya decidido en Pagos para ese mes. Todo se toca para editarlo.
 function ingresosDelMes(m = cur){ return D.ingresos.filter(i => i.activo && enMes(i.desde, i.hasta, m)); }
 function renderProximo(){
   const m = addMonth(monthKey(new Date()), 1);
   const sal = [
     ...fijosDelMes(m).map(f => ({n: f.concepto, c: f.cuenta, v: f.importe, t: 'Fijo', ed: () => editFijo(f, m)})),
-    ...cuotasDelMes(m).filter(d => d.cuota || /amex/i.test(d.nombre)).map(d => ({n: d.nombre, c: d.cuenta, v: d.cuota || d.pendiente, t: d.cuota ? 'Cuota' : 'Tarjeta', ed: () => editDeuda(d)})),
+    ...cuotasDelMes(m).map(d => ({n: d.nombre, c: d.cuenta, v: importeDeuda(d, m), t: d.cuota ? 'Cuota' : d.cada_mes ? 'Tarjeta' : 'Pago', ed: () => editDeuda(d, m)})),
   ].sort((a,b) => b.v - a.v);
   const ins = ingresosDelMes(m);
   const pl = D.plan.find(p => p.mes === m);
@@ -1073,7 +1132,7 @@ function renderProximo(){
   const entra = ent.reduce((a,i) => a + i.v, 0), sale = sal.reduce((a,i) => a + i.v, 0), queda = entra - sale;
   $('proxT').textContent = cap(monthName(m, {month: 'long'}));
   const ico = t => svg(t === 'in' ? 'Ingreso' : t === 'Fijo' ? 'ui-fijo' : 'Pago de deuda');
-  const fila = (i, k, t) => { return `<button class="item mov" data-k="${k}"><span class="ico">${ico(t)}</span>
+  const fila = (i, k, t) => { return `<button class="item mov" data-k="${k}"><span class="ico" style="--c:${t === 'in' ? tono('Ingreso') : t === 'Fijo' ? '#2563eb' : tono('Pago de deuda')}">${ico(t)}</span>
     <span class="c">${esc(i.n)}</span><span class="a num ${t === 'in' ? 'pos-ok' : ''}">${t === 'in' ? '+' : ''}${eur(i.v)}</span><span class="s">${t === 'in' ? esc(i.c || 'Ingreso') : i.t + (i.c ? ' · ' + esc(i.c) : '')}</span></button>`; };
   const all = [...ent, ...sal];
   $('prox').innerHTML = `<div class="proxsum"><div><span>Entra</span><b class="num pos-ok">${eur(entra)}</b></div><div><span>Sale</span><b class="num">${eur(sale)}</b></div><div><span>${queda < 0 ? 'Falta' : 'Sobra'}</span><b class="num ${queda < 0 ? 'neg-bad' : ''}">${eur(Math.abs(queda))}</b></div></div>
@@ -1130,7 +1189,7 @@ function estadoMes(){
   if (cur < INICIO_SEGUIMIENTO) return {items:[], total:0, pagado:0};
   const items = [
     ...fijosDelMes().map(f => ({importe: (pmDe('fijo', f.id)?.importe ?? f.importe) * 1, cuenta: f.cuenta, done: !!pmDe('fijo', f.id)})),
-    ...cuotasDelMes().map(d => { const r = pmDe('deuda', d.id); return {importe: Number(r?.importe ?? (d.cuota || d.pendiente)), cuenta: d.cuenta, done: !!r}; }),
+    ...cuotasDelMes().map(d => ({importe: importeDeuda(d), cuenta: d.cuenta, done: !!pmDe('deuda', d.id)})),
   ];
   return {items, total: items.reduce((s,i) => s + i.importe, 0), pagado: items.filter(i => i.done).reduce((s,i) => s + i.importe, 0)};
 }
@@ -1145,7 +1204,7 @@ function renderMes(){
   if (cur < INICIO_SEGUIMIENTO) {
     $('mesProg').textContent = 'Aún no'; $('mesProg').className = 'big num txt'; $('mesBar').style.width = '0'; $('mesLabel').textContent = 'Pagado este mes';
     $('mesFalta').className = 'status'; $('mesFalta').textContent = `El seguimiento empieza en ${monthName(INICIO_SEGUIMIENTO)}.`;
-    $('cuentasGroup').hidden = true; $('fijos').innerHTML = ''; $('cuotas').innerHTML = '';
+    $('cuentasGroup').hidden = $('optGroup').hidden = $('saltGroup').hidden = true; $('fijos').innerHTML = ''; $('cuotas').innerHTML = '';
     return;
   }
   const m = estadoMes();
@@ -1175,13 +1234,34 @@ function renderMes(){
   }).join('') || '<p class="empty">No hay gastos fijos este mes.</p>';
 
   $('cuotas').innerHTML = cuotasDelMes().map(d => {
-    const r = pmDe('deuda', d.id), imp = Number(r?.importe ?? (d.cuota || d.pendiente)), v = !r && visto(d.nombre, imp);
+    const r = pmDe('deuda', d.id), imp = importeDeuda(d), v = !r && visto(d.nombre, imp), extra = !d.cuota && !d.cada_mes;
     return `<div class="check ${r ? 'done' : ''}">
       <button class="tick" data-deuda="${d.id}" aria-label="${r ? 'Marcar como no pagado' : 'Marcar como pagado'}: ${esc(d.nombre)}, ${eurC(imp)}">${tickSvg}</button>
       <button class="ebody" data-edeuda="${d.id}"><span class="c">${esc(d.nombre)}</span><span class="num">${eurC(imp)}</span>
-      <span class="s">${[d.cuota ? 'Cuota' : 'Pago único', d.cuenta ? esc(d.cuenta) : ''].filter(Boolean).join(' · ')}${r && r.amortizado ? ` · baja ${eur(r.amortizado)}` : ''}${v ? ' · <span class="seen">Parece cobrado</span>' : ''}</span></button>
+      <span class="s">${[d.cuota ? 'Cuota' : extra ? (imp < d.pendiente - 0.005 ? `Parte de ${eur(d.pendiente)}` : 'Toda la deuda') : 'Entera', d.cuenta ? esc(d.cuenta) : ''].filter(Boolean).join(' · ')}${r && r.amortizado ? ` · baja ${eur(r.amortizado)}` : ''}${v ? ' · <span class="seen">Parece cobrado</span>' : ''}</span></button>
     </div>`;
   }).join('') || '<p class="empty">No hay cuotas este mes.</p>';
+
+  // Lo que se puede sumar este mes (deudas sin cuota) y lo que se ha quitado.
+  const opc = cur >= monthKey(new Date()) ? opcionalesDelMes() : [];
+  $('optGroup').hidden = !opc.length;
+  $('opcionales').innerHTML = opc.map(d => `<div class="opt"><span class="c">${esc(d.nombre)}</span>
+    <span class="s">Debes ${eurC(d.pendiente)}${d.cuenta ? ' · ' + esc(d.cuenta) : ''}</span>
+    <button class="pill" data-sumar="${d.id}" aria-label="Añadir ${esc(d.nombre)} a ${mesCorto(cur)}">${svg('ui-plus')}Añadir</button></div>`).join('');
+  const sal = saltadosDelMes();
+  $('saltGroup').hidden = !sal.length;
+  $('saltados').innerHTML = sal.map(i => `<div class="opt off"><span class="c">${esc(i.n)}</span><span class="s">${eurC(i.v)} · no cuenta en ${mesCorto(cur)}</span>
+    <button class="pill ghost" data-contar="${i.tipo}:${i.id}" aria-label="Volver a contar ${esc(i.n)}">Contar</button></div>`).join('');
+  $('v-mes').querySelectorAll('[data-sumar]').forEach(b => b.onclick = async () => {
+    const d = D.deudas.find(x => x.id == b.dataset.sumar); b.disabled = true;
+    try { await decidir('deuda', d.id, cur, 'sumar'); render(); document.querySelector(`[data-edeuda="${d.id}"]`)?.focus(); toast(`Añadido a ${mesCorto(cur)}`); }
+    catch { b.disabled = false; }
+  });
+  $('v-mes').querySelectorAll('[data-contar]').forEach(b => b.onclick = async () => {
+    const [tipo, id] = b.dataset.contar.split(':'); b.disabled = true;
+    try { await decidir(tipo, Number(id), cur, null); render(); document.querySelector(`[data-${tipo === 'fijo' ? 'efijo' : 'edeuda'}="${id}"]`)?.focus(); }
+    catch { b.disabled = false; }
+  });
 
   $('v-mes').querySelectorAll('[data-fijo]').forEach(b => b.onclick = () => toggleFijo(D.fijos.find(f => f.id == b.dataset.fijo), b));
   $('v-mes').querySelectorAll('[data-deuda]').forEach(b => b.onclick = () => toggleDeuda(D.deudas.find(d => d.id == b.dataset.deuda), b));
@@ -1218,7 +1298,7 @@ async function toggleDeuda(d, btn){
       const cuenta = !d.a_fecha || cur >= d.a_fecha.slice(0,7);
       let amort = 0, imp;
       if (d.cuota) { imp = d.cuota; if (cuenta) amort = Math.max(0, Math.min(d.pendiente, d.cuota - d.pendiente * (d.tin || 0) / 1200)); }
-      else { imp = d.pendiente; amort = d.pendiente; }
+      else { imp = importeDeuda(d); amort = Math.min(d.pendiente, imp); }
       amort = r2(amort);
       const [n] = await write(sb.from('pagos_mes').insert({mes: cur + '-01', tipo:'deuda', ref_id: d.id, importe: imp, amortizado: amort, cuenta: d.cuenta, pagado_el: today()}));
       n.mes = n.mes.slice(0,7); n.amortizado = Number(n.amortizado); D.pm.push(n);
@@ -1237,8 +1317,12 @@ async function toggleDeuda(d, btn){
 $('addFijo').onclick = () => editFijo(null);
 function editFijo(f, mesQuitar = cur){
   const nuevo = !f;
+  const puedeSaltar = !nuevo && fijosBase(mesQuitar).includes(f) && !pmDe('fijo', f.id, mesQuitar);
+  const saltado = puedeSaltar && decDe('fijo', f.id, mesQuitar)?.accion === 'saltar';
   openSheet(`${hd(nuevo ? 'Añadir gasto fijo' : 'Editar gasto fijo')}
     <form id="ff" novalidate>
+      ${puedeSaltar ? `<div class="mesbox"><p>${saltado ? `No cuenta en ${mesCorto(mesQuitar)}.` : `Si en ${mesCorto(mesQuitar)} no lo pagas, quítalo solo de ese mes. Los demás meses siguen igual.`}</p>
+        <button class="ghost" type="button" id="fsal">${saltado ? `Volver a contarlo en ${mesCorto(mesQuitar)}` : `No lo pago en ${mesCorto(mesQuitar)}`}</button></div>` : ''}
       <label class="f">Concepto<input id="fc" required value="${esc(f?.concepto || '')}" placeholder="Ej. Gimnasio"></label>
       <div class="grid2">
         <label class="f">Importe al mes (€)<input id="fi" inputmode="decimal" autocomplete="off" required value="${f ? String(f.importe).replace('.',',') : ''}"></label>
@@ -1255,6 +1339,9 @@ function editFijo(f, mesQuitar = cur){
         ${nuevo ? '' : '<button class="danger" type="button" id="fdel">Dejar de pagar</button>'}
       </div>
     </form>`, () => {
+      if (puedeSaltar) $('fsal').onclick = async () => {
+        try { await decidir('fijo', f.id, mesQuitar, saltado ? null : 'saltar'); closeSheet(); render(); toast(saltado ? `${f.concepto} vuelve a contar` : `${f.concepto}: este mes no`); } catch {}
+      };
       if (!nuevo) confirmBtn($('fdel'), `¿Dejar de contarlo desde ${monthName(mesQuitar, {month: 'long'})}? Los meses anteriores se quedan como están.`, async () => {
         // Se cierra en el mes anterior para no perder el historial.
         try { Object.assign(f, (await write(sb.from('gastos_fijos').update({hasta: addMonth(mesQuitar, -1) + '-28'}).eq('id', f.id)))[0]); f.importe = Number(f.importe); closeSheet(); render(); toast(mesQuitar === cur ? 'Quitado desde este mes' : 'Quitado desde ' + monthName(mesQuitar, {month: 'long'})); } catch {}
@@ -1330,11 +1417,17 @@ function debtChart(start, plan, now, hoyV){
     <text x="${W-R}" y="${y(0) - 12}" text-anchor="end">0 €</text>
   </svg>`;
 }
-function editDeuda(d){
+function editDeuda(d, mes = cur){
   const nuevo = !d;
+  const dc = d && !pmDe('deuda', d.id, mes) ? decDe('deuda', d.id, mes) : null;
+  const sumada = dc?.accion === 'sumar', puedeSaltar = d && deudaBase(d, mes) && !pmDe('deuda', d.id, mes), saltada = puedeSaltar && dc?.accion === 'saltar';
   const pagos = d ? D.pm.filter(r => r.tipo === 'deuda' && r.ref_id === d.id).sort((a,b) => b.mes.localeCompare(a.mes)) : [];
   openSheet(`${hd(nuevo ? 'Añadir deuda' : esc(d.nombre))}
     <form id="fdd" novalidate>
+      ${sumada ? `<div class="mesbox"><label class="f">Pagas en ${mesCorto(mes)} (€)<input id="dmes" inputmode="decimal" autocomplete="off" value="${String(dc.importe ?? d.pendiente).replace('.', ',')}"></label>
+        <button class="ghost" type="button" id="dquit">Quitar de ${mesCorto(mes)}</button></div>` : ''}
+      ${puedeSaltar ? `<div class="mesbox"><p>${saltada ? `No cuenta en ${mesCorto(mes)}.` : `Si en ${mesCorto(mes)} no la pagas, quítala solo de ese mes.`}</p>
+        <button class="ghost" type="button" id="dsal">${saltada ? `Volver a contarla en ${mesCorto(mes)}` : `No la pago en ${mesCorto(mes)}`}</button></div>` : ''}
       <label class="f">Nombre<input id="dn" required value="${esc(d?.nombre || '')}" placeholder="Ej. Préstamo coche"></label>
       <div class="grid2">
         <label class="f">Pendiente hoy (€)<input id="dp" inputmode="decimal" autocomplete="off" required value="${d ? String(d.pendiente).replace('.',',') : ''}"></label>
@@ -1344,7 +1437,8 @@ function editDeuda(d){
         <label class="f">Termina / se paga en<input id="df" type="month" value="${d?.fin ? d.fin.slice(0,7) : ''}"></label>
         <label class="f">Sale de<select id="dcu"><option value="">Sin cuenta</option>${opts(CUENTAS, d?.cuenta || '')}</select></label>
       </div>
-      <p class="small muted">Sin cuota, cuenta como un pago único en el mes en que se paga.</p>
+      <div class="checkline"><input type="checkbox" id="dcm" ${d?.cada_mes ? 'checked' : ''}><label for="dcm">Sin cuota, se paga entera cada mes (como una tarjeta)</label></div>
+      <p class="small muted">Una deuda sin cuota sale en Pagos como opcional: la añades el mes que quieras pagarla.</p>
       <label class="f">Notas<input id="dno" value="${esc(d?.notas || '')}"></label>
       ${!nuevo ? '<p class="small muted">Si el banco te da otro saldo, cámbialo en «Pendiente hoy».</p>' : ''}
       ${pagos.length ? `<div class="small muted">Pagos marcados: ${pagos.map(r => `${monthName(r.mes,{month:'short',year:'2-digit'}).replace('.','')} ${eur2(Number(r.importe))}`).join(' · ')}</div>` : ''}
@@ -1357,6 +1451,8 @@ function editDeuda(d){
       if (!nuevo && $('dliq')) $('dliq').onclick = () => confirmar('¿Marcarla como liquidada? El pendiente queda a 0 €.', 'Marcar liquidada', async () => {
         try { Object.assign(d, prepDeuda((await write(sb.from('deudas').update({pagada: true, pagada_el: today(), pendiente: 0, cuotas_restantes: d.cuota ? 0 : null}).eq('id', d.id)))[0])); closeSheet(); render(); toast(`${d.nombre}: ¡liquidada!`); } catch {}
       }, 'Cancelar');
+      if ($('dquit')) $('dquit').onclick = async () => { try { await decidir('deuda', d.id, mes, null); closeSheet(); render(); toast(`${d.nombre} ya no cuenta en ${mesCorto(mes)}`); } catch {} };
+      if ($('dsal')) $('dsal').onclick = async () => { try { await decidir('deuda', d.id, mes, saltada ? null : 'saltar'); closeSheet(); render(); toast(saltada ? `${d.nombre} vuelve a contar` : `${d.nombre}: este mes no`); } catch {} };
       if (!nuevo && $('dre')) $('dre').onclick = async () => {
         try { Object.assign(d, prepDeuda((await write(sb.from('deudas').update({pagada: false, pagada_el: null}).eq('id', d.id)))[0])); closeSheet(); render(); toast('Reabierta: pon el pendiente real'); editDeuda(d); } catch {}
       };
@@ -1373,11 +1469,14 @@ function editDeuda(d){
         if (cuota != null && !(cuota > 0)) return fieldErr($('dc'), 'Escribe la cuota o déjala vacía.');
         const row = {nombre: $('dn').value.trim(), pendiente: r2(pend), tin: isFinite(tin) ? tin : 0, cuota: cuota == null ? null : r2(cuota),
           cuotas_restantes: $('dr').value ? parseInt($('dr').value) : null, fin: $('df').value ? $('df').value + '-01' : null,
-          cuenta: $('dcu').value || null, notas: $('dno').value.trim() || null};
+          cuenta: $('dcu').value || null, notas: $('dno').value.trim() || null, cada_mes: !cuota && $('dcm').checked};
+        let pagaMes = null;
+        if (sumada) { pagaMes = parseNum($('dmes').value); if (!isFinite(pagaMes) || pagaMes <= 0) return fieldErr($('dmes'), 'Escribe cuánto pagas este mes.'); }
         if (nuevo || Math.abs(row.pendiente - d.pendiente) > 0.005) row.a_fecha = today();
         try {
           if (nuevo) D.deudas.push(prepDeuda((await write(sb.from('deudas').insert(row)))[0]));
           else Object.assign(d, prepDeuda((await write(sb.from('deudas').update(row).eq('id', d.id)))[0]));
+          if (sumada && Math.abs(pagaMes - (dc.importe ?? d.pendiente)) > 0.005) await decidir('deuda', d.id, mes, 'sumar', r2(Math.min(pagaMes, d.pendiente)));
           closeSheet(); render(); toast(nuevo ? 'Añadida' : 'Guardada');
         } catch {}
       });
