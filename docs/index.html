@@ -415,13 +415,15 @@ body::before{opacity:.32;height:55vh}
 .movtot .l{font-size:13px;color:var(--muted)} .movtot b{font-size:30px;font-weight:700;letter-spacing:-.5px}
 .movtot .ghlink{align-self:flex-start;margin-top:6px;padding:0}
 .monthnav{display:none!important}
-.mchips{display:flex;align-self:stretch;gap:8px;overflow-x:auto;scrollbar-width:none;margin:2px -20px 10px;padding:4px 20px;scroll-snap-type:x proximity}
+.mchips{display:flex;align-self:stretch;gap:22px;-webkit-mask-image:linear-gradient(90deg,transparent,#000 40px,#000 calc(100% - 40px),transparent);mask-image:linear-gradient(90deg,transparent,#000 40px,#000 calc(100% - 40px),transparent);overflow-x:auto;scrollbar-width:none;margin:0 -20px 6px;padding:2px 20px 8px;scroll-snap-type:x proximity}
 .mchips::-webkit-scrollbar{display:none}
-.mchips button{flex:none;scroll-snap-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:64px;height:58px;padding:0 12px;border-radius:18px;border:0;background:var(--fill);color:var(--ink)}
-.mchips b{font-size:18px;font-weight:700;letter-spacing:-.2px}
-.mchips span{font-size:11px;color:var(--muted);margin-top:1px}
-.mchips button[aria-selected="true"]{background:var(--grad);color:#fff;box-shadow:0 6px 18px color-mix(in srgb,var(--tint) 40%,transparent)}
-.mchips button[aria-selected="true"] span{color:rgba(255,255,255,.8)}
+.mchips button{flex:none;scroll-snap-align:center;display:flex;flex-direction:column;align-items:center;gap:5px;padding:0;border:0;background:none;color:var(--muted);transition:color .2s}
+.mchips b{font-size:19px;font-weight:600;letter-spacing:-.2px}
+.mchips small{font-size:13px;font-weight:600;color:var(--muted)}
+.mchips button::after{content:"";width:5px;height:5px;border-radius:50%;background:transparent}
+.mchips button[aria-selected="true"]{color:var(--ink)}
+.mchips button[aria-selected="true"] b{font-weight:800}
+.mchips button[aria-selected="true"]::after{background:var(--tint)}
 .anhero{padding:22px 20px;border-radius:24px;background:var(--grad);color:#fff}
 .anhero .l{font-size:14px;opacity:.85} .anhero b{display:block;font-size:42px;font-weight:800;letter-spacing:-1px;margin:4px 0 6px}
 .anhero .s{font-size:14px;opacity:.9}
@@ -758,7 +760,7 @@ function render(){
   $('prev').disabled = cur <= ms[0];
   $('next').disabled = cur >= ms[ms.length-1];
   // Meses como fichas grandes que se deslizan; el elegido, relleno.
-  $('mchips').innerHTML = ms.map(m => `<button data-m="${m}" aria-selected="${m === cur}"><b>${cap(monthName(m, {month: 'short'}).replace('.', '').replace('sept', 'sep'))}</b><span>${m.slice(0,4)}</span></button>`).join('');
+  $('mchips').innerHTML = ms.map(m => `<button data-m="${m}" aria-selected="${m === cur}"><b>${cap(monthName(m, {month: 'short'}).replace('.', '').replace('sept', 'sep'))}${m === cur || m.endsWith('-01') ? ` <small>${m.slice(2,4)}</small>` : ''}</b></button>`).join('');
   $('mchips').querySelectorAll('button').forEach(b => b.onclick = () => { cur = b.dataset.m; movLimit = 60; render(); });
   const sel = $('mchips').querySelector('[aria-selected="true"]');
   const centra = () => { const mc = $('mchips'), r = sel.getBoundingClientRect(), c = mc.getBoundingClientRect(); mc.scrollLeft += r.left - c.left - (c.width - r.width) / 2; };
