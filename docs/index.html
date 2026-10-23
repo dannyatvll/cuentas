@@ -415,7 +415,7 @@ body::before{opacity:.32;height:55vh}
 .movtot .l{font-size:13px;color:var(--muted)} .movtot b{font-size:30px;font-weight:700;letter-spacing:-.5px}
 .movtot .ghlink{align-self:flex-start;margin-top:6px;padding:0}
 .monthnav{display:none!important}
-.mchips{display:flex;align-self:stretch;gap:22px;-webkit-mask-image:linear-gradient(90deg,transparent,#000 40px,#000 calc(100% - 40px),transparent);mask-image:linear-gradient(90deg,transparent,#000 40px,#000 calc(100% - 40px),transparent);overflow-x:auto;scrollbar-width:none;margin:0 -20px 6px;padding:2px 20px 8px;scroll-snap-type:x proximity}
+.mchips{display:flex;align-self:stretch;gap:22px;padding-inline:calc(50vw - 36px)!important;-webkit-mask-image:linear-gradient(90deg,transparent,#000 40px,#000 calc(100% - 40px),transparent);mask-image:linear-gradient(90deg,transparent,#000 40px,#000 calc(100% - 40px),transparent);overflow-x:auto;scrollbar-width:none;margin:0 -20px 6px;padding:2px 20px 8px;scroll-snap-type:x proximity}
 .mchips::-webkit-scrollbar{display:none}
 .mchips button{flex:none;scroll-snap-align:center;display:flex;flex-direction:column;align-items:center;gap:5px;padding:0;border:0;background:none;color:var(--muted);transition:color .2s}
 .mchips b{font-size:19px;font-weight:600;letter-spacing:-.2px}
@@ -424,6 +424,7 @@ body::before{opacity:.32;height:55vh}
 .mchips button[aria-selected="true"]{color:var(--ink)}
 .mchips button[aria-selected="true"] b{font-weight:800}
 .mchips button[aria-selected="true"]::after{background:var(--tint)}
+.desc{font-size:17px;margin:4px 0 12px;line-height:1.4} .desc b{font-size:22px;font-weight:800} .desc .muted{display:block;font-size:14px}
 .anhero{padding:22px 20px;border-radius:24px;background:var(--grad);color:#fff}
 .anhero .l{font-size:14px;opacity:.85} .anhero b{display:block;font-size:42px;font-weight:800;letter-spacing:-1px;margin:4px 0 6px}
 .anhero .s{font-size:14px;opacity:.9}
@@ -683,7 +684,7 @@ async function load(){
   $('updated').textContent = 'Cargando…';
   try {
     const [pagos, topes, plan, deudas, fijos, pm, saldos] = await Promise.all([
-      all('pagos', 'id,fecha,con_hora,importe,comercio,categoria,tipo,cuenta,origen', 'fecha'),
+      all('pagos', 'id,fecha,con_hora,importe,comercio,categoria,tipo,cuenta,origen,creado', 'fecha'),
       all('topes', 'categoria,tope,incluye'),
       all('plan_mes', 'mes,vida,deuda_final,nota'),
       all('deudas', '*'),
@@ -855,7 +856,10 @@ function paceChart(vida, tope, dias, hoy){
 // ---------- dinero real ----------
 // Saldo de cada cuenta: el último dato que diste, menos lo que se ha movido en esa cuenta después.
 const salida = p => p.tipo === 'Ingreso' ? -p.importe : p.importe;
-function saldoDe(s){ const t = new Date(s.a_fecha).getTime(); return s.saldo - D.pagos.filter(p => p.cuenta === s.cuenta && new Date(p.fecha).getTime() > t).reduce((a,p) => a + salida(p), 0); }
+// Saldo de hoy: el último que pusiste menos lo que se ha movido después. Cuenta lo apuntado después aunque su fecha sea anterior
+// (un gasto que añades a mano resta siempre); los descuadres ya están dentro del saldo que pusiste.
+const despues = (p, t) => Math.max(new Date(p.fecha).getTime(), p.creado ? new Date(p.creado).getTime() : 0) > t;
+function saldoDe(s){ const t = new Date(s.a_fecha).getTime(); return s.saldo - D.pagos.filter(p => p.cuenta === s.cuenta && p.origen !== 'Descuadre' && despues(p, t)).reduce((a,p) => a + salida(p), 0); }
 const ACC_COLOR = {BBVA:'#1464f4', Revolut:'#111114', Efectivo:'#16a34a'};
 function renderDinero(){
   const ss = D.saldos.map(s => ({...s, ahora: saldoDe(s)}));
@@ -904,10 +908,31 @@ function editSaldos(){
         const n = Number(v.replace(/\./g, '').replace(',', '.')); if (!isNaN(n)) rows.push({cuenta: c, saldo: n, a_fecha: new Date().toISOString(), orden: i + 1}); });
       try {
         if (!rows.length) return closeSheet();
+        // Lo que la app esperaba frente a lo que dice el banco.
+        const desc = rows.map(x => { const s = D.saldos.find(y => y.cuenta === x.cuenta); return s ? {cuenta: x.cuenta, dif: r2(x.saldo - saldoDe(s)), fecha: x.a_fecha} : null; }).filter(d => d && Math.abs(d.dif) >= 1);
         const r = await write(sb.from('saldos').upsert(rows));
         r.forEach(x => { x.saldo = Number(x.saldo); const i = D.saldos.findIndex(s => s.cuenta === x.cuenta); if (i >= 0) D.saldos[i] = x; else D.saldos.push(x); });
         D.saldos.sort((a,b) => a.orden - b.orden);
-        closeSheet(); render(); toast('Saldos guardados');
+        closeSheet(); render();
+        if (desc.length) descuadre(desc); else toast('Saldos guardados, todo cuadra');
+      } catch {}
+    };
+  });
+}
+// El banco no cuadra con la app: avisa y deja apuntarlo como gasto (o entrada) sin identificar.
+function descuadre(desc){
+  openSheet(`${hd('No cuadra')}
+    ${desc.map(d => `<p class="desc"><b class="num ${d.dif < 0 ? 'neg-bad' : ''}">${eur2(Math.abs(d.dif))}</b> ${d.dif < 0 ? 'de menos' : 'de más'} en ${esc(d.cuenta)}.
+      <span class="muted">${d.dif < 0 ? 'Han salido y no sabemos dónde han ido.' : 'Han entrado y no sabemos de dónde vienen.'}</span></p>`).join('')}
+    <p class="small muted">El saldo ya está corregido. Si lo apuntas, sale en Movimientos como "Sin categoría" y luego le pones qué era.</p>
+    <button class="primary" id="dApuntar">Apuntarlo</button><button class="ghost" id="dNo">Ahora no</button>`, sh => {
+    sh.querySelector('#dNo').onclick = closeSheet;
+    sh.querySelector('#dApuntar').onclick = async () => {
+      try {
+        const r = await write(sb.from('pagos').insert(desc.map(d => ({comercio: `Sin identificar (${d.cuenta})`, importe: -d.dif, fecha: d.fecha, con_hora: true, categoria: 'Sin categoría', cuenta: d.cuenta, origen: 'Descuadre'}))));
+        r.forEach(x => D.pagos.push(prepPago(x)));
+        D.pagos.sort((a,b) => b.fecha.localeCompare(a.fecha));
+        closeSheet(); render(); toast('Apuntado');
       } catch {}
     };
   });
