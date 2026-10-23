@@ -3,8 +3,8 @@
   "short_name": "Cuentas",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#f4f4f8",
-  "theme_color": "#f4f4f8",
+  "background_color": "#f6f1e9",
+  "theme_color": "#f6f1e9",
   "icons": [
     { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
     { "src": "icon.png", "sizes": "512x512", "type": "image/png" }

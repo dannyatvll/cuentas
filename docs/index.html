@@ -8,8 +8,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Cuentas">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#f4f4f8" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0e0e12" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f6f1e9" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#151311" media="(prefers-color-scheme: dark)">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (prefers-color-scheme: light)" href="arranque-375x812.png">
@@ -34,15 +34,16 @@
 <link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (prefers-color-scheme: dark)" href="arranque-oscuro-375x667@2x.png">
 <style>
 /* Mis cuentas: una web para el móvil que se maneja como una app de iPhone.
-   Un solo sistema: los tokens de :root. Superficies neutras, un único color de acción (índigo),
-   y color de estado solo para avisar (verde entra, naranja vas justo, rojo te has pasado). */
+   Un solo sistema: los tokens de :root. Luz cálida (crema), un color de acción (salvia), uno de detalle
+   (naranja: el mes elegido y la pestaña activa) y color de estado solo para avisar. */
 :root{
   /* color */
-  --bg:#f4f4f8; --surface:#fcfcfe; --surface-2:#ececf2; --field:#ececf2; --raised:#fcfcfe;
-  --ink:#15151c; --muted:#62626d; --soft:#b9b9c4; --line:rgba(21,21,28,.1);
-  --accent:#4f46e5; --accent-soft:rgba(79,70,229,.11); --on-accent:#ffffff;
+  --bg:#f6f1e9; --surface:#fffcf7; --surface-2:#efe8dd; --field:#efe8dd; --raised:#fffcf7;
+  --ink:#22201c; --muted:#6b645a; --soft:#c9bfb1; --line:rgba(34,32,28,.1);
+  --accent:#2f6b4f; --accent-soft:rgba(47,107,79,.11); --on-accent:#ffffff;
+  --pop:#ef7d3c; --pop-soft:rgba(239,125,60,.18);
   --good:#17803f; --warn:#a85600; --bad:#d92d20; --on-bad:#ffffff;
-  --glass:rgba(252,252,254,.84); --scrim:rgba(14,14,18,.36); --shadow:0 8px 24px rgba(21,21,28,.08);
+  --glass:rgba(255,252,247,.84); --scrim:rgba(20,18,15,.36); --shadow:0 8px 24px rgba(34,32,28,.08);
   /* tipo: crece con el tamaño de texto del iPhone (rem sobre el estilo de texto del sistema) */
   --font:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,"Helvetica Neue",sans-serif;
   --t-display:2.824rem; --t-large:1.647rem; --t-title:1.294rem; --t-body:1rem; --t-sub:.882rem; --t-foot:.765rem; --t-cap:.706rem; --t-tab:11px; /* la barra de pestañas no crece, como en iOS */
@@ -52,19 +53,20 @@
   --r-s:12px; --r-l:20px; --r-full:999px;
   --gutter-l:max(16px,env(safe-area-inset-left,0px)); --gutter-r:max(16px,env(safe-area-inset-right,0px));
   --ease:cubic-bezier(.2,.8,.2,1);
-  --brand:var(--accent); --on-brand:var(--on-accent);
+  --brand:#365f4b; --on-brand:#ffffff;
   accent-color:var(--accent); caret-color:var(--accent);
 }
 @media (prefers-color-scheme: dark){:root{
-  --bg:#0e0e12; --surface:#1a1a21; --surface-2:#26262f; --field:#2e2e38; --raised:#22222a;
-  --ink:#f2f2f6; --muted:#a0a0ac; --soft:#55555f; --line:rgba(242,242,246,.1);
-  --accent:#8b85ff; --accent-soft:rgba(139,133,255,.16); --on-accent:#0e0e12;
+  --bg:#151311; --surface:#211e1a; --surface-2:#2d2924; --field:#35302a; --raised:#28241f;
+  --ink:#f5efe6; --muted:#aea493; --soft:#5a5248; --line:rgba(245,239,230,.1);
+  --accent:#7fcca5; --accent-soft:rgba(127,204,165,.15); --on-accent:#151311;
+  --pop:#ff9a5c; --pop-soft:rgba(255,154,92,.18); --brand:#3d6b55; --on-brand:#ffffff;
   --good:#3dd68c; --warn:#ffb340; --bad:#ff6b5e; --on-bad:#0e0e12;
-  --glass:rgba(34,34,42,.84); --scrim:rgba(0,0,0,.55); --shadow:0 8px 24px rgba(0,0,0,.35);
+  --glass:rgba(40,36,31,.84); --scrim:rgba(0,0,0,.55); --shadow:0 8px 24px rgba(0,0,0,.35);
   color-scheme:dark;
 }}
-@media (prefers-contrast: more){:root{--line:rgba(21,21,28,.32); --muted:#4a4a54; --glass:var(--surface)}}
-@media (prefers-contrast: more) and (prefers-color-scheme: dark){:root{--line:rgba(242,242,246,.32); --muted:#c4c4ce}}
+@media (prefers-contrast: more){:root{--line:rgba(34,32,28,.32); --muted:#4d473f; --glass:var(--surface)}}
+@media (prefers-contrast: more) and (prefers-color-scheme: dark){:root{--line:rgba(245,239,230,.32); --muted:#cfc6b8}}
 
 *{box-sizing:border-box}
 [hidden]{display:none!important}
@@ -232,6 +234,7 @@ header.top{display:flex;flex-direction:column;gap:var(--s1);padding-top:var(--s3
 .check.done .c,.check.done .ebody .num{color:var(--muted)}
 .lrow > span:first-child{min-width:0}
 /* opcionales y saltados del mes */
+.gtot{font-weight:600;color:var(--muted);margin-left:6px}
 .gnote{font-size:var(--t-foot);color:var(--muted);padding:0 4px;margin-top:calc(-1 * var(--s1))}
 .opt{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px var(--s3);align-items:center;padding:10px 0;min-height:60px;border-top:.5px solid var(--line)}
 .list > .opt:first-child{border-top:0}
@@ -452,11 +455,11 @@ svg.chart text{fill:var(--muted);font:500 26px var(--font)}
       <div class="card" id="mesCuentas"></div>
     </section>
     <section class="group" aria-labelledby="hFijos">
-      <div class="ghrow"><h2 id="hFijos">Gastos fijos</h2><button class="ghlink" id="addFijo">Añadir fijo</button></div>
+      <div class="ghrow"><h2 id="hFijos">Gastos fijos <span class="gtot num" id="totFijos"></span></h2><button class="ghlink" id="addFijo">Añadir fijo</button></div>
       <div class="card"><div class="list" id="fijos"></div></div>
     </section>
     <section class="group" aria-labelledby="hCuotas">
-      <div class="ghrow"><h2 id="hCuotas">Deudas</h2></div>
+      <div class="ghrow"><h2 id="hCuotas">Deudas <span class="gtot num" id="totCuotas"></span></h2></div>
       <div class="card"><div class="list" id="cuotas"></div></div>
     </section>
     <section class="group" id="optGroup" aria-labelledby="hOpt" aria-describedby="optNota" hidden>
@@ -741,7 +744,7 @@ function deudaActual(){ return D.deudas.filter(d => !d.pagada).reduce((s,d) => s
 // Cada categoría con su tono: el icono en color sobre un fondo suave del mismo color.
 const TONO = {'Restaurantes':'#ea580c','Supermercado':'#16a34a','Transporte':'#2563eb','Compras':'#db2777','Viajes':'#0891b2','Ocio':'#9333ea',
   'Salidas de noche':'#7c3aed','Suscripciones':'#e11d48','Vivienda':'#b45309','Salud':'#dc2626','Deporte':'#0d9488','Cuidado personal':'#c026d3',
-  'Teléfono e internet':'#0284c7','Impuestos':'#57534e','Ingreso':'#15803d','Movimiento interno':'#64748b','Pago de deuda':'#c2410c','Entre personas':'#4f46e5',
+  'Teléfono e internet':'#0284c7','Impuestos':'#57534e','Ingreso':'#15803d','Movimiento interno':'#64748b','Pago de deuda':'#c2410c','Entre personas':'#6d5bd0',
   'Bizum':'#0e7490','Tabaco':'#78716c','Apuestas':'#a16207','Comisiones':'#64748b','Educación':'#1d4ed8','Multas':'#b91c1c','Efectivo':'#15803d'};
 const tono = cat => TONO[cat] || '#64748b';
 const icon = cat => `<span class="ico" style="--c:${tono(cat)}" aria-hidden="true">${svg(cat)}</span>`;
@@ -1215,7 +1218,7 @@ function renderMes(){
   if (cur < INICIO_SEGUIMIENTO) {
     $('mesProg').textContent = 'Aún no'; $('mesProg').className = 'big num txt'; $('mesBar').style.width = '0'; $('mesLabel').textContent = 'Pagado este mes';
     $('mesFalta').className = 'status'; $('mesFalta').textContent = `El seguimiento empieza en ${monthName(INICIO_SEGUIMIENTO)}.`;
-    $('cuentasGroup').hidden = $('optGroup').hidden = $('saltGroup').hidden = true; $('fijos').innerHTML = ''; $('cuotas').innerHTML = '';
+    $('cuentasGroup').hidden = $('optGroup').hidden = $('saltGroup').hidden = true; $('totFijos').textContent = $('totCuotas').textContent = ''; $('fijos').innerHTML = ''; $('cuotas').innerHTML = '';
     return;
   }
   const m = estadoMes();
@@ -1235,7 +1238,10 @@ function renderMes(){
   $('mesCuentas').innerHTML = Object.entries(porCuenta).sort((a,b) => b[1]-a[1]).map(([k,v]) => `<div class="lrow"><span>${esc(k)}</span><b class="num">${eur(v)}</b></div>`).join('');
 
   const tickSvg = '<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
-  $('fijos').innerHTML = fijosDelMes().map(f => {
+  const fm = fijosDelMes(), cm = cuotasDelMes();
+  $('totFijos').textContent = fm.length ? eurC(fm.reduce((a, f) => a + Number(pmDe('fijo', f.id)?.importe ?? f.importe), 0)) : '';
+  $('totCuotas').textContent = cm.length ? eurC(cm.reduce((a, d) => a + importeDeuda(d), 0)) : '';
+  $('fijos').innerHTML = fm.map(f => {
     const r = pmDe('fijo', f.id), v = !r && visto(f.concepto, f.importe);
     return `<div class="check ${r ? 'done' : ''}">
       <button class="tick" data-fijo="${f.id}" aria-label="${r ? 'Marcar como no pagado' : 'Marcar como pagado'}: ${esc(f.concepto)}, ${eurC(r?.importe ?? f.importe)}">${tickSvg}</button>
@@ -1244,7 +1250,7 @@ function renderMes(){
     </div>`;
   }).join('') || '<p class="empty">No hay gastos fijos este mes.</p>';
 
-  $('cuotas').innerHTML = cuotasDelMes().map(d => {
+  $('cuotas').innerHTML = cm.map(d => {
     const r = pmDe('deuda', d.id), imp = importeDeuda(d), v = !r && visto(d.nombre, imp), extra = !d.cuota && !d.cada_mes;
     return `<div class="check ${r ? 'done' : ''}">
       <button class="tick" data-deuda="${d.id}" aria-label="${r ? 'Marcar como no pagado' : 'Marcar como pagado'}: ${esc(d.nombre)}, ${eurC(imp)}">${tickSvg}</button>
