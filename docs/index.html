@@ -234,6 +234,12 @@ header.top{display:flex;flex-direction:column;gap:var(--s1);padding-top:var(--s3
 .check.done .c,.check.done .ebody .num{color:var(--muted)}
 .lrow > span:first-child{min-width:0}
 /* opcionales y saltados del mes */
+.cu b{display:inline-flex;align-items:center;gap:4px}
+.cu svg.i{width:16px;height:16px;transition:transform .2s}
+.cu[aria-expanded="true"] svg.i{transform:rotate(90deg)}
+.cusub{display:flex;flex-direction:column;gap:6px;padding:0 0 12px 12px;font-size:var(--t-sub);color:var(--muted)}
+.cusub div{display:flex;justify-content:space-between;gap:var(--s3)}
+.check.entar .ebody .num{color:var(--muted);font-weight:500}
 .gtot{font-weight:600;color:var(--muted);margin-left:6px}
 .gnote{font-size:var(--t-foot);color:var(--muted);padding:0 4px;margin-top:calc(-1 * var(--s1))}
 .opt{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px var(--s3);align-items:center;padding:10px 0;min-height:60px;border-top:.5px solid var(--line)}
@@ -1092,9 +1098,10 @@ const fijosBase = (m = cur) => D.fijos.filter(f => f.activo && enMes(f.desde, f.
 const deudaBase = (d, m = cur) => !d.pagada && (d.cuota ? !d.fin || d.fin.slice(0,7) >= m : d.cada_mes && (!d.fin || d.fin.slice(0,7) <= m));
 // Tarjeta con día de cierre: en el mes m se paga lo gastado del día siguiente al cierre de m-2 al cierre de m-1.
 function ciclo(d, m = cur){
-  if (!d.cada_mes || !d.cierre || !d.cuenta) return null;
+  const tj = d.tarjeta || d.cuenta;
+  if (!d.cada_mes || !d.cierre || !tj) return null;
   const dd = String(d.cierre).padStart(2, '0'), ini = `${addMonth(m, -2)}-${dd}`, fin = `${addMonth(m, -1)}-${dd}`;
-  const total = D.pagos.filter(p => p.cuenta === d.cuenta && p.dia > ini && p.dia <= fin).reduce((a, p) => a + p.importe, 0);
+  const total = D.pagos.filter(p => p.cuenta === tj && p.dia > ini && p.dia <= fin).reduce((a, p) => a + p.importe, 0);
   const dia = k => new Date(k + 'T12:00:00Z').toLocaleDateString('es-ES', {day: 'numeric', month: 'short', timeZone: 'UTC'}).replace('.', '');
   const sig = new Date(ini + 'T12:00:00Z'); sig.setUTCDate(sig.getUTCDate() + 1);
   return {total: r2(total), texto: `Gastos del ${dia(sig.toISOString().slice(0,10))} al ${dia(fin)}`, abierto: today() <= fin, cierre: d.cierre};
@@ -1129,13 +1136,15 @@ async function decidir(tipo, id, m, accion, importe = null){
   }
 }
 const mesCorto = m => monthName(m, {month: 'long'});
+// Un fijo que se carga en una tarjeta que se paga entera (Amex) ya va dentro de su factura: no suma aparte.
+const tarjetaDe = f => D.deudas.find(d => d.cada_mes && d.cierre && !d.pagada && (d.tarjeta || d.cuenta) === f.cuenta);
 // El mes que viene, en un solo bloque: lo que entra (con su origen) y lo que toca pagar, con lo que Danny
 // haya decidido en Pagos para ese mes. Todo se toca para editarlo.
 function ingresosDelMes(m = cur){ return D.ingresos.filter(i => i.activo && enMes(i.desde, i.hasta, m)); }
 function renderProximo(){
   const m = addMonth(monthKey(new Date()), 1);
   const sal = [
-    ...fijosDelMes(m).map(f => ({n: f.concepto, c: f.cuenta, v: f.importe, t: 'Fijo', ed: () => editFijo(f, m)})),
+    ...fijosDelMes(m).filter(f => !tarjetaDe(f)).map(f => ({n: f.concepto, c: f.cuenta, v: f.importe, t: 'Fijo', ed: () => editFijo(f, m)})),
     ...cuotasDelMes(m).map(d => ({n: d.nombre, c: d.cuenta, v: importeDeuda(d, m), t: d.cuota ? 'Cuota' : d.cada_mes ? 'Tarjeta' : 'Pago', ed: () => editDeuda(d, m)})),
   ].sort((a,b) => b.v - a.v);
   const ins = ingresosDelMes(m);
@@ -1199,11 +1208,12 @@ function editIngreso(i, sugerido){
   });
 }
 let verProx = false;
+const cuentasAbiertas = new Set();
 function estadoMes(){
   if (cur < INICIO_SEGUIMIENTO) return {items:[], total:0, pagado:0};
   const items = [
-    ...fijosDelMes().map(f => ({importe: (pmDe('fijo', f.id)?.importe ?? f.importe) * 1, cuenta: f.cuenta, done: !!pmDe('fijo', f.id)})),
-    ...cuotasDelMes().map(d => ({importe: importeDeuda(d), cuenta: d.cuenta, done: !!pmDe('deuda', d.id)})),
+    ...fijosDelMes().filter(f => !tarjetaDe(f)).map(f => ({n: f.concepto, importe: (pmDe('fijo', f.id)?.importe ?? f.importe) * 1, cuenta: f.cuenta, done: !!pmDe('fijo', f.id)})),
+    ...cuotasDelMes().map(d => ({n: d.nombre, importe: importeDeuda(d), cuenta: d.cuenta, done: !!pmDe('deuda', d.id)})),
   ];
   return {items, total: items.reduce((s,i) => s + i.importe, 0), pagado: items.filter(i => i.done).reduce((s,i) => s + i.importe, 0)};
 }
@@ -1233,20 +1243,29 @@ function renderMes(){
   $('mesFalta').className = 'status' + (falta.length ? '' : ' ok');
   $('mesFalta').textContent = falta.length ? `${falta.length} ${falta.length === 1 ? 'pago' : 'pagos'} · llevas ${eur(m.pagado)} de ${eur(m.total)}` : `${m.items.length} pagos, ${eur(m.total)} en total`;
   $('cuentasGroup').hidden = !falta.length;
+  // Cada cuenta se abre para ver qué se cobra de ella.
   const porCuenta = {};
-  falta.forEach(i => porCuenta[i.cuenta || "Sin cuenta"] = (porCuenta[i.cuenta || "Sin cuenta"] || 0) + i.importe);
-  $('mesCuentas').innerHTML = Object.entries(porCuenta).sort((a,b) => b[1]-a[1]).map(([k,v]) => `<div class="lrow"><span>${esc(k)}</span><b class="num">${eur(v)}</b></div>`).join('');
+  falta.forEach(i => (porCuenta[i.cuenta || 'Sin cuenta'] ||= []).push(i));
+  $('mesCuentas').innerHTML = Object.entries(porCuenta).map(([k, is]) => [k, is, is.reduce((a, i) => a + i.importe, 0)]).sort((a,b) => b[2] - a[2]).map(([k, is, v], n) => {
+    const abierta = cuentasAbiertas.has(k);
+    return `<button class="lrow cu" aria-expanded="${abierta}" aria-controls="cu${n}" data-cu="${esc(k)}"><span>${esc(k)}</span><b class="num">${eur(v)}${svg('ui-chev')}</b></button>
+      <div class="cusub" id="cu${n}" ${abierta ? '' : 'hidden'}>${is.sort((a,b) => b.importe - a.importe).map(i => `<div><span>${esc(i.n)}</span><span class="num">${eurC(i.importe)}</span></div>`).join('')}</div>`;
+  }).join('');
+  $('mesCuentas').querySelectorAll('.cu').forEach(b => b.onclick = () => {
+    const k = b.dataset.cu, on = !cuentasAbiertas.has(k); on ? cuentasAbiertas.add(k) : cuentasAbiertas.delete(k);
+    b.setAttribute('aria-expanded', on); $(b.getAttribute('aria-controls')).hidden = !on;
+  });
 
   const tickSvg = '<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
   const fm = fijosDelMes(), cm = cuotasDelMes();
-  $('totFijos').textContent = fm.length ? eurC(fm.reduce((a, f) => a + Number(pmDe('fijo', f.id)?.importe ?? f.importe), 0)) : '';
+  $('totFijos').textContent = fm.length ? eurC(fm.filter(f => !tarjetaDe(f)).reduce((a, f) => a + Number(pmDe('fijo', f.id)?.importe ?? f.importe), 0)) : '';
   $('totCuotas').textContent = cm.length ? eurC(cm.reduce((a, d) => a + importeDeuda(d), 0)) : '';
   $('fijos').innerHTML = fm.map(f => {
-    const r = pmDe('fijo', f.id), v = !r && visto(f.concepto, f.importe);
-    return `<div class="check ${r ? 'done' : ''}">
+    const r = pmDe('fijo', f.id), v = !r && visto(f.concepto, f.importe), tj = tarjetaDe(f);
+    return `<div class="check ${r ? 'done' : ''} ${tj ? 'entar' : ''}">
       <button class="tick" data-fijo="${f.id}" aria-label="${r ? 'Marcar como no pagado' : 'Marcar como pagado'}: ${esc(f.concepto)}, ${eurC(r?.importe ?? f.importe)}">${tickSvg}</button>
       <button class="ebody" data-efijo="${f.id}"><span class="c">${esc(f.concepto)}</span><span class="num">${eurC(r?.importe ?? f.importe)}</span>
-      <span class="s">${[f.cuenta ? esc(f.cuenta) : 'Sin cuenta', f.dia ? 'día ' + f.dia : ''].filter(Boolean).join(' · ')}${v ? ' · <span class="seen">Parece cobrado</span>' : ''}</span></button>
+      <span class="s">${[tj ? `Va en la factura de ${esc(tj.nombre)}` : f.cuenta ? esc(f.cuenta) : 'Sin cuenta', f.dia ? 'día ' + f.dia : ''].filter(Boolean).join(' · ')}${v ? ' · <span class="seen">Parece cobrado</span>' : ''}</span></button>
     </div>`;
   }).join('') || '<p class="empty">No hay gastos fijos este mes.</p>';
 
