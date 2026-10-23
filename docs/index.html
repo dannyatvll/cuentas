@@ -319,6 +319,7 @@ svg.donut path{transform-origin:90px 90px;animation:pop .6s cubic-bezier(.2,.8,.
 /* análisis */
 .segtop{display:grid;grid-template-columns:repeat(3,1fr);background:var(--glass);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border:.5px solid var(--glass-line);border-radius:12px;padding:3px;position:relative}
 .kpis{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.kpis.one{display:block}
 .kpi{border-radius:20px;padding:14px 14px 16px;display:flex;flex-direction:column;gap:2px;min-width:0}
 .kpi .ico{margin-bottom:10px}
 .kpi b{font-family:var(--display);font-size:26px;font-weight:700;letter-spacing:-.03em;line-height:1.1}
@@ -413,6 +414,17 @@ body::before{opacity:.32;height:55vh}
 .movtot{display:flex;flex-direction:column;gap:2px;padding:16px 18px;margin-bottom:14px}
 .movtot .l{font-size:13px;color:var(--muted)} .movtot b{font-size:30px;font-weight:700;letter-spacing:-.5px}
 .movtot .ghlink{align-self:flex-start;margin-top:6px;padding:0}
+.monthnav{display:none!important}
+.mchips{display:flex;align-self:stretch;gap:8px;overflow-x:auto;scrollbar-width:none;margin:2px -20px 10px;padding:4px 20px;scroll-snap-type:x proximity}
+.mchips::-webkit-scrollbar{display:none}
+.mchips button{flex:none;scroll-snap-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:64px;height:58px;padding:0 12px;border-radius:18px;border:0;background:var(--fill);color:var(--ink)}
+.mchips b{font-size:18px;font-weight:700;letter-spacing:-.2px}
+.mchips span{font-size:11px;color:var(--muted);margin-top:1px}
+.mchips button[aria-selected="true"]{background:var(--grad);color:#fff;box-shadow:0 6px 18px color-mix(in srgb,var(--tint) 40%,transparent)}
+.mchips button[aria-selected="true"] span{color:rgba(255,255,255,.8)}
+.anhero{padding:22px 20px;border-radius:24px;background:var(--grad);color:#fff}
+.anhero .l{font-size:14px;opacity:.85} .anhero b{display:block;font-size:42px;font-weight:800;letter-spacing:-1px;margin:4px 0 6px}
+.anhero .s{font-size:14px;opacity:.9}
 .item.tope .a small{font-size:13px;font-weight:500;color:var(--muted)} .item.tope .a.neg-bad small{color:inherit}
 </style>
 </head>
@@ -439,6 +451,7 @@ body::before{opacity:.32;height:55vh}
       <button id="next" aria-label="Mes siguiente">›</button>
     </div>
     <h1 id="title">Resumen</h1>
+    <div class="mchips" id="mchips" role="tablist" aria-label="Mes"></div>
   </header>
 
   <!-- RESUMEN -->
@@ -492,35 +505,35 @@ body::before{opacity:.32;height:55vh}
       <input type="radio" name="periodo" id="per12" value="12"><label for="per12">12 meses</label>
     </div>
     <div class="kpis" id="kpis"></div>
-    <div class="group">
+    <div class="group" hidden>
       <div class="ghrow"><h2>A dónde va</h2><span class="ghnote num" id="flujoNota"></span></div>
       <div class="card pad"><div id="flujo"></div></div>
-    </div>
-    <div class="group">
-      <div class="ghrow"><h2>Últimos 12 meses</h2><span class="ghnote num" id="media"></span></div>
-      <div class="card pad"><div class="bars" id="bars"></div></div>
-    </div>
-    <div class="group">
-      <div class="ghrow"><h2>Por día de la semana</h2></div>
-      <div class="card pad"><p class="insight" id="wdIns"></p><div class="wbars" id="wd"></div></div>
-    </div>
-    <div class="group">
-      <div class="ghrow"><h2>Por hora</h2></div>
-      <div class="card pad"><p class="insight" id="hrIns"></p><div class="hbars" id="hr"></div><div class="hax"><span>0 h</span><span>6 h</span><span>12 h</span><span>18 h</span><span>23 h</span></div><p class="small muted" id="hrNote"></p></div>
-    </div>
-    <div class="group">
-      <div class="ghrow"><h2>Cuándo gastas</h2></div>
-      <div class="card pad"><div class="heat" id="heat"></div></div>
     </div>
     <div class="group">
       <div class="ghrow"><h2>En qué</h2></div>
       <div class="card pad"><div class="donutwrap" id="donut"></div></div>
     </div>
     <div class="group">
+      <div class="ghrow"><h2>Últimos 12 meses</h2><span class="ghnote num" id="media"></span></div>
+      <div class="card pad"><div class="bars" id="bars"></div></div>
+    </div>
+    <div class="group" hidden>
+      <div class="ghrow"><h2>Por día de la semana</h2></div>
+      <div class="card pad"><p class="insight" id="wdIns"></p><div class="wbars" id="wd"></div></div>
+    </div>
+    <div class="group" hidden>
+      <div class="ghrow"><h2>Por hora</h2></div>
+      <div class="card pad"><p class="insight" id="hrIns"></p><div class="hbars" id="hr"></div><div class="hax"><span>0 h</span><span>6 h</span><span>12 h</span><span>18 h</span><span>23 h</span></div><p class="small muted" id="hrNote"></p></div>
+    </div>
+    <div class="group" hidden>
+      <div class="ghrow"><h2>Cuándo gastas</h2></div>
+      <div class="card pad"><div class="heat" id="heat"></div></div>
+    </div>
+    <div class="group">
       <div class="ghrow"><h2>Dónde más</h2></div>
       <div class="card"><div class="list" id="topCom"></div></div>
     </div>
-    <div class="group">
+    <div class="group" hidden>
       <div class="ghrow"><h2>Gastos más grandes</h2></div>
       <div class="card"><div class="list" id="topGas"></div></div>
     </div>
@@ -721,7 +734,7 @@ function setView(v){
   $('tabs').querySelectorAll('button').forEach(b => b.setAttribute('aria-selected', b.dataset.v === v));
   $('title').textContent = TITLES[v];
   $('fab').hidden = v !== 'movs';
-  document.querySelector('.monthnav').hidden = v === 'deudas';
+  document.querySelector('.monthnav').hidden = $('mchips').hidden = v === 'deudas';
   scrollTo(0, 0); navbar();
   if (D) render();
 }
@@ -744,6 +757,12 @@ function render(){
   $('mlabel').textContent = cap(monthName(cur).replace(' de ', ' '));
   $('prev').disabled = cur <= ms[0];
   $('next').disabled = cur >= ms[ms.length-1];
+  // Meses como fichas grandes que se deslizan; el elegido, relleno.
+  $('mchips').innerHTML = ms.map(m => `<button data-m="${m}" aria-selected="${m === cur}"><b>${cap(monthName(m, {month: 'short'}).replace('.', '').replace('sept', 'sep'))}</b><span>${m.slice(0,4)}</span></button>`).join('');
+  $('mchips').querySelectorAll('button').forEach(b => b.onclick = () => { cur = b.dataset.m; movLimit = 60; render(); });
+  const sel = $('mchips').querySelector('[aria-selected="true"]');
+  const centra = () => { const mc = $('mchips'), r = sel.getBoundingClientRect(), c = mc.getBoundingClientRect(); mc.scrollLeft += r.left - c.left - (c.width - r.width) / 2; };
+  if (sel) { centra(); requestAnimationFrame(centra); }
   const sinN = D.pagos.filter(p => p.categoria === 'Sin categoría').length;
   $('sinDot').hidden = !sinN; $('sinDot').textContent = sinN;
   ({resumen: renderResumen, movs: renderMovs, analisis: renderAnalisis, mes: renderMes, deudas: renderDeudas})[view]();
@@ -954,11 +973,10 @@ function renderAnalisis(){
   const sinGastar = diasP.filter(d => !porDia[d]).length;
   const top = Object.entries(porDia).sort((a,b) => b[1] - a[1])[0];
   const kpi = (ic, col, label, val, sub='') => `<div class="kpi glass"><span class="ico sm" style="--c:${col}"><svg viewBox="0 0 24 24">${ic}</svg></span><span class="label">${label}</span><b class="num">${val}</b>${sub ? `<span class="sub">${sub}</span>` : ''}</div>`;
-  $('kpis').innerHTML =
-    kpi('<path d="M4 19h16M7 16V9M12 16V5M17 16v-4"/>', 'var(--tint)', 'Al día', eur(diasP.length ? total / diasP.length : 0), `${diasP.length} días`) +
-    kpi('<path d="M6 3h12l-1 18H7z"/><path d="M9 8h6"/>', 'var(--tint)', 'Por compra', eur(g.length ? total / g.length : 0, 2), `${g.length} compras`) +
-    kpi('<path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/>', 'var(--tint)', 'Día más caro', top ? eur(top[1]) : '—', top ? cap(dayName(top[0])).replace(/ de \d{4}$/,'') : '') +
-    kpi('<circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/>', 'var(--tint)', 'Sin gastar', `${sinGastar} ${sinGastar === 1 ? 'día' : 'días'}`, diasP.length ? `${Math.round(sinGastar / diasP.length * 100)} % del periodo` : '');
+  const perLbl = periodo === 1 ? 'en ' + monthName(cur, {month: 'long'}) : `en ${periodo} meses`;
+  $('kpis').className = 'kpis one';
+  $('kpis').innerHTML = `<div class="anhero"><span class="l">Has gastado ${perLbl}</span><b class="num">${eur(total)}</b>
+    <span class="s num">${eur(diasP.length ? total / diasP.length : 0)} al día · ${sinGastar} ${sinGastar === 1 ? 'día' : 'días'} sin gastar</span></div>`;
 
   // día de la semana: media por cada lunes, martes...
   const wdTot = Array(7).fill(0), wdN = Array(7).fill(0);
@@ -1003,7 +1021,7 @@ function renderAnalisis(){
 
   // comercios
   const com = {}; g.forEach(p => { const c = com[p.comercio] || (com[p.comercio] = {t:0, n:0, cat:p.categoria}); c.t += p.importe; c.n++; });
-  $('topCom').innerHTML = Object.entries(com).sort((a,b) => b[1].t - a[1].t).slice(0, 8).map(([k,c]) => `<div class="item mov">${icon(c.cat)}<span class="c">${esc(k)}</span><span class="a num">${eur(c.t)}</span><span class="s">${c.n} ${c.n === 1 ? 'vez' : 'veces'} · ${eur(c.t / c.n)} de media</span></div>`).join('') || '<p class="muted empty">Nada.</p>';
+  $('topCom').innerHTML = Object.entries(com).sort((a,b) => b[1].t - a[1].t).slice(0, 5).map(([k,c]) => `<div class="item mov">${icon(c.cat)}<span class="c">${esc(k)}</span><span class="a num">${eur(c.t)}</span><span class="s">${c.n} ${c.n === 1 ? 'vez' : 'veces'} · ${eur(c.t / c.n)} de media</span></div>`).join('') || '<p class="muted empty">Nada.</p>';
   $('topGas').innerHTML = g.slice().sort((a,b) => b.importe - a.importe).slice(0, 5).map(p => `<button class="item mov" data-id="${p.id}">${icon(p.categoria)}<span class="c">${esc(p.comercio)}</span><span class="a num">${eur2(p.importe)}</span><span class="s">${cap(dayName(p.dia)).replace(/ de \d{4}$/,'')} · ${esc(p.categoria)}</span></button>`).join('') || '<p class="muted empty">Nada.</p>';
   $('topGas').querySelectorAll('.item').forEach(b => b.onclick = () => editPago(D.pagos.find(p => p.id == b.dataset.id)));
 }
