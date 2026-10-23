@@ -124,7 +124,7 @@ header.top{display:flex;flex-direction:column;gap:var(--s1);padding-top:var(--s3
 .mchips button{flex:none;scroll-snap-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:52px;min-height:48px;padding:0 6px;border:0;background:none;color:var(--muted);font-size:var(--t-body);font-weight:600}
 .mchips button::after{content:"";width:5px;height:5px;border-radius:50%;background:transparent}
 .mchips button[aria-current="true"]{color:var(--ink);font-weight:700}
-.mchips button[aria-current="true"]::after{background:var(--accent)}
+.mchips button[aria-current="true"]::after{background:var(--pop,var(--accent))}
 @media (prefers-reduced-motion: no-preference){.mchips.flash button[aria-current="true"]{animation:flash 1s var(--ease)}}
 @keyframes flash{30%{color:var(--accent)}}
 
@@ -142,7 +142,7 @@ header.top{display:flex;flex-direction:column;gap:var(--s1);padding-top:var(--s3
 .tabs button{background:none;border:0;border-radius:var(--r-full);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:52px;padding:4px 0;font-size:var(--t-tab);font-weight:600;color:var(--muted);position:relative;min-width:0}
 .tabs button span.l{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px}
 .tabs button svg.i{width:24px;height:24px}
-.tabs button[aria-current="page"]{color:var(--accent);background:var(--accent-soft)}
+.tabs button[aria-current="page"]{color:var(--accent);background:var(--pop-soft,var(--accent-soft))}
 .tabs .dot{position:absolute;top:4px;left:calc(50% + 6px);min-width:18px;height:18px;border-radius:9px;background:var(--bad);color:var(--on-bad);font-size:var(--t-tab);line-height:18px;padding:0 5px;font-weight:700}
 @media (prefers-reduced-transparency: reduce){.tabs,.navbar{background:var(--surface);-webkit-backdrop-filter:none;backdrop-filter:none}}
 
@@ -1085,7 +1085,17 @@ const enMes = (desde, hasta, m = cur) => (!desde || desde.slice(0,7) <= m) && (!
 // Danny puede quitar una de un mes ('saltar') o sumar una deuda sin cuota ('sumar', con su importe).
 const decDe = (tipo, id, m = cur) => D.dec.find(r => r.tipo === tipo && r.ref_id === id && r.mes === m);
 const fijosBase = (m = cur) => D.fijos.filter(f => f.activo && enMes(f.desde, f.hasta, m));
-const deudaBase = (d, m = cur) => !d.pagada && (d.cuota ? !d.fin || d.fin.slice(0,7) >= m : d.cada_mes);
+// Una tarjeta que se paga entera (cada_mes) cuenta desde su primer mes de pago (fin) en adelante.
+const deudaBase = (d, m = cur) => !d.pagada && (d.cuota ? !d.fin || d.fin.slice(0,7) >= m : d.cada_mes && (!d.fin || d.fin.slice(0,7) <= m));
+// Tarjeta con día de cierre: en el mes m se paga lo gastado del día siguiente al cierre de m-2 al cierre de m-1.
+function ciclo(d, m = cur){
+  if (!d.cada_mes || !d.cierre || !d.cuenta) return null;
+  const dd = String(d.cierre).padStart(2, '0'), ini = `${addMonth(m, -2)}-${dd}`, fin = `${addMonth(m, -1)}-${dd}`;
+  const total = D.pagos.filter(p => p.cuenta === d.cuenta && p.dia > ini && p.dia <= fin).reduce((a, p) => a + p.importe, 0);
+  const dia = k => new Date(k + 'T12:00:00Z').toLocaleDateString('es-ES', {day: 'numeric', month: 'short', timeZone: 'UTC'}).replace('.', '');
+  const sig = new Date(ini + 'T12:00:00Z'); sig.setUTCDate(sig.getUTCDate() + 1);
+  return {total: r2(total), texto: `Gastos del ${dia(sig.toISOString().slice(0,10))} al ${dia(fin)}`, abierto: today() <= fin, cierre: d.cierre};
+}
 function fijosDelMes(m = cur){ return fijosBase(m).filter(f => pmDe('fijo', f.id, m) || decDe('fijo', f.id, m)?.accion !== 'saltar'); }
 function cuotasDelMes(m = cur){
   return D.deudas.filter(d => {
@@ -1102,7 +1112,7 @@ function saltadosDelMes(m = cur){
   ];
 }
 const opcionalesDelMes = (m = cur) => D.deudas.filter(d => !d.pagada && !deudaBase(d, m) && !pmDe('deuda', d.id, m) && !decDe('deuda', d.id, m)).sort((a,b) => b.pendiente - a.pendiente);
-const importeDeuda = (d, m = cur) => Number(pmDe('deuda', d.id, m)?.importe ?? decDe('deuda', d.id, m)?.importe ?? (d.cuota || d.pendiente));
+const importeDeuda = (d, m = cur) => Number(pmDe('deuda', d.id, m)?.importe ?? decDe('deuda', d.id, m)?.importe ?? ciclo(d, m)?.total ?? (d.cuota || d.pendiente));
 // Guarda (o borra, con accion null) lo que se decide para un mes.
 async function decidir(tipo, id, m, accion, importe = null){
   const r = decDe(tipo, id, m);
@@ -1239,7 +1249,7 @@ function renderMes(){
     return `<div class="check ${r ? 'done' : ''}">
       <button class="tick" data-deuda="${d.id}" aria-label="${r ? 'Marcar como no pagado' : 'Marcar como pagado'}: ${esc(d.nombre)}, ${eurC(imp)}">${tickSvg}</button>
       <button class="ebody" data-edeuda="${d.id}"><span class="c">${esc(d.nombre)}</span><span class="num">${eurC(imp)}</span>
-      <span class="s">${[d.cuota ? 'Cuota' : extra ? (imp < d.pendiente - 0.005 ? `Parte de ${eur(d.pendiente)}` : 'Toda la deuda') : 'Entera', d.cuenta ? esc(d.cuenta) : ''].filter(Boolean).join(' · ')}${r && r.amortizado ? ` · baja ${eur(r.amortizado)}` : ''}${v ? ' · <span class="seen">Parece cobrado</span>' : ''}</span></button>
+      <span class="s">${[d.cuota ? 'Cuota' : extra ? (imp < d.pendiente - 0.005 ? `Parte de ${eur(d.pendiente)}` : 'Toda la deuda') : ciclo(d) ? ciclo(d).texto + (ciclo(d).abierto && !r ? `, se cierra el ${d.cierre}` : '') : 'Entera', d.cuenta ? esc(d.cuenta) : ''].filter(Boolean).join(' · ')}${r && r.amortizado ? ` · baja ${eur(r.amortizado)}` : ''}${v ? ' · <span class="seen">Parece cobrado</span>' : ''}</span></button>
     </div>`;
   }).join('') || '<p class="empty">No hay cuotas este mes.</p>';
 
@@ -1299,6 +1309,7 @@ async function toggleDeuda(d, btn){
       const cuenta = !d.a_fecha || cur >= d.a_fecha.slice(0,7);
       let amort = 0, imp;
       if (d.cuota) { imp = d.cuota; if (cuenta) amort = Math.max(0, Math.min(d.pendiente, d.cuota - d.pendiente * (d.tin || 0) / 1200)); }
+      else if (d.cada_mes) { imp = importeDeuda(d); }   // tarjeta: se paga el ciclo, la deuda sigue abierta
       else { imp = importeDeuda(d); amort = Math.min(d.pendiente, imp); }
       amort = r2(amort);
       const [n] = await write(sb.from('pagos_mes').insert({mes: cur + '-01', tipo:'deuda', ref_id: d.id, importe: imp, amortizado: amort, cuenta: d.cuenta, pagado_el: today()}));
@@ -1436,6 +1447,7 @@ function editDeuda(d, mes = cur){
         <label class="f">Cuota al mes (€)<input id="dc" inputmode="decimal" autocomplete="off" value="${d?.cuota ? String(d.cuota).replace('.',',') : ''}"></label>
         <label class="f">Cuotas que quedan<input id="dr" inputmode="numeric" autocomplete="off" value="${d?.cuotas_restantes ?? ''}"></label>
         <label class="f">Termina / se paga en<input id="df" type="month" value="${d?.fin ? d.fin.slice(0,7) : ''}"></label>
+        <label class="f">Día de cierre (tarjeta)<input id="dci" inputmode="numeric" autocomplete="off" value="${d?.cierre ?? ''}"></label>
         <label class="f">Sale de<select id="dcu"><option value="">Sin cuenta</option>${opts(CUENTAS, d?.cuenta || '')}</select></label>
       </div>
       <div class="checkline"><input type="checkbox" id="dcm" ${d?.cada_mes ? 'checked' : ''}><label for="dcm">Sin cuota, se paga entera cada mes (como una tarjeta)</label></div>
@@ -1470,7 +1482,8 @@ function editDeuda(d, mes = cur){
         if (cuota != null && !(cuota > 0)) return fieldErr($('dc'), 'Escribe la cuota o déjala vacía.');
         const row = {nombre: $('dn').value.trim(), pendiente: r2(pend), tin: isFinite(tin) ? tin : 0, cuota: cuota == null ? null : r2(cuota),
           cuotas_restantes: $('dr').value ? parseInt($('dr').value) : null, fin: $('df').value ? $('df').value + '-01' : null,
-          cuenta: $('dcu').value || null, notas: $('dno').value.trim() || null, cada_mes: !cuota && $('dcm').checked};
+          cuenta: $('dcu').value || null, notas: $('dno').value.trim() || null, cada_mes: !cuota && $('dcm').checked,
+          cierre: (n => n >= 1 && n <= 31 ? n : null)(parseInt($('dci').value))};
         let pagaMes = null;
         if (sumada) { pagaMes = parseNum($('dmes').value); if (!isFinite(pagaMes) || pagaMes <= 0) return fieldErr($('dmes'), 'Escribe cuánto pagas este mes.'); }
         if (nuevo || Math.abs(row.pendiente - d.pendiente) > 0.005) row.a_fecha = today();
