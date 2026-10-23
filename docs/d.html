@@ -48,7 +48,7 @@
   --font:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,"Helvetica Neue",sans-serif;
   --t-display:2.824rem; --t-large:1.647rem; --t-title:1.294rem; --t-body:1rem; --t-sub:.882rem; --t-foot:.765rem; --t-cap:.706rem; --t-tab:11px; /* la barra de pestañas no crece, como en iOS */
   --t-num:min(var(--t-display),12vw);
-  --display:var(--font); --w-display:700; --ls-display:-.01em; --glow:transparent; --chip:var(--surface-2); /* la cifra grande nunca se sale de la pantalla */
+  --display:var(--font); --w-display:700; --ls-display:-.01em; --photo:none; --chip:var(--surface-2); /* la cifra grande nunca se sale de la pantalla */
   /* espacio, radios, movimiento */
   --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px;
   --r-s:12px; --r-l:20px; --r-full:999px;
@@ -80,13 +80,13 @@
 :root[data-look="d"]{--bg:#f7f3ee; --surface:#fffdfa; --surface-2:#f0e9e0; --field:#efe8de; --raised:#fffdfa;
   --ink:#1d1712; --muted:#6f655a; --soft:#978b7e; --line:rgba(29,23,18,.08);
   --accent:#b9530f; --accent-soft:rgba(232,120,40,.14); --pop:#e8782a; --pop-soft:rgba(232,120,40,.16);
-  --glow:rgba(255,168,96,.42); --chip:rgba(29,23,18,.07); --glass:rgba(255,252,247,.82);
+  --photo:url("luz.webp"); --chip:rgba(29,23,18,.07); --glass:rgba(255,252,247,.82);
   --display:ui-rounded,"SF Pro Rounded",var(--font); --w-display:700; --r-l:24px}
 @media (prefers-color-scheme: dark){
   :root[data-look="d"]{--bg:#0d0a07; --surface:#1d1814; --surface-2:#2b241e; --field:#2e2721; --raised:#221c17;
     --ink:#f7efe6; --muted:#ab9f92; --soft:#857a6e; --line:rgba(247,239,230,.08);
     --accent:#ff9a52; --accent-soft:rgba(255,140,60,.18); --on-accent:#1a0c03; --pop:#ff9a52; --pop-soft:rgba(255,140,60,.18);
-    --glow:rgba(150,86,28,.55); --chip:rgba(255,236,214,.12); --glass:rgba(34,28,23,.82)}
+    --photo:url("luz-oscura.webp"); --chip:rgba(255,236,214,.12); --glass:rgba(34,28,23,.82)}
   :root[data-look="a"]{--bg:#141312; --surface:#1f1d1b; --surface-2:#2b2926; --field:#322f2c; --raised:#252320;
     --accent:#ff8f5a; --accent-soft:rgba(255,143,90,.16); --on-accent:#1a0c05; --pop:#ff8f5a; --pop-soft:rgba(255,143,90,.16)}
   :root[data-look="b"]{--bg:#141312; --surface:#1f1d1b; --surface-2:#2b2926; --field:#322f2c; --raised:#252320}
@@ -229,7 +229,8 @@ header.top{display:flex;flex-direction:column;gap:var(--s1);padding-top:var(--s3
 
 /* Resumen: una zona sin tarjeta, con luz cálida detrás. La cifra centrada se pasa de lado (total, cada cuenta)
    y debajo cuatro acciones redondas, como en las apps de banco del iPhone. */
-body[data-view="resumen"]{background-image:radial-gradient(130% 520px at 50% -60px,var(--glow),transparent 75%);background-repeat:no-repeat}
+/* La única imagen de la app: luz de tarde en una pared, solo detrás de Resumen. */
+body[data-view="resumen"]{background-image:var(--photo);background-repeat:no-repeat;background-position:top center;background-size:max(100%,640px) auto}
 .hz{display:flex;flex-direction:column;align-items:center;gap:var(--s3);padding-top:var(--s5)}
 .slides{display:flex;width:calc(100% + var(--gutter-l) + var(--gutter-r));margin-inline:calc(-1 * var(--gutter-l)) calc(-1 * var(--gutter-r));overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain}
 .slides::-webkit-scrollbar{display:none}
@@ -242,11 +243,10 @@ body[data-view="resumen"]{background-image:radial-gradient(130% 520px at 50% -60
 .pdots:empty{display:none}
 .pdots i{width:6px;height:6px;border-radius:50%;background:var(--ink);opacity:.35;transition:opacity .2s}
 .pdots i.on{opacity:1}
-.ract{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--s2);width:100%;margin-top:var(--s3)}
-.ract button{display:flex;flex-direction:column;align-items:center;gap:8px;border:0;background:none;padding:0;font-size:var(--t-foot);font-weight:500;color:var(--ink);text-align:center;min-width:0}
-.rc{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;background:var(--chip);color:var(--ink)}
-.rc svg.i{width:24px;height:24px;stroke-width:2}
-.ract button:active .rc{transform:scale(.94)}
+.addg{display:inline-flex;align-items:center;gap:8px;min-height:48px;padding:0 22px 0 18px;margin-top:var(--s3);border:0;border-radius:var(--r-full);font-weight:600;font-size:var(--t-sub);color:var(--ink);
+  background:var(--glass);-webkit-backdrop-filter:blur(20px) saturate(160%);backdrop-filter:blur(20px) saturate(160%);box-shadow:inset 0 0 0 .5px var(--line)}
+.addg svg.i{width:20px;height:20px;stroke-width:2.2}
+.addg:active{transform:scale(.96)}
 .skw{display:block;height:calc(var(--t-num) * 1.25);width:55%;border-radius:var(--r-s);background:var(--chip);margin:6px 0 8px}
 
 /* cifra principal del resto de pestañas */
@@ -440,12 +440,7 @@ svg.chart text{fill:var(--muted);font:500 26px var(--font)}
     <section class="hz" aria-label="Dinero">
       <div class="slides" id="wSlides"></div>
       <div class="pdots" id="wDots" aria-hidden="true"></div>
-      <div class="ract">
-        <button id="aAdd"><span class="rc"><span data-ico="ui-plus"></span></span>Añadir gasto</button>
-        <button id="aSaldo"><span class="rc"><span data-ico="ui-refresh"></span></span>Poner saldos</button>
-        <button id="aPagos"><span class="rc"><span data-ico="ui-pagos"></span></span>Pagos</button>
-        <button id="aAna"><span class="rc"><span data-ico="ui-analisis"></span></span>Análisis</button>
-      </div>
+      <button class="addg" id="aAdd"><span data-ico="ui-plus"></span>Añadir gasto</button>
     </section>
 
     <section class="group" aria-labelledby="hTopes">
@@ -778,9 +773,6 @@ async function nuevos(){
 $('hAdd').onclick = () => editPago(null);
 $('hSet').onclick = () => ajustes();
 $('aAdd').onclick = () => editPago(null);
-$('aSaldo').onclick = editSaldos;
-$('aPagos').onclick = () => setView('mes');
-$('aAna').onclick = () => setView('analisis');
 
 function render(){
   const ms = months();
