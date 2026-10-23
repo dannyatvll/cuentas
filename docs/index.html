@@ -1027,7 +1027,9 @@ function renderMovs(){
   if (busqueda) list = list.filter(p => (p.comercio + ' ' + p.categoria + ' ' + (p.cuenta||'')).toLowerCase().includes(busqueda));
   list.sort((a,b) => b.fecha.localeCompare(a.fecha));
   // Cabecera: lo gastado en el mes (o en la categoría) y la media por día.
-  if (global) $('movsTot').innerHTML = '';
+  const ing = filtro === 'ingresos';
+  if (global || filtro === 'otros') $('movsTot').innerHTML = '';
+  else if (ing) $('movsTot').innerHTML = `<div class="card movtot"><span class="l">Ingresos de ${monthName(cur, {month: 'long'})}</span><b class="num">${eur(-list.reduce((a,p) => a + salida(p), 0))}</b></div>`;
   else {
     const g = sum(list.filter(p => p.tipo === 'Gasto')), now = monthKey(new Date());
     const dias = cur === now ? Number(new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Madrid',day:'numeric'}).format(new Date())) : new Date(Date.UTC(+cur.slice(0,4), +cur.slice(5,7), 0)).getUTCDate();
@@ -1038,9 +1040,9 @@ function renderMovs(){
   }
   const vis = list.slice(0, movLimit), byDay = [];
   vis.forEach(p => { const g = byDay[byDay.length - 1]; if (g && g.dia === p.dia) g.items.push(p); else byDay.push({dia: p.dia, items: [p]}); });
-  let html = byDay.map(g => `<div class="group"><div class="ghrow sm"><h3>${cap(dayName(g.dia))}</h3><span class="ghnote num">${eur2(sum(g.items.filter(p => p.tipo === 'Gasto')))}</span></div>
+  let html = byDay.map(g => `<div class="group"><div class="ghrow sm"><h3>${cap(dayName(g.dia))}</h3><span class="ghnote num">${ing ? '+' + eur2(-g.items.reduce((a,p) => a + salida(p), 0)) : eur2(sum(g.items.filter(p => p.tipo === 'Gasto')))}</span></div>
     <div class="card"><div class="list">${g.items.map(p => `<button class="item mov" data-id="${p.id}">${icon(p.categoria)}<span class="c">${esc(p.comercio)}</span>
-      <span class="a num ${p.importe < 0 ? 'neg' : ''}">${p.importe < 0 ? '+' + eur2(-p.importe) : eur2(p.importe)}</span>
+      <span class="a num ${salida(p) < 0 ? 'neg' : ''}">${salida(p) < 0 ? '+' + eur2(-salida(p)) : eur2(salida(p))}</span>
       <span class="s">${p.categoria === 'Sin categoría' ? '<span class="tag">Sin categoría</span>' : esc(p.categoria)}</span></button>`).join('')}</div></div></div>`).join('');
   if (list.length > movLimit) html += `<button class="ghost" id="moreMovs">Ver ${Math.min(200, list.length - movLimit)} más</button>`;
   $('movs').innerHTML = html || '<p class="muted empty">Nada por aquí.</p>';
