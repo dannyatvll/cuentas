@@ -24,6 +24,14 @@
 <link rel="apple-touch-startup-image" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (prefers-color-scheme: dark)" href="arranque-oscuro-430x932.png">
 <link rel="apple-touch-startup-image" media="(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (prefers-color-scheme: light)" href="arranque-440x956.png">
 <link rel="apple-touch-startup-image" media="(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (prefers-color-scheme: dark)" href="arranque-oscuro-440x956.png">
+<link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (prefers-color-scheme: light)" href="arranque-414x896@2x.png">
+<link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (prefers-color-scheme: dark)" href="arranque-oscuro-414x896@2x.png">
+<link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (prefers-color-scheme: light)" href="arranque-414x896@3x.png">
+<link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (prefers-color-scheme: dark)" href="arranque-oscuro-414x896@3x.png">
+<link rel="apple-touch-startup-image" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (prefers-color-scheme: light)" href="arranque-428x926@3x.png">
+<link rel="apple-touch-startup-image" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (prefers-color-scheme: dark)" href="arranque-oscuro-428x926@3x.png">
+<link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (prefers-color-scheme: light)" href="arranque-375x667@2x.png">
+<link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (prefers-color-scheme: dark)" href="arranque-oscuro-375x667@2x.png">
 <style>
 /* Mis cuentas: una web para el móvil que se maneja como una app de iPhone.
    Un solo sistema: los tokens de :root. Superficies neutras, un único color de acción (índigo),
@@ -32,24 +40,26 @@
   /* color */
   --bg:#f4f4f8; --surface:#fcfcfe; --surface-2:#ececf2; --field:#ececf2; --raised:#fcfcfe;
   --ink:#15151c; --muted:#62626d; --soft:#b9b9c4; --line:rgba(21,21,28,.1);
-  --accent:#4f46e5; --accent-soft:rgba(79,70,229,.11); --on-accent:#ffffff; --brand:#4f46e5;
-  --good:#1e8e4f; --warn:#a85600; --bad:#d92d20;
+  --accent:#4f46e5; --accent-soft:rgba(79,70,229,.11); --on-accent:#ffffff;
+  --good:#17803f; --warn:#a85600; --bad:#d92d20; --on-bad:#ffffff;
   --glass:rgba(252,252,254,.84); --scrim:rgba(14,14,18,.36); --shadow:0 8px 24px rgba(21,21,28,.08);
   /* tipo: crece con el tamaño de texto del iPhone (rem sobre el estilo de texto del sistema) */
   --font:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,"Helvetica Neue",sans-serif;
-  --t-display:2.824rem; --t-large:1.647rem; --t-title:1.294rem; --t-body:1rem; --t-sub:.882rem; --t-foot:.765rem; --t-cap:.706rem; --t-tab:.647rem;
+  --t-display:2.824rem; --t-large:1.647rem; --t-title:1.294rem; --t-body:1rem; --t-sub:.882rem; --t-foot:.765rem; --t-cap:.706rem; --t-tab:11px; /* la barra de pestañas no crece, como en iOS */
+  --t-num:min(var(--t-display),12vw); /* la cifra grande nunca se sale de la pantalla */
   /* espacio, radios, movimiento */
   --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px;
   --r-s:12px; --r-l:20px; --r-full:999px;
   --gutter-l:max(16px,env(safe-area-inset-left,0px)); --gutter-r:max(16px,env(safe-area-inset-right,0px));
   --ease:cubic-bezier(.2,.8,.2,1);
+  --brand:var(--accent); --on-brand:var(--on-accent);
   accent-color:var(--accent); caret-color:var(--accent);
 }
 @media (prefers-color-scheme: dark){:root{
   --bg:#0e0e12; --surface:#1a1a21; --surface-2:#26262f; --field:#2e2e38; --raised:#22222a;
   --ink:#f2f2f6; --muted:#a0a0ac; --soft:#55555f; --line:rgba(242,242,246,.1);
   --accent:#8b85ff; --accent-soft:rgba(139,133,255,.16); --on-accent:#0e0e12;
-  --good:#3dd68c; --warn:#ffb340; --bad:#ff6b5e;
+  --good:#3dd68c; --warn:#ffb340; --bad:#ff6b5e; --on-bad:#0e0e12;
   --glass:rgba(34,34,42,.84); --scrim:rgba(0,0,0,.55); --shadow:0 8px 24px rgba(0,0,0,.35);
   color-scheme:dark;
 }}
@@ -94,14 +104,14 @@ label.f{display:flex;flex-direction:column;gap:6px;font-size:var(--t-foot);color
 .primary{background:var(--accent);color:var(--on-accent)}
 .ghost{background:var(--surface-2);color:var(--ink)}
 .danger{background:none;color:var(--bad);min-height:44px}
-.danger.solid{background:var(--bad);color:#fff}
+.danger.solid{background:var(--bad);color:var(--on-bad)}
 .primary:disabled,.ghost:disabled{opacity:.55}
 .linkbtn{background:none;border:0;color:var(--accent);font-weight:600;min-height:44px;padding:0}
 .ibtn{width:44px;height:44px;display:grid;place-items:center;border:0;border-radius:50%;background:none;color:var(--muted);padding:0}
 .ibtn.acc{color:var(--accent)}
 .ibtn svg.i{width:24px;height:24px}
-.press,.item,.lrow,.debt,.ebody,.primary,.ghost,.chips button,.wact button,.tabs button,.chip-acc,.mchips button{transition:transform .12s var(--ease)}
-.press:active,.item:active,.lrow:active,.debt:active,.ebody:active,.primary:active,.ghost:active,.chips button:active,.wact button:active,.tabs button:active,.chip-acc:active,.mchips button:active{transform:scale(.97)}
+.item,.lrow,.debt,.ebody,.primary,.ghost,.chips button,.wact button,.tabs button,.chip-acc,.mchips button{transition:transform .12s var(--ease)}
+.item:active,.lrow:active,.debt:active,.ebody:active,.primary:active,.ghost:active,.chips button:active,.wact button:active,.tabs button:active,.chip-acc:active,.mchips button:active{transform:scale(.97)}
 
 /* cabecera */
 header.top{display:flex;flex-direction:column;gap:var(--s1);padding-top:var(--s3)}
@@ -115,7 +125,7 @@ header.top{display:flex;flex-direction:column;gap:var(--s1);padding-top:var(--s3
 .mchips button::after{content:"";width:5px;height:5px;border-radius:50%;background:transparent}
 .mchips button[aria-current="true"]{color:var(--ink);font-weight:700}
 .mchips button[aria-current="true"]::after{background:var(--accent)}
-.mchips.flash button[aria-current="true"]{animation:flash 1s var(--ease)}
+@media (prefers-reduced-motion: no-preference){.mchips.flash button[aria-current="true"]{animation:flash 1s var(--ease)}}
 @keyframes flash{30%{color:var(--accent)}}
 
 .navbar{position:fixed;top:0;left:0;right:0;z-index:30;padding:calc(env(safe-area-inset-top,0px) + 10px) var(--gutter-r) 10px var(--gutter-l);text-align:center;
@@ -129,11 +139,11 @@ header.top{display:flex;flex-direction:column;gap:var(--s1);padding-top:var(--s3
 .tabs{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:20;width:min(440px,calc(100% - 24px));
   background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px);backdrop-filter:saturate(180%) blur(22px);border:.5px solid var(--line);border-radius:var(--r-full);
   display:grid;grid-template-columns:repeat(5,1fr);padding:4px;box-shadow:var(--shadow)}
-.tabs button{background:none;border:0;border-radius:var(--r-full);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:52px;padding:4px 0;font-size:11px;font-weight:600;color:var(--muted);position:relative;min-width:0}
+.tabs button{background:none;border:0;border-radius:var(--r-full);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:52px;padding:4px 0;font-size:var(--t-tab);font-weight:600;color:var(--muted);position:relative;min-width:0}
 .tabs button span.l{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px}
 .tabs button svg.i{width:24px;height:24px}
 .tabs button[aria-current="page"]{color:var(--accent);background:var(--accent-soft)}
-.tabs .dot{position:absolute;top:4px;left:calc(50% + 6px);min-width:18px;height:18px;border-radius:9px;background:var(--bad);color:#fff;font-size:.647rem;line-height:18px;padding:0 5px;font-weight:700}
+.tabs .dot{position:absolute;top:4px;left:calc(50% + 6px);min-width:18px;height:18px;border-radius:9px;background:var(--bad);color:var(--on-bad);font-size:var(--t-tab);line-height:18px;padding:0 5px;font-weight:700}
 @media (prefers-reduced-transparency: reduce){.tabs,.navbar{background:var(--surface);-webkit-backdrop-filter:none;backdrop-filter:none}}
 
 /* grupos y listas */
@@ -172,26 +182,26 @@ header.top{display:flex;flex-direction:column;gap:var(--s1);padding-top:var(--s3
 .meter.warn i{background:var(--warn)} .meter.bad i{background:var(--bad)}
 
 /* Resumen: la única tarjeta de color */
-.wallet{background:var(--brand);color:#fff;border-radius:var(--r-l);padding:var(--s5) var(--s4) var(--s4);display:flex;flex-direction:column;box-shadow:var(--shadow)}
-.wlabel{font-size:var(--t-sub);font-weight:600;color:rgba(255,255,255,.86)}
-.wbig{font-size:var(--t-display);font-weight:700;letter-spacing:-.02em;line-height:1.05;margin:2px 0 4px}
-.wsub{font-size:var(--t-sub);color:rgba(255,255,255,.86);margin-bottom:var(--s3)}
+.wallet{--on-brand-2:color-mix(in srgb,var(--on-brand) 86%,transparent);--on-brand-f:color-mix(in srgb,var(--on-brand) 16%,transparent);background:var(--brand);color:var(--on-brand);border-radius:var(--r-l);padding:var(--s5) var(--s4) var(--s4);display:flex;flex-direction:column;box-shadow:var(--shadow)}
+.wlabel{font-size:var(--t-sub);font-weight:600;color:var(--on-brand-2)}
+.wbig{font-size:var(--t-num);font-weight:700;letter-spacing:-.02em;line-height:1.05;margin:2px 0 4px}
+.wsub{font-size:var(--t-sub);color:var(--on-brand-2);margin-bottom:var(--s3)}
 .wsub:empty{display:none}
 .wacc{display:flex;gap:var(--s2);overflow-x:auto;scrollbar-width:none;margin:var(--s2) calc(-1 * var(--s4)) 0;padding:0 var(--s4)}
 .wacc::-webkit-scrollbar{display:none}
-.chip-acc{flex:none;display:flex;align-items:center;gap:var(--s2);border:0;border-radius:var(--r-full);min-height:44px;padding:0 14px 0 6px;color:#fff;font-size:var(--t-sub);background:rgba(255,255,255,.16)}
-.chip-acc i{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-weight:700;font-size:var(--t-foot);background:rgba(255,255,255,.22)}
+.chip-acc{flex:none;display:flex;align-items:center;gap:var(--s2);border:0;border-radius:var(--r-full);min-height:44px;padding:0 14px 0 6px;color:var(--on-brand);font-size:var(--t-sub);background:var(--on-brand-f)}
+.chip-acc i{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-weight:700;font-size:var(--t-foot);background:var(--on-brand-f)}
 .chip-acc span{font-weight:600} .chip-acc b{font-weight:500}
 .wact{display:grid;grid-template-columns:repeat(auto-fit,minmax(8rem,1fr));gap:var(--s2);margin-top:var(--s4)}
-.wact button{border:0;display:flex;align-items:center;justify-content:center;gap:var(--s2);min-height:48px;padding:6px 14px;border-radius:var(--r-full);font-size:var(--t-sub);font-weight:600;color:#fff;background:rgba(255,255,255,.16)}
-.wact button:first-child{background:#fff;color:var(--brand)}
-.skw{display:block;height:var(--t-display);width:60%;border-radius:10px;background:rgba(255,255,255,.18);margin:6px 0 8px}
+.wact button{border:0;display:flex;align-items:center;justify-content:center;gap:var(--s2);min-height:48px;padding:6px 14px;border-radius:var(--r-full);font-size:var(--t-sub);font-weight:600;color:var(--on-brand);background:var(--on-brand-f)}
+.wact button:first-child{background:var(--on-brand);color:var(--brand)}
+.skw{display:block;height:var(--t-display);width:60%;border-radius:var(--r-s);background:var(--on-brand-f);margin:6px 0 8px}
 
 /* cifra principal del resto de pestañas */
 .hero{display:flex;flex-direction:column;gap:2px;padding:0 4px}
 .hero .label{font-size:var(--t-sub);font-weight:600;color:var(--muted)}
-.hero .big{font-size:var(--t-display);font-weight:700;letter-spacing:-.02em;line-height:1.05}
-.hero .big.txt{font-size:calc(var(--t-display) * .8)}
+.hero .big{font-size:var(--t-num);font-weight:700;letter-spacing:-.02em;line-height:1.05}
+.hero .big.txt{font-size:calc(var(--t-num) * .8)}
 .hero .status{font-size:var(--t-sub);color:var(--muted);margin-top:2px}
 .hero .status.ok{color:var(--accent);font-weight:600}
 .hero .meter{margin-top:var(--s3)}
@@ -208,7 +218,8 @@ header.top{display:flex;flex-direction:column;gap:var(--s1);padding-top:var(--s3
 .check{display:grid;grid-template-columns:auto minmax(0,1fr);gap:var(--s2);align-items:center;padding:4px 0;border-top:.5px solid var(--line)}
 .list > .check:first-child{border-top:0}
 .tick{width:44px;height:44px;margin-left:-9px;display:grid;place-items:center;border:0;background:none;padding:0}
-.tick svg{width:26px;height:26px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--soft);padding:5px;fill:none;stroke:transparent;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;transition:background-color .2s,box-shadow .2s}
+.tick svg{width:26px;height:26px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--muted);padding:5px;fill:none;stroke:transparent;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+@media (prefers-reduced-motion: no-preference){.tick svg{transition:background-color .2s,box-shadow .2s}}
 .check.done .tick svg{background:var(--accent);box-shadow:none;stroke:var(--on-accent)}
 .ebody{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px var(--s3);align-items:baseline;background:none;border:0;padding:8px 0;text-align:left;width:100%;min-height:52px}
 .ebody .c{min-width:0;overflow-wrap:break-word}
@@ -232,19 +243,18 @@ svg.chart text{fill:var(--muted);font:500 26px var(--font)}
 .seg{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));background:var(--surface-2);border-radius:var(--r-s);padding:3px;gap:3px}
 .sheet .seg{background:var(--field)}
 .seg input{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px}
-.seg label{display:grid;place-items:center;text-align:center;min-height:40px;padding:4px 6px;border-radius:9px;font-size:var(--t-sub);font-weight:600;color:var(--muted);cursor:pointer}
-.seg input:checked + label{background:var(--surface);color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.1)}
+.seg label{display:grid;place-items:center;text-align:center;min-height:44px;padding:4px 6px;border-radius:calc(var(--r-s) - 3px);font-size:var(--t-sub);font-weight:600;color:var(--muted);cursor:pointer}
+.seg input:checked + label{background:var(--surface);color:var(--ink);box-shadow:0 1px 4px color-mix(in srgb,var(--ink) 12%,transparent)}
 .seg input:focus-visible + label{outline:2px solid var(--accent)}
-.kpis{display:block}
 .rank{display:flex;flex-direction:column;gap:var(--s3)}
 .rk{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px var(--s3);align-items:baseline}
 .rk .c{overflow-wrap:break-word}
 .rk b{font-weight:600}
 .rk b small{font-weight:400;color:var(--muted);font-size:var(--t-foot);margin-left:6px}
 .rk .meter{grid-column:1/-1}
-.bars{display:flex;align-items:flex-end;gap:2px;height:160px;padding-top:28px}
+.bars{display:flex;align-items:flex-end;gap:0;height:160px;padding-top:28px}
 .bar{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end;background:none;border:0;padding:0;min-width:0}
-.bar i{display:block;width:calc(100% - 6px);max-width:22px;border-radius:6px;background:var(--surface-2);position:relative}
+.bar i{display:block;width:calc(100% - 6px);max-width:22px;border-radius:6px;background:color-mix(in srgb,var(--muted) 40%,transparent);position:relative}
 .bar.sel i{background:var(--accent)}
 .bar span{font-size:var(--t-cap);color:var(--muted)}
 .bar.sel span{color:var(--accent);font-weight:700}
@@ -291,7 +301,7 @@ svg.chart text{fill:var(--muted);font:500 26px var(--font)}
 .sheet .actions{display:flex;gap:var(--s3);flex-wrap:wrap;margin-top:var(--s2)}
 .sheet .actions .primary{flex:1 1 10rem}
 .sheet form{display:flex;flex-direction:column;gap:var(--s3)}
-.sheet .sep{margin-top:var(--s2);align-self:flex-start}
+.sheet .sep{margin-top:var(--s2);align-self:flex-start;padding:0}
 .checkline{display:flex;gap:var(--s3);align-items:flex-start;font-size:var(--t-sub)}
 .checkline input{width:22px;height:22px;min-height:0;flex:none;margin:1px 0 0;padding:0;border-radius:6px;-webkit-appearance:auto;appearance:auto}
 .confirm{background:var(--field);border-radius:var(--r-l);padding:var(--s4);display:flex;flex-direction:column;gap:var(--s3)}
@@ -303,10 +313,10 @@ svg.chart text{fill:var(--muted);font:500 26px var(--font)}
 .desc .muted{display:block;font-size:var(--t-sub)}
 .toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:60;transform:translate(-50%,8px);background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:var(--r-full);font-weight:600;font-size:var(--t-sub);max-width:calc(100% - 32px);box-shadow:var(--shadow);opacity:0;visibility:hidden;transition:opacity .2s,transform .2s,visibility 0s .2s}
 .toast.on{opacity:1;visibility:visible;transform:translate(-50%,0);transition:opacity .2s,transform .2s}
-.toast.err{background:var(--bad);color:#fff}
+.toast.err{background:var(--bad);color:var(--on-bad)}
 
 #login{max-width:420px;margin:16vh auto 0;display:flex;flex-direction:column;gap:var(--s4)}
-#login .logo{width:64px;height:64px;border-radius:16px}
+#login .logo{width:64px;height:64px;border-radius:var(--r-s)}
 #login h1{font-size:calc(var(--t-large) * 1.2)}
 #login form{display:flex;flex-direction:column;gap:var(--s3)}
 
@@ -343,7 +353,7 @@ svg.chart text{fill:var(--muted);font:500 26px var(--font)}
         <button class="ibtn" id="hSet" aria-label="Ajustes"><span data-ico="ui-settings"></span></button>
       </div>
     </div>
-    <div class="mchips" id="mchips" aria-label="Mes"></div>
+    <div class="mchips" id="mchips" role="group" aria-label="Mes"></div>
   </header>
 
   <div class="banner" id="estado" role="alert" hidden><p id="estadoTxt"></p><button class="linkbtn" id="estadoBtn">Reintentar</button></div>
@@ -377,7 +387,7 @@ svg.chart text{fill:var(--muted);font:500 26px var(--font)}
     <div class="group">
       <label class="vh" for="search">Buscar movimientos</label>
       <input id="search" type="search" placeholder="Buscar" autocomplete="off" enterkeyhint="search">
-      <div class="chips" id="filters" aria-label="Filtrar">
+      <div class="chips" id="filters" role="group" aria-label="Filtrar">
         <button data-f="todos" aria-pressed="true">Todos</button>
         <button data-f="gastos" aria-pressed="false">Gastos</button>
         <button data-f="sin" aria-pressed="false">Sin categoría</button>
@@ -424,7 +434,7 @@ svg.chart text{fill:var(--muted);font:500 26px var(--font)}
       <div class="card" id="mesCuentas"></div>
     </section>
     <section class="group" aria-labelledby="hFijos">
-      <div class="ghrow"><h2 id="hFijos">Gastos fijos</h2><button class="ghlink" id="addFijo">Añadir</button></div>
+      <div class="ghrow"><h2 id="hFijos">Gastos fijos</h2><button class="ghlink" id="addFijo">Añadir fijo</button></div>
       <div class="card"><div class="list" id="fijos"></div></div>
     </section>
     <section class="group" aria-labelledby="hCuotas">
@@ -442,7 +452,7 @@ svg.chart text{fill:var(--muted);font:500 26px var(--font)}
     </div>
     <div class="card pad"><div id="debtChart"></div><p class="small muted" id="debtVsPlan"></p></div>
     <section class="group" aria-labelledby="hAct">
-      <div class="ghrow"><h2 id="hAct">Activas</h2><button class="ghlink" id="addDeuda">Añadir</button></div>
+      <div class="ghrow"><h2 id="hAct">Activas</h2><button class="ghlink" id="addDeuda">Añadir deuda</button></div>
       <div class="card"><div class="list" id="debts"></div></div>
     </section>
     <section class="group" id="paidSec" aria-labelledby="hLiq" hidden>
@@ -461,7 +471,7 @@ svg.chart text{fill:var(--muted);font:500 26px var(--font)}
 </nav>
 
 <div class="scrim" id="scrim" hidden><div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetT"></div></div>
-<div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+<div class="toast" id="toast" role="status" aria-live="assertive" aria-atomic="true"></div>
 
 <script src="supabase.js"></script>
 <script>
@@ -489,14 +499,13 @@ const toLocalInput = d => { const x = new Date(d); x.setMinutes(x.getMinutes() -
 const parseNum = v => Number(String(v).replace(/\s|€/g,'').replace(/\.(?=\d{3}(\D|$))/g,'').replace(',','.'));
 const r2 = n => Math.round(n * 100) / 100;
 const sum = arr => arr.reduce((s,p) => s + p.importe, 0);
-const tipoDe = c => ({'Ingreso':'Ingreso','Movimiento interno':'Interno','Pago de deuda':'Deuda','Entre personas':'Personas'}[c] || 'Gasto');
 
 let D = null, cur = monthKey(new Date()), view = 'resumen', filtro = 'todos', busqueda = '', catSel = null, movLimit = 60;
 try { const v = localStorage.getItem('cuentas.view'); if (v) view = v; } catch {}
 
 // Aviso abajo, que VoiceOver lee. Los errores se quedan más tiempo.
 function toast(msg, err = /^No se|^Revisa|^Error/.test(msg)){
-  const t = $('toast'); t.className = 'toast' + (err ? ' err' : ''); t.setAttribute('role', err ? 'alert' : 'status');
+  const t = $('toast'); t.className = 'toast' + (err ? ' err' : '');
   t.textContent = ''; requestAnimationFrame(() => { t.textContent = msg; t.classList.add('on'); });
   clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('on'), err ? 6000 : 2800);
 }
@@ -572,12 +581,14 @@ function esqueleto(){
 }
 function estado(msg){ $('estado').hidden = !msg; $('estadoTxt').textContent = msg || ''; }
 let cargadoEn = 0;
+const COLS_PAGOS = 'id,fecha,con_hora,importe,comercio,categoria,tipo,cuenta,origen,creado';
 async function load(){
   if (!D) esqueleto();
+  $('app').setAttribute('aria-busy', 'true');
   $('estadoBtn').disabled = true;
   try {
     const [pagos, topes, plan, deudas, fijos, pm, saldos, ingresos] = await Promise.all([
-      all('pagos', 'id,fecha,con_hora,importe,comercio,categoria,tipo,cuenta,origen,creado', 'fecha'),
+      all('pagos', COLS_PAGOS, 'fecha'),
       all('topes', 'categoria,tope,incluye'),
       all('plan_mes', 'mes,ingresos,vida,deuda_final,nota'),
       all('deudas', '*'),
@@ -604,7 +615,7 @@ async function load(){
     console.error(err);
     if (!D) $('app').classList.add('sindatos');
     estado(navigator.onLine === false ? 'No hay conexión. Lo que ves puede no estar al día.' : 'No se pudieron cargar los datos.');
-  } finally { $('estadoBtn').disabled = false; }
+  } finally { $('estadoBtn').disabled = false; $('app').removeAttribute('aria-busy'); }
 }
 // Escribe y comprueba que la fila existe (si la seguridad la bloquea, Supabase devuelve 0 filas sin error).
 // Mientras guarda, los botones de la hoja no responden: un doble toque no crea dos filas.
@@ -620,8 +631,8 @@ async function write(q){
   ocupado(true);
   try {
     const {data, error} = await q.select();
-    if (error) { console.error(error); toast(navigator.onLine === false ? 'No se guardó: no hay conexión.' : 'No se guardó. Prueba otra vez.'); throw error; }
-    if (!data || !data.length) { toast('No se guardó: la clave no vale. Vuelve a pegarla.'); throw new Error('0 filas'); }
+    if (error) { console.error(error); toast(navigator.onLine === false ? 'No se guardó: no hay conexión.' : 'No se guardó. Prueba otra vez.'); error.avisado = true; throw error; }
+    if (!data || !data.length) { toast('No se guardó: la clave no vale. Vuelve a pegarla.'); throw Object.assign(new Error('0 filas'), {avisado: true}); }
     return data;
   } finally { ocupado(false); }
 }
@@ -664,7 +675,18 @@ function navbar(){
 }
 addEventListener('scroll', navbar, {passive: true});
 // Al volver a la web, recarga solo si han pasado más de 5 minutos.
-document.addEventListener('visibilitychange', () => { if (!document.hidden && shown && $('scrim').hidden && Date.now() - cargadoEn > 5 * 60e3) load(); });
+// Al volver a la web: si hace más de 5 minutos, todo; si no, solo los movimientos nuevos (los que mete el Atajo de Apple Pay).
+document.addEventListener('visibilitychange', () => { if (document.hidden || !shown || !$('scrim').hidden) return; if (!D || Date.now() - cargadoEn > 5 * 60e3) load(); else nuevos(); });
+async function nuevos(){
+  const ult = D.pagos.reduce((m, p) => p.creado > m ? p.creado : m, '');
+  if (!ult) return;
+  const {data, error} = await sb.from('pagos').select(COLS_PAGOS).gt('creado', ult).order('fecha', {ascending: false});
+  if (error || !data.length) return;
+  const ya = new Set(D.pagos.map(p => p.id)), n = data.filter(p => !ya.has(p.id)).map(prepPago);
+  if (!n.length) return;
+  D.pagos.push(...n); D.pagos.sort((a,b) => b.fecha.localeCompare(a.fecha)); render();
+  toast(n.length === 1 ? `Nuevo: ${n[0].comercio}, ${eur2(n[0].importe)}` : `${n.length} movimientos nuevos`);
+}
 $('hAdd').onclick = () => editPago(null);
 $('hSet').onclick = () => ajustes();
 
@@ -911,15 +933,18 @@ function renderMovs(){
 // ---------- hoja de edición ----------
 // Hoja inferior: el fondo queda inerte, el foco entra en la hoja y vuelve al cerrar.
 // Se cierra con la ✕, tocando fuera, con Escape o deslizando hacia abajo; si has cambiado algo, pregunta antes.
-let volverA = null, foto = '';
+let volverA = null, volverSel = null, foto = '';
+const ATTR_FOCO = ['data-id','data-efijo','data-edeuda','data-fijo','data-deuda','data-k','data-cat'];
+const selDe = el => { if (!el || el === document.body) return null; if (el.id) return '#' + CSS.escape(el.id);
+  const a = ATTR_FOCO.find(a => el.hasAttribute(a)); return a ? `[${a}="${CSS.escape(el.getAttribute(a))}"]` : null; };
 const fotoForm = () => [...$('sheet').querySelectorAll('input,select,textarea')].map(x => x.type === 'checkbox' || x.type === 'radio' ? x.checked : x.value).join('\u0001');
 function openSheet(html, onReady){
-  volverA = document.activeElement;
+  volverA = document.activeElement; volverSel = selDe(volverA);
   const sh = $('sheet');
-  sh.innerHTML = '<button class="grab" aria-label="Cerrar" tabindex="-1"></button>' + html; sh.style.transform = '';
+  sh.innerHTML = '<button class="grab" aria-hidden="true" tabindex="-1"></button>' + html; sh.style.transform = '';
   $('scrim').hidden = false; document.documentElement.style.overflow = 'hidden';
   ['app','tabs','navbar'].forEach(id => $(id).inert = true);
-  sh.querySelector('.x').onclick = pedirCierre;
+  sh.querySelector('.x').onclick = pedirCierre; sh.querySelector('.grab').onclick = pedirCierre;
   onReady && onReady(sh);
   foto = fotoForm();
   if (!sh.contains(document.activeElement)) sh.querySelector('h2').focus();
@@ -927,14 +952,15 @@ function openSheet(html, onReady){
 function closeSheet(){
   $('scrim').hidden = true; document.documentElement.style.overflow = ''; $('sheet').innerHTML = '';
   ['app','tabs','navbar'].forEach(id => $(id).inert = false);
-  if (volverA && document.contains(volverA)) volverA.focus(); volverA = null;
+  const a = volverA, s2 = volverSel; volverA = volverSel = null;
+  requestAnimationFrame(() => { const el = document.contains(a) ? a : s2 && document.querySelector(s2); el?.focus(); });
 }
 function pedirCierre(){
   if (fotoForm() === foto) return closeSheet();
-  confirmar('¿Descartar los cambios?', 'Descartar', closeSheet, 'Seguir editando');
+  confirmar('¿Descartar los cambios?', 'Descartar', closeSheet, 'Seguir editando', true);
 }
 $('scrim').addEventListener('click', e => { if (e.target === $('scrim')) pedirCierre(); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('scrim').hidden) { e.preventDefault(); $('sheet').querySelector('.confirm') ? $('sheet').querySelector('.confirm').remove() : pedirCierre(); } });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('scrim').hidden) { e.preventDefault(); $('sheet').querySelector('.confirm') ? $('cfNo').click() : pedirCierre(); } });
 // Deslizar hacia abajo desde arriba de la hoja.
 (() => {
   const sh = $('sheet'); let y0 = null, dy = 0;
@@ -942,14 +968,13 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('scrim'
   sh.addEventListener('touchmove', e => { if (y0 == null) return; dy = Math.max(0, e.touches[0].clientY - y0); sh.style.transform = dy ? `translateY(${dy}px)` : ''; }, {passive: true});
   sh.addEventListener('touchend', () => { if (y0 == null) return; y0 = null; sh.style.transform = ''; if (dy > 110) pedirCierre(); });
 })();
-let nHoja = 0;
 const hd = t => `<div class="hd"><h2 id="sheetT" tabindex="-1">${t}</h2><button class="ibtn x" type="button" aria-label="Cerrar"><span>${svg('ui-x')}</span></button></div>`;
 // Confirmación dentro de la hoja, con Cancelar. Sustituye al "toca otra vez".
 function confirmar(pregunta, accion, fn, cancelar = 'Cancelar', peligro = false){
-  const sh = $('sheet'); sh.querySelector('.confirm')?.remove();
+  const sh = $('sheet'), antes = document.activeElement; sh.querySelector('.confirm')?.remove();
   sh.insertAdjacentHTML('beforeend', `<div class="confirm" role="alertdialog" aria-labelledby="cfq"><p id="cfq">${pregunta}</p>
     <div class="row"><button type="button" class="${peligro ? 'danger solid' : 'primary'}" id="cfOk">${accion}</button><button type="button" class="ghost" id="cfNo">${cancelar}</button></div></div>`);
-  $('cfNo').onclick = () => sh.querySelector('.confirm').remove();
+  $('cfNo').onclick = () => { sh.querySelector('.confirm').remove(); (sh.contains(antes) ? antes : sh.querySelector('h2')).focus(); };
   $('cfOk').onclick = async e => { const b = e.currentTarget; b.disabled = true; try { await fn(); } finally { b.disabled = false; } };
   $('cfNo').focus(); $('cfNo').scrollIntoView({block: 'nearest'});
 }
@@ -961,8 +986,8 @@ function editPago(p){
   const cats = categorias();
   const cuentas = [...new Set([...CUENTAS, ...D.pagos.map(x => x.cuenta).filter(Boolean)])];
   const iguales = p ? D.pagos.filter(x => x.comercio === p.comercio && x.id !== p.id).length : 0;
-  openSheet(`${hd(nuevo ? 'Añadir gasto' : 'Editar movimiento')}
-    <form id="fp" novalidate style="display:flex;flex-direction:column;gap:10px">
+  openSheet(`${hd(nuevo ? 'Añadir movimiento' : 'Editar movimiento')}
+    <form id="fp" novalidate>
       <label class="f">Comercio o concepto<input id="pc" required value="${esc(p?.comercio || '')}" placeholder="Ej. Mercadona"></label>
       <div class="grid2">
         <label class="f">Importe (€)<input id="pi" inputmode="decimal" autocomplete="off" enterkeyhint="done" required value="${p ? String(p.importe).replace('.',',') : ''}" placeholder="12,50"></label>
@@ -975,7 +1000,7 @@ function editPago(p){
       <label class="f">Categoría<select id="pcat">${opts(cats, p?.categoria || 'Sin categoría')}<option value="__nueva">Nueva categoría…</option></select></label>
       <label class="f" id="pcatL" hidden>Nombre de la categoría nueva<input id="pcatN" autocomplete="off"></label>
       <label class="f">Cuenta o tarjeta<select id="pcu"><option value="">Sin cuenta</option>${opts(cuentas, p?.cuenta || (nuevo ? 'BBVA' : ''))}</select></label>
-      ${iguales ? `<div class="checkline"><input type="checkbox" id="pall"><label for="pall">Poner esta categoría también a los otros ${iguales} movimientos de “${esc(p.comercio)}” y recordarla para los nuevos</label></div>` : ''}
+      ${iguales ? `<div class="checkline"><input type="checkbox" id="pall"><label for="pall">Poner esta categoría también a los otros ${iguales} movimientos de «${esc(p.comercio)}» y recordarla para los nuevos</label></div>` : ''}
       ${p ? `<p class="small muted">Origen: ${esc(p.origen)}${p.con_hora ? '' : ' · el banco solo da el día'}</p>` : ''}
       <div class="actions">
         <button class="primary" type="submit">${nuevo ? 'Añadir' : 'Guardar'}</button>
@@ -1065,7 +1090,7 @@ function renderProximo(){
 function editIngreso(i, sugerido){
   const nuevo = !i;
   openSheet(`${hd(nuevo ? 'Añadir ingreso' : 'Editar ingreso')}
-    <form id="fin" novalidate style="display:flex;flex-direction:column;gap:10px">
+    <form id="fin" novalidate>
       <label class="f">De dónde sale<input id="inc" required value="${esc(i?.concepto || '')}" placeholder="Ej. Nómina, paro…" autocomplete="off"></label>
       <div class="grid2">
         <label class="f">Importe al mes (€)<input id="ini" inputmode="decimal" autocomplete="off" enterkeyhint="done" required value="${i ? String(i.importe).replace('.', ',') : sugerido ? String(sugerido).replace('.', ',') : ''}"></label>
@@ -1143,8 +1168,8 @@ function renderMes(){
   $('fijos').innerHTML = fijosDelMes().map(f => {
     const r = pmDe('fijo', f.id), v = !r && visto(f.concepto, f.importe);
     return `<div class="check ${r ? 'done' : ''}">
-      <button class="tick" data-fijo="${f.id}" aria-label="${r ? 'Marcar como no pagado' : 'Marcar como pagado'}: ${esc(f.concepto)}">${tickSvg}</button>
-      <button class="ebody" data-efijo="${f.id}" aria-label="Editar ${esc(f.concepto)}"><span class="c">${esc(f.concepto)}</span><span class="num">${eurC(r?.importe ?? f.importe)}</span>
+      <button class="tick" data-fijo="${f.id}" aria-label="${r ? 'Marcar como no pagado' : 'Marcar como pagado'}: ${esc(f.concepto)}, ${eurC(r?.importe ?? f.importe)}">${tickSvg}</button>
+      <button class="ebody" data-efijo="${f.id}"><span class="c">${esc(f.concepto)}</span><span class="num">${eurC(r?.importe ?? f.importe)}</span>
       <span class="s">${[f.cuenta ? esc(f.cuenta) : 'Sin cuenta', f.dia ? 'día ' + f.dia : ''].filter(Boolean).join(' · ')}${v ? ' · <span class="seen">Parece cobrado</span>' : ''}</span></button>
     </div>`;
   }).join('') || '<p class="empty">No hay gastos fijos este mes.</p>';
@@ -1152,8 +1177,8 @@ function renderMes(){
   $('cuotas').innerHTML = cuotasDelMes().map(d => {
     const r = pmDe('deuda', d.id), imp = Number(r?.importe ?? (d.cuota || d.pendiente)), v = !r && visto(d.nombre, imp);
     return `<div class="check ${r ? 'done' : ''}">
-      <button class="tick" data-deuda="${d.id}" aria-label="${r ? 'Marcar como no pagado' : 'Marcar como pagado'}: ${esc(d.nombre)}">${tickSvg}</button>
-      <button class="ebody" data-edeuda="${d.id}" aria-label="Editar ${esc(d.nombre)}"><span class="c">${esc(d.nombre)}</span><span class="num">${eurC(imp)}</span>
+      <button class="tick" data-deuda="${d.id}" aria-label="${r ? 'Marcar como no pagado' : 'Marcar como pagado'}: ${esc(d.nombre)}, ${eurC(imp)}">${tickSvg}</button>
+      <button class="ebody" data-edeuda="${d.id}"><span class="c">${esc(d.nombre)}</span><span class="num">${eurC(imp)}</span>
       <span class="s">${[d.cuota ? 'Cuota' : 'Pago único', d.cuenta ? esc(d.cuenta) : ''].filter(Boolean).join(' · ')}${r && r.amortizado ? ` · baja ${eur(r.amortizado)}` : ''}${v ? ' · <span class="seen">Parece cobrado</span>' : ''}</span></button>
     </div>`;
   }).join('') || '<p class="empty">No hay cuotas este mes.</p>';
@@ -1168,14 +1193,13 @@ async function toggleFijo(f, btn){
   try {
     const r = pmDe('fijo', f.id);
     if (r) {
-      const {error} = await sb.from('pagos_mes').delete().eq('id', r.id);
-      if (error) throw error;
+      await write(sb.from('pagos_mes').delete().eq('id', r.id));
       D.pm = D.pm.filter(x => x !== r);
     } else {
       const [n] = await write(sb.from('pagos_mes').insert({mes: cur + '-01', tipo:'fijo', ref_id: f.id, importe: f.importe, cuenta: f.cuenta, pagado_el: today()}));
       n.mes = n.mes.slice(0,7); n.amortizado = 0; D.pm.push(n);
     }
-  } catch (e) { toast('No se guardó: ' + (e.message || e)); }
+  } catch (e) { if (!e.avisado) toast(navigator.onLine === false ? 'No se guardó: no hay conexión.' : 'No se guardó. Prueba otra vez.'); }
   render(); document.querySelector(`[data-fijo="${f.id}"]`)?.focus();
 }
 // Marcar una cuota baja la deuda por el capital (cuota menos intereses del mes); desmarcar lo devuelve.
@@ -1184,8 +1208,7 @@ async function toggleDeuda(d, btn){
   try {
     const r = pmDe('deuda', d.id);
     if (r) {
-      const {error} = await sb.from('pagos_mes').delete().eq('id', r.id);
-      if (error) throw error;
+      await write(sb.from('pagos_mes').delete().eq('id', r.id));
       D.pm = D.pm.filter(x => x !== r);
       const upd = {pendiente: r2(d.pendiente + r.amortizado), pagada: false, pagada_el: null};
       if (d.cuota && d.cuotas_restantes != null && r.amortizado) upd.cuotas_restantes = d.cuotas_restantes + 1;
@@ -1208,14 +1231,14 @@ async function toggleDeuda(d, btn){
         if (d.pagada) toast(`${d.nombre}: ¡liquidada!`);
       }
     }
-  } catch (e) { toast('No se guardó: ' + (e.message || e)); }
+  } catch (e) { if (!e.avisado) toast(navigator.onLine === false ? 'No se guardó: no hay conexión.' : 'No se guardó. Prueba otra vez.'); }
   render(); document.querySelector(`[data-deuda="${d.id}"]`)?.focus();
 }
 $('addFijo').onclick = () => editFijo(null);
 function editFijo(f, mesQuitar = cur){
   const nuevo = !f;
   openSheet(`${hd(nuevo ? 'Añadir gasto fijo' : 'Editar gasto fijo')}
-    <form id="ff" novalidate style="display:flex;flex-direction:column;gap:10px">
+    <form id="ff" novalidate>
       <label class="f">Concepto<input id="fc" required value="${esc(f?.concepto || '')}" placeholder="Ej. Gimnasio"></label>
       <div class="grid2">
         <label class="f">Importe al mes (€)<input id="fi" inputmode="decimal" autocomplete="off" required value="${f ? String(f.importe).replace('.',',') : ''}"></label>
@@ -1311,16 +1334,17 @@ function editDeuda(d){
   const nuevo = !d;
   const pagos = d ? D.pm.filter(r => r.tipo === 'deuda' && r.ref_id === d.id).sort((a,b) => b.mes.localeCompare(a.mes)) : [];
   openSheet(`${hd(nuevo ? 'Añadir deuda' : esc(d.nombre))}
-    <form id="fdd" novalidate style="display:flex;flex-direction:column;gap:10px">
+    <form id="fdd" novalidate>
       <label class="f">Nombre<input id="dn" required value="${esc(d?.nombre || '')}" placeholder="Ej. Préstamo coche"></label>
       <div class="grid2">
         <label class="f">Pendiente hoy (€)<input id="dp" inputmode="decimal" autocomplete="off" required value="${d ? String(d.pendiente).replace('.',',') : ''}"></label>
         <label class="f">TIN (%)<input id="dt" inputmode="decimal" autocomplete="off" value="${d?.tin ? String(d.tin).replace('.',',') : ''}" placeholder="0"></label>
-        <label class="f">Cuota al mes (€)<input id="dc" inputmode="decimal" autocomplete="off" value="${d?.cuota ? String(d.cuota).replace('.',',') : ''}" placeholder="Vacío = pago único"></label>
+        <label class="f">Cuota al mes (€)<input id="dc" inputmode="decimal" autocomplete="off" value="${d?.cuota ? String(d.cuota).replace('.',',') : ''}"></label>
         <label class="f">Cuotas que quedan<input id="dr" inputmode="numeric" autocomplete="off" value="${d?.cuotas_restantes ?? ''}"></label>
         <label class="f">Termina / se paga en<input id="df" type="month" value="${d?.fin ? d.fin.slice(0,7) : ''}"></label>
         <label class="f">Sale de<select id="dcu"><option value="">Sin cuenta</option>${opts(CUENTAS, d?.cuenta || '')}</select></label>
       </div>
+      <p class="small muted">Sin cuota, cuenta como un pago único en el mes en que se paga.</p>
       <label class="f">Notas<input id="dno" value="${esc(d?.notas || '')}"></label>
       ${!nuevo ? '<p class="small muted">Si el banco te da otro saldo, cámbialo en «Pendiente hoy».</p>' : ''}
       ${pagos.length ? `<div class="small muted">Pagos marcados: ${pagos.map(r => `${monthName(r.mes,{month:'short',year:'2-digit'}).replace('.','')} ${eur2(Number(r.importe))}`).join(' · ')}</div>` : ''}
@@ -1328,7 +1352,7 @@ function editDeuda(d){
         <button class="primary" type="submit">${nuevo ? 'Añadir' : 'Guardar'}</button>
         ${nuevo ? '' : d.pagada ? '<button class="ghost" type="button" id="dre">Reabrir deuda</button>' : '<button class="ghost" type="button" id="dliq">Marcar liquidada</button>'}
       </div>
-      ${nuevo ? '' : '<button class="danger" type="button" id="ddel" style="align-self:flex-start;padding:0">Borrar deuda</button>'}
+      ${nuevo ? '' : '<button class="danger sep" type="button" id="ddel">Borrar deuda</button>'}
     </form>`, () => {
       if (!nuevo && $('dliq')) $('dliq').onclick = () => confirmar('¿Marcarla como liquidada? El pendiente queda a 0 €.', 'Marcar liquidada', async () => {
         try { Object.assign(d, prepDeuda((await write(sb.from('deudas').update({pagada: true, pagada_el: today(), pendiente: 0, cuotas_restantes: d.cuota ? 0 : null}).eq('id', d.id)))[0])); closeSheet(); render(); toast(`${d.nombre}: ¡liquidada!`); } catch {}
@@ -1337,7 +1361,7 @@ function editDeuda(d){
         try { Object.assign(d, prepDeuda((await write(sb.from('deudas').update({pagada: false, pagada_el: null}).eq('id', d.id)))[0])); closeSheet(); render(); toast('Reabierta: pon el pendiente real'); editDeuda(d); } catch {}
       };
       if (!nuevo) confirmBtn($('ddel'), '¿Borrar esta deuda y sus pagos? No se puede deshacer.', async () => {
-        try { await write(sb.from('pagos_mes').delete().eq('tipo','deuda').eq('ref_id', d.id)); await write(sb.from('deudas').delete().eq('id', d.id)); } catch { return; }
+        try { if (D.pm.some(r => r.tipo === 'deuda' && r.ref_id === d.id)) await write(sb.from('pagos_mes').delete().eq('tipo','deuda').eq('ref_id', d.id)); await write(sb.from('deudas').delete().eq('id', d.id)); } catch { return; }
         D.deudas = D.deudas.filter(x => x !== d); D.pm = D.pm.filter(r => !(r.tipo === 'deuda' && r.ref_id === d.id));
         closeSheet(); render(); toast('Borrada');
       });
@@ -1367,7 +1391,7 @@ function ajustes(){
     <div class="card"><div class="lrow"><span>Datos cargados</span><b>${hace == null ? 'Aún no' : hace < 1 ? 'Ahora mismo' : `Hace ${hace} min`}</b></div>
     <div class="lrow"><span>Movimientos</span><b class="num">${D ? new Intl.NumberFormat('es-ES',{useGrouping:'always'}).format(D.pagos.length) : 0}</b></div></div>
     <div class="actions"><button class="primary" type="button" id="ajLoad">Actualizar datos</button></div>
-    <button class="danger" type="button" id="ajOut" style="align-self:flex-start;padding:0">Olvidar la clave en este iPhone</button>`, () => {
+    <button class="danger sep" type="button" id="ajOut">Olvidar la clave en este iPhone</button>`, () => {
     $('ajLoad').onclick = () => { closeSheet(); load(); };
     $('ajOut').onclick = () => confirmar('¿Olvidar la clave? Tendrás que pegarla otra vez para entrar.', 'Olvidar la clave', () => { closeSheet(); olvidar(); }, 'Cancelar', true);
   });
