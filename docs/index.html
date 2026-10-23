@@ -458,6 +458,11 @@ body::before{opacity:.32;height:55vh}
     </div>
 
     <div class="group">
+      <div class="ghrow"><h2 id="proxT">El mes que viene</h2><span class="ghnote num" id="proxTot"></span></div>
+      <div class="card"><div class="list" id="prox"></div></div>
+    </div>
+
+    <div class="group">
       <div class="ghrow"><h2 id="gastosT">Gastos del mes</h2><button class="ghlink" id="verMovs">Ver todos</button></div>
       <div class="card"><div class="list" id="gastosMes"></div></div>
     </div>
@@ -779,7 +784,7 @@ const ICON_PATHS = {
 const icon = cat => `<span class="ico" aria-hidden="true" style="--c:${colorDe(cat)}"><svg viewBox="0 0 24 24">${ICON_PATHS[cat] || ICON_PATHS['_']}</svg></span>`;
 
 function renderResumen(){
-  renderDinero();
+  renderDinero(); renderProximo();
   const {pagos, topes, plan} = D;
   const mp = pagos.filter(p => p.mes === cur);
   const gastos = mp.filter(p => p.tipo === 'Gasto');
@@ -1123,17 +1128,34 @@ function editPago(p){
 
 // ---------- mes: fijos y cuotas ----------
 const pmDe = (tipo, id, mes = cur) => D.pm.find(r => r.tipo === tipo && r.ref_id === id && r.mes === mes);
-const enMes = (desde, hasta) => (!desde || desde.slice(0,7) <= cur) && (!hasta || hasta.slice(0,7) >= cur);
-function fijosDelMes(){ return D.fijos.filter(f => f.activo && enMes(f.desde, f.hasta)); }
-function cuotasDelMes(){
+const enMes = (desde, hasta, m = cur) => (!desde || desde.slice(0,7) <= m) && (!hasta || hasta.slice(0,7) >= m);
+function fijosDelMes(m = cur){ return D.fijos.filter(f => f.activo && enMes(f.desde, f.hasta, m)); }
+function cuotasDelMes(m = cur){
   return D.deudas.filter(d => {
-    const r = pmDe('deuda', d.id);
+    const r = pmDe('deuda', d.id, m);
     if (r) return true;                                     // pagada este mes: se queda en la lista
     if (d.pagada) return false;
-    if (d.cuota) return !d.fin || d.fin.slice(0,7) >= cur;  // cuota mensual hasta el final
-    return d.fin && d.fin.slice(0,7) === cur;               // pago único: su mes
+    if (d.cuota) return !d.fin || d.fin.slice(0,7) >= m;    // cuota mensual hasta el final
+    return d.fin && d.fin.slice(0,7) === m;                 // pago único: su mes
   });
 }
+// Lo que toca pagar el mes que viene: fijos, cuotas y pagos únicos (tarjetas, devoluciones).
+function renderProximo(){
+  const m = addMonth(monthKey(new Date()), 1);
+  const items = [
+    ...fijosDelMes(m).map(f => ({n: f.concepto, c: f.cuenta, v: f.importe, t: 'Fijo'})),
+    ...cuotasDelMes(m).map(d => ({n: d.nombre, c: d.cuenta, v: d.cuota || d.pendiente, t: d.cuota ? 'Cuota' : 'Pago entero'})),
+  ].sort((a,b) => b.v - a.v);
+  const tot = items.reduce((a,i) => a + i.v, 0);
+  $('proxT').textContent = cap(monthName(m, {month: 'long'}));
+  $('proxTot').textContent = `${eur(tot)} en ${items.length} pagos`;
+  const fila = i => `<div class="item mov"><span class="ico" style="--c:${i.t === 'Fijo' ? 'var(--tint)' : i.t === 'Cuota' ? '#f5a524' : '#ff3b30'}"><svg viewBox="0 0 24 24">${i.t === 'Fijo' ? '<path d="M4 7h16v12H4zM4 7l2-3h12l2 3"/>' : '<rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/>'}</svg></span>
+    <span class="c">${esc(i.n)}</span><span class="a num">${eur(i.v)}</span><span class="s">${i.t}${i.c ? ' · ' + esc(i.c) : ''}</span></div>`;
+  $('prox').innerHTML = (verProx ? items : items.slice(0, 6)).map(fila).join('') +
+    (items.length > 6 ? `<button class="lrow go" id="proxMore"><span>${verProx ? 'Ver menos' : `Ver los ${items.length}`}</span><b></b></button>` : '');
+  if ($('proxMore')) $('proxMore').onclick = () => { verProx = !verProx; renderProximo(); };
+}
+let verProx = false;
 function estadoMes(){
   if (cur < INICIO_SEGUIMIENTO) return {items:[], total:0, pagado:0};
   const items = [
