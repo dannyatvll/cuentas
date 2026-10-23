@@ -410,6 +410,7 @@ body::before{opacity:.32;height:55vh}
 .item.tope{grid-template-columns:auto 1fr auto;column-gap:13px}
 .item.tope .meter{grid-column:2/-1;height:4px;margin-top:6px}
 .item.tope .a{font-weight:700;font-size:18px}
+.item.tope .a small{font-size:13px;font-weight:500;color:var(--muted)} .item.tope .a.neg-bad small{color:inherit}
 </style>
 </head>
 <body>
@@ -462,10 +463,6 @@ body::before{opacity:.32;height:55vh}
       <div class="card"><div class="list" id="prox"></div></div>
     </div>
 
-    <div class="group">
-      <div class="ghrow"><h2 id="gastosT">Gastos del mes</h2><button class="ghlink" id="verMovs">Ver todos</button></div>
-      <div class="card"><div class="list" id="gastosMes"></div></div>
-    </div>
   </div>
 
   <!-- MOVIMIENTOS -->
@@ -733,7 +730,6 @@ function navbar(){
   $('navSub').textContent = view === 'deudas' ? '' : $('mlabel').textContent;
 }
 addEventListener('scroll', navbar, {passive: true});
-$('verMovs').onclick = () => setView('movs');
 $('prev').onclick = () => { const ms = months(), i = ms.indexOf(cur); if (i > 0) { cur = ms[i-1]; movLimit = 60; render(); } };
 $('next').onclick = () => { const ms = months(), i = ms.indexOf(cur); if (i < ms.length-1) { cur = ms[i+1]; movLimit = 60; render(); } };
 document.addEventListener('visibilitychange', () => { if (!document.hidden && shown && $('scrim').hidden) load(); });
@@ -806,19 +802,11 @@ function renderResumen(){
       const q = t.tope - g, over = q < 0, near = !over && t.tope && g > t.tope * hoy / dias * 1.1;
       const w = t.tope ? Math.min(100, g / t.tope * 100) : 100;
       return `<button class="item tope" data-cat="${esc(t.incluye[0])}">${icon(t.incluye[0])}<span class="c">${esc(t.categoria)}</span>
-        <span class="a num ${over ? 'neg-bad' : ''}">${over ? '−' + eur(-q) : eur(q)}</span>
-        <span class="s num">${over ? 'Te has pasado' : 'Te quedan'} · gastado ${eur(g)} de ${eur(t.tope)}</span>
+        <span class="a num ${over ? 'neg-bad' : ''}">${eur(over ? -q : q)}<small>${over ? ' de más' : ' libres'}</small></span>
+        <span class="s num">Gastado ${eur(g)} de ${eur(t.tope)}</span>
         <div class="meter ${over ? 'bad' : near ? 'warn' : ''}"><i style="width:${w}%"></i></div></button>`;
     }).join('');
   $('topes').querySelectorAll('.tope').forEach(b => b.onclick = () => { busqueda = b.dataset.cat.toLowerCase(); $('search').value = b.dataset.cat; setView('movs'); });
-  // Gastos del mes, del más reciente al más antiguo.
-  $('gastosT').textContent = 'Gastos de ' + monthName(cur, {month: 'long'});
-  const gl = gastos.slice().sort((a,b) => b.fecha.localeCompare(a.fecha));
-  $('gastosMes').innerHTML = gl.slice(0, 25).map(p => `<button class="item mov" data-id="${p.id}">${icon(p.categoria)}<span class="c">${esc(p.comercio)}</span>
-      <span class="a num ${p.importe < 0 ? 'neg' : ''}">${p.importe < 0 ? '+' + eur2(-p.importe) : eur2(p.importe)}</span>
-      <span class="s">${cap(dayName(p.dia)).replace(/ de \w+$/,'')} · ${esc(p.categoria)}</span></button>`).join('') || '<p class="muted empty">Sin gastos este mes.</p>';
-  $('gastosMes').querySelectorAll('.item').forEach(b => b.onclick = () => editPago(D.pagos.find(p => p.id == b.dataset.id)));
-  $('verMovs').textContent = gl.length > 25 ? `Ver los ${gl.length}` : 'Ver todos';
 }
 
 // Curva del mes: gasto acumulado día a día frente al ritmo del presupuesto.
@@ -1139,12 +1127,12 @@ function cuotasDelMes(m = cur){
     return d.fin && d.fin.slice(0,7) === m;                 // pago único: su mes
   });
 }
-// Lo que toca pagar el mes que viene: fijos, cuotas y pagos únicos (tarjetas, devoluciones).
+// Lo que toca pagar el mes que viene: fijos, cuotas y la tarjeta Amex (los demás pagos únicos son opcionales y no salen).
 function renderProximo(){
   const m = addMonth(monthKey(new Date()), 1);
   const items = [
     ...fijosDelMes(m).map(f => ({n: f.concepto, c: f.cuenta, v: f.importe, t: 'Fijo'})),
-    ...cuotasDelMes(m).map(d => ({n: d.nombre, c: d.cuenta, v: d.cuota || d.pendiente, t: d.cuota ? 'Cuota' : 'Pago entero'})),
+    ...cuotasDelMes(m).filter(d => d.cuota || /amex/i.test(d.nombre)).map(d => ({n: d.nombre, c: d.cuenta, v: d.cuota || d.pendiente, t: d.cuota ? 'Cuota' : 'Tarjeta'})),
   ].sort((a,b) => b.v - a.v);
   const tot = items.reduce((a,i) => a + i.v, 0);
   $('proxT').textContent = cap(monthName(m, {month: 'long'}));
