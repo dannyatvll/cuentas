@@ -45,7 +45,7 @@
   --good:#1b7a43; --warn:#9a5b00; --bad:#c8321e; --on-bad:#ffffff;
   --glass:rgba(254,254,253,.86); --scrim:rgba(18,17,16,.36); --shadow:0 8px 24px rgba(28,27,25,.07);
   /* tipo: crece con el tamaño de texto del iPhone (rem sobre el estilo de texto del sistema) */
-  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,"Helvetica Neue",sans-serif;
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",system-ui,"Helvetica Neue",sans-serif;
   --t-display:2.824rem; --t-large:1.647rem; --t-title:1.294rem; --t-body:1rem; --t-sub:.882rem; --t-foot:.765rem; --t-cap:.706rem; --t-tab:11px; /* la barra de pestañas no crece, como en iOS */
   --t-num:min(var(--t-display),12vw);
   --display:var(--font); --w-display:700; --ls-display:-.01em; --photo:none; --chip:var(--surface-2); /* la cifra grande nunca se sale de la pantalla */
@@ -81,12 +81,12 @@
   --ink:#18181a; --muted:#6b6b70; --soft:#939398; --line:rgba(24,24,26,.08);
   --accent:#c4520f; --accent-soft:rgba(240,118,40,.13); --pop:#f07628; --pop-soft:rgba(240,118,40,.15);
   --photo:url("luz.webp"); --chip:rgba(24,24,26,.06); --glass:rgba(255,255,255,.84);
-  --display:ui-rounded,"SF Pro Rounded",var(--font); --w-display:700; --r-l:24px}
+  --w-display:700; --r-l:24px}
 @media (prefers-color-scheme: dark){
   :root[data-look="d"]{--bg:#0a0a0b; --surface:#1a1a1c; --surface-2:#262628; --field:#2a2a2d; --raised:#1f1f22;
     --ink:#f5f5f4; --muted:#a1a1a6; --soft:#7c7c82; --line:rgba(255,255,255,.08);
     --accent:#ff9a52; --accent-soft:rgba(255,140,60,.18); --on-accent:#1a0c03; --pop:#ff9a52; --pop-soft:rgba(255,140,60,.18);
-    --photo:url("luz-oscura.webp"); --chip:rgba(255,255,255,.1); --glass:rgba(30,30,32,.84)}
+    --photo:url("luz-oscura.webp"); --chip:rgba(255,255,255,.1); --seg:#3a3a3d; --glass:rgba(30,30,32,.84)}
   :root[data-look="a"]{--bg:#141312; --surface:#1f1d1b; --surface-2:#2b2926; --field:#322f2c; --raised:#252320;
     --accent:#ff8f5a; --accent-soft:rgba(255,143,90,.16); --on-accent:#1a0c05; --pop:#ff8f5a; --pop-soft:rgba(255,143,90,.16)}
   :root[data-look="b"]{--bg:#141312; --surface:#1f1d1b; --surface-2:#2b2926; --field:#322f2c; --raised:#252320}
@@ -233,30 +233,16 @@ header.top{display:flex;flex-direction:column;gap:var(--s1);padding-top:var(--s3
 body[data-view="resumen"]{background-image:var(--photo);background-repeat:no-repeat;background-position:top center;background-size:max(100%,640px) auto}
 .hz{display:flex;flex-direction:column;align-items:center;gap:var(--s3);padding-top:var(--s5)}
 .tq{display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center;padding:var(--s2) var(--s4) 0}
-/* Tarjetas como en la Cartera: cada cuenta con su material y un brillo de su color sobre el fondo. */
-.cards{display:flex;gap:14px;width:calc(100% + var(--gutter-l) + var(--gutter-r));margin:var(--s3) calc(-1 * var(--gutter-r)) 0 calc(-1 * var(--gutter-l));padding:10px 6% 34px;
-  overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain}
-.cards::-webkit-scrollbar{display:none}
-.tc{--gl:rgba(0,0,0,.3);flex:0 0 88%;max-width:380px;aspect-ratio:1.586;scroll-snap-align:center;position:relative;overflow:hidden;isolation:isolate;
-  display:flex;flex-direction:column;justify-content:space-between;padding:18px 20px;border:0;border-radius:18px;text-align:left;color:#fff;
-  box-shadow:0 22px 50px -14px var(--gl),0 0 60px -10px var(--gl),inset 0 0 0 .5px rgba(255,255,255,.3);transition:transform .3s var(--ease)}
-.tc:active{transform:scale(.98)}
-.tc::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(115deg,rgba(255,255,255,.3),rgba(255,255,255,0) 38%,rgba(255,255,255,0) 70%,rgba(255,255,255,.12))}
-.tc svg.art{position:absolute;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none}
-.tc .tt{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
-.tc .nm{font-size:1.55rem;font-weight:800;letter-spacing:-.03em;line-height:1}
-.tc .ty{font-size:10px;letter-spacing:.28em;font-weight:700;text-transform:uppercase;opacity:.9;padding-top:4px}
-.tc .bb{display:flex;justify-content:space-between;align-items:flex-end;gap:8px}
-.tc .lb{display:block;font-size:12px;font-weight:600;opacity:.85}
-.tc .am{display:block;font-size:1.7rem;font-weight:700;letter-spacing:-.02em;line-height:1.1}
-.tc .am small{font-size:.6em}
-.tc .nfc{width:22px;height:22px;opacity:.75}
-.tc.bbva{--gl:rgba(64,176,200,.45);background:linear-gradient(140deg,#4fb6c9,#2a8aa2)}
-.tc.revolut{--gl:rgba(120,120,130,.35);background:linear-gradient(140deg,#3a3a40,#17171a)}
-.tc.amex{--gl:rgba(200,204,212,.35);color:#17181b;background:linear-gradient(140deg,#ececef,#c4c6cc)}
-.tc.amex::after{background:linear-gradient(115deg,rgba(255,255,255,.6),rgba(255,255,255,0) 35%)}
-.tc.efectivo{--gl:rgba(110,160,110,.4);background:linear-gradient(140deg,#8fb88a,#5d8d5b)}
-.tc.otra{background:linear-gradient(140deg,#5a534b,#2e2a26)}
+/* Cuentas: un selector sencillo; la elegida decide qué movimientos se ven debajo. */
+.accs{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:4px;width:100%;margin-top:var(--s4);padding:4px;border-radius:var(--r-l);background:var(--chip);
+  -webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px)}
+.accs button{display:flex;flex-direction:column;align-items:center;gap:1px;min-height:56px;padding:6px 4px;border:0;border-radius:calc(var(--r-l) - 4px);background:none;color:var(--muted);min-width:0}
+.accs button span{font-size:var(--t-foot);font-weight:500;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.accs button b{font-size:var(--t-sub);font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap}
+.accs button[aria-selected="true"]{background:var(--seg,var(--surface));box-shadow:0 1px 6px rgba(0,0,0,.08)}
+.accs button[aria-selected="true"] span{color:var(--ink)}
+.accnote{font-size:var(--t-foot);color:var(--muted);text-align:center;min-height:44px;display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap}
+.accnote .linkbtn{font-size:var(--t-foot);min-height:44px}
 .tx{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:1px var(--s2);align-items:start;padding:14px 0;min-height:64px;border:0;border-top:.5px solid var(--line);background:none;text-align:left;width:100%}
 .list > .tx:first-child{border-top:0}
 .tx .c{font-weight:600;min-width:0;overflow-wrap:break-word}
@@ -268,10 +254,6 @@ body[data-view="resumen"]{background-image:var(--photo);background-repeat:no-rep
 .wbig{font-family:var(--display);font-size:var(--t-num);font-weight:var(--w-display);letter-spacing:-.02em;line-height:1.05;margin:2px 0}
 .wbig small{font-size:.5em;letter-spacing:0;margin-left:1px}
 .wsub{font-size:var(--t-sub);color:var(--muted);min-height:1.3em}
-.pdots{display:flex;gap:6px;padding:8px 12px;border-radius:var(--r-full);background:var(--chip);margin-top:-18px}
-.pdots:empty{display:none}
-.pdots i{width:6px;height:6px;border-radius:50%;background:var(--ink);opacity:.35;transition:opacity .2s}
-.pdots i.on{opacity:1}
 .skw{display:block;height:calc(var(--t-num) * 1.25);width:55%;border-radius:var(--r-s);background:var(--chip);margin:6px 0 8px}
 
 /* cifra principal del resto de pestañas */
@@ -464,8 +446,8 @@ svg.chart text{fill:var(--muted);font:500 26px var(--font)}
   <div id="v-resumen" class="view">
     <section class="hz" aria-label="Dinero">
       <div class="tq"><span class="wlabel">Te queda</span><span class="wbig num" id="wTotal"></span><span class="wsub num" id="wSub"></span></div>
-      <div class="cards" id="wCards" role="group" aria-label="Tus tarjetas"></div>
-      <div class="pdots" id="wDots" aria-hidden="true"></div>
+      <div class="accs" id="wAccs" role="tablist" aria-label="Cuentas"></div>
+      <p class="accnote" id="wNote"></p>
     </section>
 
     <section class="group" aria-labelledby="hUlt">
@@ -868,12 +850,8 @@ const despues = (p, t) => Math.max(new Date(p.fecha).getTime(), p.creado ? new D
 function saldoDe(s){ const t = new Date(s.a_fecha).getTime(); return s.saldo - D.pagos.filter(p => p.cuenta === s.cuenta && p.origen !== 'Descuadre' && despues(p, t)).reduce((a,p) => a + salida(p), 0); }
 // La cifra con los céntimos y el € más pequeños.
 const cifra = n => { const s = eur2(n), m = s.match(/^(.*?)(,\d\d)?\s€$/); return m ? `${esc(m[1])}<small>${m[2] || ''} €</small>` : esc(s); };
-// Tarjetas de Resumen: la elegida decide qué movimientos se ven debajo.
+// Cuentas de Resumen: la elegida decide qué movimientos se ven debajo.
 let tarjetas = [], tSel = 0;
-function tarjetaVista(){ const el = $('wCards'), c = el.firstElementChild; return c ? Math.max(0, Math.min(tarjetas.length - 1, Math.round(el.scrollLeft / (c.offsetWidth + 14)))) : 0; }
-function puntos(){ const k = tarjetaVista(); $('wDots').querySelectorAll('i').forEach((d, i) => d.classList.toggle('on', i === k)); if (k !== tSel){ tSel = k; renderUlt(); } }
-$('wCards').addEventListener('scroll', puntos, {passive: true});
-const claseTarjeta = c => ({bbva: 'bbva', revolut: 'revolut', amex: 'amex', efectivo: 'efectivo'})[c.toLowerCase()] || 'otra';
 // Fecha corta como en la Cartera: Hoy, Ayer, el día de la semana y después la fecha.
 function cuando(p){
   const d = p.dia, h = today(), dif = Math.round((new Date(h + 'T12:00:00Z') - new Date(d + 'T12:00:00Z')) / 864e5);
@@ -899,23 +877,22 @@ function renderDinero(){
   const sub = cur === now && pend > 0 ? `${eur(total - pend)} tras los ${eur(pend)} que faltan por pagar` : ss.length > 1 ? `Entre ${ss.map(s => s.cuenta).join(' y ')}` : '';
   $('wTotal').innerHTML = ss.length ? cifra(total) : 'Sin saldos';
   $('wSub').textContent = sub;
-  // Una tarjeta por cuenta con saldo, y la tarjeta de crédito con lo que lleva la factura que viene.
+  // Una cuenta por saldo, y la tarjeta de crédito con lo que lleva la factura que viene.
   tarjetas = ss.map(s => ({nombre: s.cuenta, cuentas: s.cuenta === 'BBVA' ? ['BBVA', 'BBVA (retención)'] : [s.cuenta], tipo: s.cuenta === 'Efectivo' ? 'En mano' : 'Débito', lb: 'Saldo de hoy', v: s.ahora, saldo: true}));
   D.deudas.filter(d => d.cada_mes && d.cierre && d.tarjeta && !d.pagada).forEach(d => {
     const h = today(), mf = Number(h.slice(8, 10)) > d.cierre ? addMonth(h.slice(0, 7), 2) : addMonth(h.slice(0, 7), 1), c = ciclo(d, mf);
     tarjetas.push({nombre: d.tarjeta, cuentas: [d.tarjeta], tipo: 'Crédito', lb: `Factura de ${monthName(mf, {month: 'long'})}`, v: c ? c.total : 0});
   });
-  $('wCards').innerHTML = tarjetas.map((t, i) => { const k = claseTarjeta(t.nombre); return `<button class="tc ${k}" data-i="${i}" aria-label="${esc(t.nombre)}, ${t.tipo}. ${t.lb}: ${eur2(t.v)}">
-    <span class="tt"><span class="nm">${esc(t.nombre)}</span><span class="ty">${t.tipo}</span></span>
-    <span class="bb"><span><span class="lb">${esc(t.lb)}</span><span class="am num">${cifra(t.v)}</span></span></span></button>`; }).join('');
-  $('wCards').querySelectorAll('.tc').forEach(b => b.onclick = () => {
-    const i = +b.dataset.i;
-    if (i !== tarjetaVista()) return b.scrollIntoView({behavior: 'smooth', inline: 'center', block: 'nearest'});
-    tarjetas[i].saldo ? editSaldos() : setView('mes');
-  });
-  $('wDots').innerHTML = tarjetas.length > 1 ? tarjetas.map(() => '<i></i>').join('') : '';
   tSel = Math.min(tSel, Math.max(0, tarjetas.length - 1));
-  $('wDots').querySelectorAll('i').forEach((d, i) => d.classList.toggle('on', i === tSel));
+  pintarCuentas();
+}
+function pintarCuentas(){
+  $('wAccs').innerHTML = tarjetas.map((t, i) => `<button role="tab" aria-selected="${i === tSel}" data-i="${i}" aria-label="${esc(t.nombre)}: ${eur2(t.v)}"><span>${esc(t.nombre)}</span><b>${eur2(t.v)}</b></button>`).join('');
+  $('wAccs').querySelectorAll('button').forEach(b => b.onclick = () => { tSel = +b.dataset.i; pintarCuentas(); });
+  const t = tarjetas[tSel];
+  $('wNote').innerHTML = t ? `${esc(t.lb)} · <button class="linkbtn" id="wAcc">${t.saldo ? 'Poner saldos' : 'Ver en Pagos'}</button>`
+    : '<button class="linkbtn" id="wAcc">Pon cuánto tienes en cada cuenta</button>';
+  $('wAcc').onclick = () => !t || t.saldo ? editSaldos() : setView('mes');
   renderUlt();
 }
 function editSaldos(){
