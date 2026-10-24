@@ -86,7 +86,7 @@
   --track:rgba(24,24,26,.07);
   --fill-good:linear-gradient(90deg,#3cc47a,#1b8a4b); --fill-warn:linear-gradient(90deg,#f0b24a,#b06c00);
   --fill-bad:linear-gradient(90deg,#f0705a,#c42f1c); --fill-acc:linear-gradient(90deg,#f6a066,#d45f17);
-  --col-off:linear-gradient(180deg,#f3d9c6,#ebc7ad); --col-sel:linear-gradient(180deg,#f58a3c,#c4520f); --glow:none}
+  --col-off:rgba(24,24,26,.11); --col-sel:linear-gradient(180deg,#3cc47a,#1b8a4b); --glow:none}
 @media (prefers-color-scheme: dark){
   :root[data-look="d"]{--bg:#0a0a0b; --surface:#1a1a1c; --surface-2:#262628; --field:#2a2a2d; --raised:#1f1f22;
     --ink:#f5f5f4; --muted:#a1a1a6; --soft:#7c7c82; --line:rgba(255,255,255,.08);
@@ -95,7 +95,7 @@
     --track:rgba(255,255,255,.09);
     --fill-good:linear-gradient(90deg,#2bb673,#5fdc9a); --fill-warn:linear-gradient(90deg,#d98a1c,#ffb340);
     --fill-bad:linear-gradient(90deg,#e5483a,#ff7b67); --fill-acc:linear-gradient(90deg,#e0702a,#ffb27a);
-    --col-off:linear-gradient(180deg,#4a3324,#3a2a20); --col-sel:linear-gradient(180deg,#ffb27a,#ff8a3d); --glow:0 0 10px -2px currentColor; --glass:rgba(30,30,32,.84)}
+    --col-off:rgba(255,255,255,.13); --col-sel:linear-gradient(180deg,#5fdc9a,#2bb673); --glow:0 0 10px -2px currentColor; --glass:rgba(30,30,32,.84)}
   :root[data-look="a"]{--bg:#141312; --surface:#1f1d1b; --surface-2:#2b2926; --field:#322f2c; --raised:#252320;
     --accent:#ff8f5a; --accent-soft:rgba(255,143,90,.16); --on-accent:#1a0c05; --pop:#ff8f5a; --pop-soft:rgba(255,143,90,.16)}
   :root[data-look="b"]{--bg:#141312; --surface:#1f1d1b; --surface-2:#2b2926; --field:#322f2c; --raised:#252320}
@@ -223,12 +223,10 @@ header.top{display:flex;flex-direction:column;gap:var(--s1);padding-top:var(--s3
 :root[data-look="d"] .ibtn svg.i{width:20px;height:20px}
 /* barras con color y degradado: verde si vas bien o ya está pagado, ámbar si vas justo, rojo si te pasas; naranja en Análisis */
 :root[data-look="d"] .meter{height:6px;border-radius:3px;background:var(--track);overflow:visible}
-:root[data-look="d"] .meter i{border-radius:3px;background:var(--fill-acc);box-shadow:var(--glow);color:transparent}
+:root[data-look="d"] .meter i{border-radius:3px;background:var(--fill-good);box-shadow:var(--glow);color:transparent}
 :root[data-look="d"] .meter.ok i{background:var(--fill-good);color:rgba(79,207,139,.5)}
 :root[data-look="d"] .meter.warn i{background:var(--fill-warn);color:rgba(255,179,64,.45)}
 :root[data-look="d"] .meter.bad i{background:var(--fill-bad);color:rgba(255,123,103,.5)}
-:root[data-look="d"] .bar i{background:var(--col-off);border-radius:7px}
-:root[data-look="d"] .bar.sel i{background:var(--col-sel);box-shadow:0 4px 12px -4px rgba(240,118,40,.55)}
 :root[data-look="d"] .check.done .tick svg{background:linear-gradient(145deg,#f58a3c,var(--accent))}
 :root[data-look="d"] .hero .status.ok{background:color-mix(in srgb,var(--good) 13%,transparent);color:var(--good)}
 :root[data-look="d"] .ico{background:linear-gradient(160deg,rgba(240,118,40,.18),rgba(240,118,40,.08))}
@@ -361,14 +359,19 @@ svg.chart text{fill:var(--muted);font:500 26px var(--font)}
 .rk b{font-weight:600}
 .rk b small{font-weight:400;color:var(--muted);font-size:var(--t-foot);margin-left:6px}
 .rk .meter{grid-column:1/-1}
-.bars{display:flex;align-items:flex-end;gap:0;height:160px;padding-top:28px}
-.bar{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end;background:none;border:0;padding:0;min-width:0}
-.bar i{display:block;width:calc(100% - 6px);max-width:22px;border-radius:6px;background:color-mix(in srgb,var(--muted) 40%,transparent);position:relative}
-.bar.sel i{background:var(--accent)}
-.bar span{font-size:var(--t-cap);color:var(--muted)}
-.bar.sel span{color:var(--accent);font-weight:700}
-.bar i em{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);font-style:normal;font-size:var(--t-foot);color:var(--ink);font-weight:700;white-space:nowrap;margin-bottom:6px}
-.bar:first-child i em{left:0;transform:none} .bar:last-child i em{left:auto;right:0;transform:none}
+/* 12 meses: columnas finas, una línea de media y los meses debajo, sin pisarse */
+.bars{display:flex;flex-direction:column;gap:8px;padding-top:6px}
+.plot{position:relative;display:flex;align-items:flex-end;gap:6px;height:140px;margin-top:18px;border-bottom:1px solid var(--line)}
+.bar{flex:1;height:100%;display:flex;align-items:flex-end;justify-content:center;background:none;border:0;padding:0;min-width:0}
+.bar i{display:block;width:100%;max-width:16px;border-radius:6px 6px 3px 3px;background:var(--col-off,color-mix(in srgb,var(--ink) 14%,transparent))}
+.bar.sel i{background:var(--col-sel,var(--accent))}
+.avg{position:absolute;left:0;right:0;border-top:1.5px dashed color-mix(in srgb,var(--muted) 70%,transparent);pointer-events:none}
+.lbls{display:flex;gap:6px}
+.lbls span{flex:1;text-align:center;font-size:var(--t-cap);color:var(--muted);white-space:nowrap;min-width:0}
+.lbls span.sel{color:var(--ink);font-weight:700}
+.bar{position:relative}
+.bar em{position:absolute;left:50%;transform:translateX(-50%);font-style:normal;font-size:var(--t-cap);font-weight:700;color:var(--ink);white-space:nowrap;margin-bottom:4px}
+.bar:last-child em{left:auto;right:0;transform:none} .bar:first-child em{left:0;transform:none}
 
 /* movimientos */
 .chips{display:flex;gap:var(--s2);overflow-x:auto;scrollbar-width:none;margin-inline:calc(-1 * var(--gutter-l)) calc(-1 * var(--gutter-r));padding-inline:var(--gutter-l) var(--gutter-r)}
@@ -1002,12 +1005,14 @@ function barras12(){
   const all12 = []; for (let i = 11; i >= 0; i--) all12.push(addMonth(cur, -i));
   const tot = all12.map(mm => sum(D.pagos.filter(p => p.mes === mm && p.tipo === 'Gasto')));
   const max = Math.max(1, ...tot);
-  $('bars').innerHTML = all12.map((mm,i) => `<button class="bar ${mm === cur ? 'sel' : ''}" data-m="${mm}" aria-label="${monthName(mm)}: ${eur(tot[i])}">
-      <i style="height:${Math.max(2, tot[i]/max*100)}%"></i>
-      <span aria-hidden="true">${(i % 2 === (11 % 2) || mm === cur) ? cap(monthName(mm,{month:'short'}).replace('.','').slice(0,3)) : ''}</span></button>`).join('');
+  const hoyM0 = monthKey(new Date()), cerr = tot.filter((v, i) => v > 0 && all12[i] !== hoyM0), media = cerr.length ? cerr.reduce((a,b) => a + b, 0) / cerr.length : 0;
+  const lbl = (mm, i) => (i % 2 === 1 || mm === cur) ? cap(monthName(mm,{month:'short'}).replace('.','').slice(0,3)) : '';
+  $('bars').innerHTML = `<div class="plot">${media ? `<div class="avg" style="bottom:${media / max * 100}%"></div>` : ''}${all12.map((mm,i) => `<button class="bar ${mm === cur ? 'sel' : ''}" data-m="${mm}" aria-label="${monthName(mm)}: ${eur(tot[i])}">
+      <i style="height:${Math.max(2, tot[i]/max*100)}%"></i>${mm === cur ? `<em class="num" style="bottom:${Math.max(2, tot[i]/max*100)}%">${eur(tot[i])}</em>` : ''}</button>`).join('')}</div>
+    <div class="lbls" aria-hidden="true">${all12.map((mm,i) => `<span class="${mm === cur ? 'sel' : ''}">${lbl(mm, i)}</span>`).join('')}</div>`;
   $('bars').querySelectorAll('.bar').forEach(b => b.onclick = () => irAMes(b.dataset.m));
   const hoyM = monthKey(new Date()), con = tot.filter((v, i) => v > 0 && all12[i] !== hoyM);
-  $('media').textContent = con.length ? `Media de los meses cerrados: ${eur(con.reduce((a,b)=>a+b,0)/con.length)}` : '';
+  $('media').textContent = con.length ? `Línea de puntos: tu media, ${eur(con.reduce((a,b)=>a+b,0)/con.length)}` : '';
 
 }
 let periodo = 1;
