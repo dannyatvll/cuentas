@@ -79,14 +79,23 @@
 /* d: zonas y luz cálida, como en las apps de banco del iPhone */
 :root[data-look="d"]{--bg:#f4f4f2; --surface:#ffffff; --surface-2:#ececea; --field:#ececea; --raised:#ffffff;
   --ink:#18181a; --muted:#6b6b70; --soft:#939398; --line:rgba(24,24,26,.08);
-  --accent:#c4520f; --accent-soft:rgba(240,118,40,.13); --pop:#f07628; --pop-soft:rgba(240,118,40,.15);
+  --accent:#b8490c; --accent-soft:rgba(240,118,40,.13); --pop:#f07628; --pop-soft:rgba(240,118,40,.15);
   --photo:url("luz.webp"); --chip:rgba(24,24,26,.06); --glass:rgba(255,255,255,.84);
-  --w-display:700; --r-l:24px}
+  --w-display:700; --r-l:24px;
+  /* barras de datos: degradado de un solo tono, la punta es la parte fuerte (≥3:1 sobre la tarjeta) */
+  --track:rgba(24,24,26,.07);
+  --fill-good:linear-gradient(90deg,#3cc47a,#1b8a4b); --fill-warn:linear-gradient(90deg,#f0b24a,#b06c00);
+  --fill-bad:linear-gradient(90deg,#f0705a,#c42f1c); --fill-acc:linear-gradient(90deg,#f6a066,#d45f17);
+  --col-off:linear-gradient(180deg,#f3d9c6,#ebc7ad); --col-sel:linear-gradient(180deg,#f58a3c,#c4520f); --glow:none}
 @media (prefers-color-scheme: dark){
   :root[data-look="d"]{--bg:#0a0a0b; --surface:#1a1a1c; --surface-2:#262628; --field:#2a2a2d; --raised:#1f1f22;
     --ink:#f5f5f4; --muted:#a1a1a6; --soft:#7c7c82; --line:rgba(255,255,255,.08);
     --accent:#ff9a52; --accent-soft:rgba(255,140,60,.18); --on-accent:#1a0c03; --pop:#ff9a52; --pop-soft:rgba(255,140,60,.18);
-    --photo:url("luz-oscura.webp"); --chip:rgba(255,255,255,.1); --seg:#3a3a3d; --glass:rgba(30,30,32,.84)}
+    --photo:url("luz-oscura.webp"); --chip:rgba(255,255,255,.1); --seg:#3a3a3d;
+    --track:rgba(255,255,255,.09);
+    --fill-good:linear-gradient(90deg,#2bb673,#5fdc9a); --fill-warn:linear-gradient(90deg,#d98a1c,#ffb340);
+    --fill-bad:linear-gradient(90deg,#e5483a,#ff7b67); --fill-acc:linear-gradient(90deg,#e0702a,#ffb27a);
+    --col-off:linear-gradient(180deg,#4a3324,#3a2a20); --col-sel:linear-gradient(180deg,#ffb27a,#ff8a3d); --glow:0 0 10px -2px currentColor; --glass:rgba(30,30,32,.84)}
   :root[data-look="a"]{--bg:#141312; --surface:#1f1d1b; --surface-2:#2b2926; --field:#322f2c; --raised:#252320;
     --accent:#ff8f5a; --accent-soft:rgba(255,143,90,.16); --on-accent:#1a0c05; --pop:#ff8f5a; --pop-soft:rgba(255,143,90,.16)}
   :root[data-look="b"]{--bg:#141312; --surface:#1f1d1b; --surface-2:#2b2926; --field:#322f2c; --raised:#252320}
@@ -212,7 +221,19 @@ header.top{display:flex;flex-direction:column;gap:var(--s1);padding-top:var(--s3
 :root[data-look="d"] .view{gap:40px}
 :root[data-look="d"] .ibtn{width:40px;height:40px;background:var(--chip);color:var(--ink);margin-left:8px}
 :root[data-look="d"] .ibtn svg.i{width:20px;height:20px}
-:root[data-look="d"] .meter{height:5px;background:var(--chip)}
+/* barras con color y degradado: verde si vas bien o ya está pagado, ámbar si vas justo, rojo si te pasas; naranja en Análisis */
+:root[data-look="d"] .meter{height:6px;border-radius:3px;background:var(--track);overflow:visible}
+:root[data-look="d"] .meter i{border-radius:3px;background:var(--fill-acc);box-shadow:var(--glow);color:transparent}
+:root[data-look="d"] .meter.ok i{background:var(--fill-good);color:rgba(79,207,139,.5)}
+:root[data-look="d"] .meter.warn i{background:var(--fill-warn);color:rgba(255,179,64,.45)}
+:root[data-look="d"] .meter.bad i{background:var(--fill-bad);color:rgba(255,123,103,.5)}
+:root[data-look="d"] .bar i{background:var(--col-off);border-radius:7px}
+:root[data-look="d"] .bar.sel i{background:var(--col-sel);box-shadow:0 4px 12px -4px rgba(240,118,40,.55)}
+:root[data-look="d"] .check.done .tick svg{background:linear-gradient(145deg,#f58a3c,var(--accent))}
+:root[data-look="d"] .hero .status.ok{background:color-mix(in srgb,var(--good) 13%,transparent);color:var(--good)}
+:root[data-look="d"] .ico{background:linear-gradient(160deg,rgba(240,118,40,.18),rgba(240,118,40,.08))}
+:root[data-look="d"] .accs button[aria-selected="true"]{box-shadow:0 1px 2px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.06)}
+@media (prefers-contrast: more){:root[data-look="d"] .meter i{background:var(--accent);box-shadow:none} :root[data-look="d"] .meter.ok i{background:var(--good)} :root[data-look="d"] .meter.warn i{background:var(--warn)} :root[data-look="d"] .meter.bad i{background:var(--bad)}}
 /* pestañas flotantes con la elegida en píldora */
 :root[data-look="d"] .tabs{left:50%;right:auto;transform:translateX(-50%);bottom:calc(10px + env(safe-area-inset-bottom,0px));width:min(440px,calc(100% - 24px));border:.5px solid var(--line);border-radius:var(--r-full);grid-template-columns:repeat(5,1fr);padding:4px;box-shadow:0 10px 30px rgba(0,0,0,.18)}
 :root[data-look="d"] .tabs button{border-radius:var(--r-full);min-height:54px;color:var(--muted)}
@@ -860,8 +881,8 @@ function renderResumen(){
       return `<button class="item tope" data-cat="${esc(t.incluye[0])}">${icon(t.incluye[0])}<span class="c">${esc(t.categoria)}</span>
         <span class="a num ${mucho ? 'neg-bad' : over ? 'neg-warn' : ''}">${eur(over ? -q : q)}<small>${over ? ' de más' : ' libres'}</small></span>
         <span class="s num">Presupuesto ${eur(t.tope)}${near ? ' · <span class="tag">vas rápido</span>' : ''}</span>
-        <span class="meter ${mucho ? 'bad' : over || near ? 'warn' : ''}" role="img" aria-label="${Math.round(w)} % gastado"><i style="width:${w}%"></i></span></button>`;
-    }).join('') + (sinTope.length ? `<button class="item" id="sinTope">${icon('_')}<span class="c">Sin presupuesto</span><span class="a num free">${eur(sum(sinTope.map(x => x.g)))}</span>
+        <span class="meter ${mucho ? 'bad' : over || near ? 'warn' : 'ok'}" role="img" aria-label="${Math.round(w)} % gastado"><i style="width:${w}%"></i></span></button>`;
+    }).join('') + (sinTope.length ? `<button class="item" id="sinTope">${icon('_')}<span class="c">Sin presupuesto</span><span class="a num free">${eur(sinTope.reduce((a, x) => a + x.g, 0))}</span>
       <span class="s">${sinTope.map(x => esc(x.t.categoria)).join(', ')} · no cuentan arriba</span></button>` : '');
   if ($('sinTope')) $('sinTope').onclick = () => setView('analisis');
   $('topes').querySelectorAll('.tope').forEach(b => b.onclick = () => { const t = topes.find(x => x.incluye[0] === b.dataset.cat); catSel = {nombre: t.categoria, incluye: t.incluye}; busqueda = ''; $('search').value = ''; movLimit = 60; setView('movs'); });
@@ -1540,7 +1561,7 @@ function renderDeudas(){
       <span class="h"><span>${esc(d.nombre)}</span><span class="num">${d.pagada ? 'Ya pagada' : eur(d.pendiente)}</span></span>
       <span class="s">${d.pagada ? (d.pagada_el ? 'El ' + new Date(d.pagada_el+'T12:00:00Z').toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'}) : '') :
         [d.cuota ? `${eur(d.cuota)}/mes` : d.cada_mes ? 'Tarjeta, se paga entera cada mes' : 'Sin cuota fija', base ? `${Math.round(pct)} % pagado` : '', d.fin && !d.cada_mes ? `${d.cuota ? 'hasta' : 'para'} ${monthName(d.fin.slice(0,7),{month:'short',year:'numeric'}).replace('.','')}` : ''].filter(Boolean).join(' · ')}</span>
-      ${!d.pagada && base ? `<span class="meter"><i style="width:${pct}%"></i></span>` : ''}
+      ${!d.pagada && base ? `<span class="meter ok"><i style="width:${pct}%"></i></span>` : ''}
     </button>`;
   };
   $('debts').innerHTML = act.map(row).join('') || '<p class="empty">No te queda ninguna deuda.</p>';
@@ -1560,8 +1581,11 @@ function debtChart(start, plan, now, hoyV){
   const years = pts.map((p,i) => ({i, y: p.mes.slice(0,4), m: p.mes.slice(5)})).filter(p => p.i === 0 || (p.m === '01' && p.i > 3));
   return `<svg class="chart" viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${esc(`Plan de deuda: de ${eur(start)} a 0 € en ${monthName(pts[pts.length-1].mes)}. Hoy debes ${eur(hoyV)}.`)}">
     <line x1="${L}" x2="${W-R}" y1="${H-B}" y2="${H-B}" stroke="var(--line)"/>
-    <path d="${line}" fill="none" stroke="var(--ink)" stroke-width="2" stroke-dasharray="6 6" stroke-linejoin="round"/>
-    <circle cx="${x(ni)}" cy="${y(hoyV)}" r="8" fill="var(--pop)" stroke="var(--ink)" stroke-width="2"/>
+    <defs><linearGradient id="dg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--good)" stop-opacity=".22"/><stop offset="1" stop-color="var(--good)" stop-opacity="0"/></linearGradient></defs>
+    <path d="${line}L${x(pts.length-1)},${H-B}L${x(0)},${H-B}Z" fill="url(#dg)"/>
+    <path d="${line}" fill="none" stroke="var(--good)" stroke-width="2.5" stroke-dasharray="1 7" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="${x(ni)}" cy="${y(hoyV)}" r="14" fill="var(--pop)" opacity=".2"/>
+    <circle cx="${x(ni)}" cy="${y(hoyV)}" r="7" fill="var(--pop)" stroke="var(--surface)" stroke-width="3"/>
     ${years.map(p => `<text x="${x(p.i)}" y="${H-6}" text-anchor="${p.i === 0 ? 'start' : 'middle'}">${p.i === 0 ? monthName(pts[0].mes,{month:'short'}).replace('.','') + ' ' + p.y : p.y}</text>`).join('')}
     <text x="${W-R}" y="${y(0) - 12}" text-anchor="end">0 €</text>
   </svg>`;
