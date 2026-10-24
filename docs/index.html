@@ -359,6 +359,12 @@ svg.chart text{fill:var(--muted);font:500 26px var(--font)}
 .days{display:flex;flex-direction:column;gap:var(--s4)}
 #moreMovs{align-self:center}
 
+/* aviso de fin de mes */
+.aviso{display:flex;align-items:center;justify-content:space-between;gap:var(--s3);padding:var(--s3) var(--s4);border-radius:var(--r-l);background:var(--glass);
+  -webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);box-shadow:inset 0 0 0 .5px var(--line);font-size:var(--t-sub);margin-top:var(--s3)}
+.aviso p b{display:block;font-size:var(--t-body)}
+#hRef.gira svg{animation:gira .8s linear infinite}
+@keyframes gira{to{transform:rotate(360deg)}}
 /* estados */
 .banner{display:flex;align-items:center;justify-content:space-between;gap:var(--s3);background:var(--surface);border-radius:var(--r-l);padding:var(--s2) var(--s4);font-size:var(--t-sub);box-shadow:inset 0 0 0 1.5px var(--bad)}
 .banner p{padding:var(--s2) 0}
@@ -434,6 +440,7 @@ svg.chart text{fill:var(--muted);font:500 26px var(--font)}
       <h1 id="title">Resumen</h1>
       <div class="hact">
         <button class="ibtn acc" id="hAdd" aria-label="Añadir movimiento" hidden><span data-ico="ui-plus"></span></button>
+        <button class="ibtn" id="hRef" aria-label="Actualizar"><span data-ico="ui-refresh"></span></button>
         <button class="ibtn" id="hSet" aria-label="Ajustes"><span data-ico="ui-settings"></span></button>
       </div>
     </div>
@@ -444,6 +451,7 @@ svg.chart text{fill:var(--muted);font:500 26px var(--font)}
 
   <!-- RESUMEN -->
   <div id="v-resumen" class="view">
+    <div class="aviso" id="aviso" hidden><p id="avisoTxt"></p><button class="linkbtn" id="avisoOk">Hecho</button></div>
     <section class="hz" aria-label="Dinero">
       <div class="tq"><span class="wlabel">Te queda</span><span class="wbig num" id="wTotal"></span><span class="wsub num" id="wSub"></span></div>
       <div class="accs" id="wAccs" role="tablist" aria-label="Cuentas"></div>
@@ -664,7 +672,7 @@ async function all(table, select, order){
   }
 }
 function prepPago(p){ p.mes = monthKey(p.fecha); p.dia = dayKey(p.fecha); p.importe = Number(p.importe); return p; }
-function prepDeuda(d){ ['pendiente','tin','cuota'].forEach(k => d[k] = d[k] == null ? null : Number(d[k])); return d; }
+function prepDeuda(d){ ['pendiente','tin','cuota','inicial'].forEach(k => d[k] = d[k] == null ? null : Number(d[k])); return d; }
 // Mientras llegan los datos, bloques grises con la forma de lo que viene.
 const skRows = n => Array.from({length: n}, () => '<div class="skrow" aria-hidden="true"><span class="sk"></span><span class="sk w"></span><span class="sk"></span><span class="sk"></span></div>').join('');
 function esqueleto(){
@@ -784,6 +792,18 @@ async function nuevos(){
 }
 $('hAdd').onclick = () => editPago(null);
 $('hSet').onclick = () => ajustes();
+// Actualizar a mano: vuelve a traer todo de la base de datos.
+$('hRef').onclick = async () => { const b = $('hRef'); if (b.classList.contains('gira')) return; b.classList.add('gira'); try { await load(); if ($('estado').hidden) toast('Actualizado'); } finally { b.classList.remove('gira'); } };
+// Fin de mes: recuerda pasar las exportaciones del banco (los 3 últimos días y los 3 primeros del mes siguiente).
+function avisoMes(){
+  const h = today(), dia = +h.slice(8, 10), m = h.slice(0, 7), ult = new Date(Date.UTC(+m.slice(0, 4), +m.slice(5, 7), 0)).getUTCDate();
+  const mes = dia <= 3 ? addMonth(m, -1) : dia >= ult - 2 ? m : null;
+  let hecho = false; try { hecho = !!mes && localStorage.getItem('cuentas.export.' + mes) === '1'; } catch {}
+  $('aviso').hidden = !mes || hecho;
+  if (!mes || hecho) return;
+  $('avisoTxt').innerHTML = `<b>Cierre de ${monthName(mes, {month: 'long'})}</b>Descarga los movimientos de BBVA, Revolut y Amex y mándamelos por el chat: lo meto todo y cuadro los saldos.`;
+  $('avisoOk').onclick = () => { try { localStorage.setItem('cuentas.export.' + mes, '1'); } catch {} $('aviso').hidden = true; };
+}
 $('aAdd').onclick = () => editPago(null);
 
 function render(){
@@ -810,7 +830,7 @@ const tono = cat => cat === 'Ingreso' ? 'var(--good)' : cat === 'Sin categoría'
 const icon = cat => `<span class="ico" style="--c:${tono(cat)}" aria-hidden="true">${svg(cat)}</span>`;
 
 function renderResumen(){
-  renderDinero(); renderProximo();
+  renderDinero(); renderProximo(); avisoMes();
   const {pagos, topes, plan} = D;
   const mp = pagos.filter(p => p.mes === cur);
   const gastos = mp.filter(p => p.tipo === 'Gasto');
@@ -1504,12 +1524,14 @@ function renderDeudas(){
   $('debtVsPlan').textContent = planHoy ? (total <= planHoy.deuda_final + 1 ? `Vas por delante del plan: tocaba ${eur(planHoy.deuda_final)} a final de ${monthName(planHoy.mes,{month:'long'})}.` : `Vas ${eur(total - planHoy.deuda_final)} por detrás del plan de ${monthName(planHoy.mes,{month:'long'})}.`) : 'La línea es el plan; el punto, hoy.';
   const row = d => {
     const pagado = D.pm.filter(r => r.tipo === 'deuda' && r.ref_id === d.id).reduce((s,r) => s + r.amortizado, 0);
-    const pct = d.pendiente + pagado ? pagado / (d.pendiente + pagado) * 100 : 100;
+    // La barra mide lo pagado sobre lo que pediste; si no lo sabemos, sobre lo marcado aquí.
+    const base = d.inicial || (pagado ? d.pendiente + pagado : 0);
+    const pct = base ? Math.max(0, Math.min(100, (base - d.pendiente) / base * 100)) : 0;
     return `<button class="debt" data-id="${d.id}">
       <span class="h"><span>${esc(d.nombre)}</span><span class="num">${d.pagada ? 'Liquidada' : eur(d.pendiente)}</span></span>
       <span class="s">${d.pagada ? (d.pagada_el ? 'El ' + new Date(d.pagada_el+'T12:00:00Z').toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'}) : '') :
-        [d.cuota ? `${eur(d.cuota)}/mes` : 'Pago único', d.fin ? `hasta ${monthName(d.fin.slice(0,7),{month:'short',year:'numeric'}).replace('.','')}` : ''].filter(Boolean).join(' · ')}</span>
-      ${!d.pagada && pagado ? `<span class="meter"><i style="width:${pct}%"></i></span>` : ''}
+        [d.cuota ? `${eur(d.cuota)}/mes` : 'Pago único', base ? `${Math.round(pct)} % pagado` : '', d.fin ? `hasta ${monthName(d.fin.slice(0,7),{month:'short',year:'numeric'}).replace('.','')}` : ''].filter(Boolean).join(' · ')}</span>
+      ${!d.pagada && base ? `<span class="meter"><i style="width:${pct}%"></i></span>` : ''}
     </button>`;
   };
   $('debts').innerHTML = act.map(row).join('') || '<p class="empty">No te queda ninguna deuda.</p>';
@@ -1549,6 +1571,7 @@ function editDeuda(d, mes = cur){
       <label class="f">Nombre<input id="dn" required value="${esc(d?.nombre || '')}" placeholder="Ej. Préstamo coche"></label>
       <div class="grid2">
         <label class="f">Pendiente hoy (€)<input id="dp" inputmode="decimal" autocomplete="off" required value="${d ? String(d.pendiente).replace('.',',') : ''}"></label>
+        <label class="f">Lo que pediste (€)<input id="dini" inputmode="decimal" autocomplete="off" value="${d?.inicial ? String(d.inicial).replace('.',',') : ''}" placeholder="Para la barra"></label>
         <label class="f">TIN (%)<input id="dt" inputmode="decimal" autocomplete="off" value="${d?.tin ? String(d.tin).replace('.',',') : ''}" placeholder="0"></label>
         <label class="f">Cuota al mes (€)<input id="dc" inputmode="decimal" autocomplete="off" value="${d?.cuota ? String(d.cuota).replace('.',',') : ''}"></label>
         <label class="f">Cuotas que quedan<input id="dr" inputmode="numeric" autocomplete="off" value="${d?.cuotas_restantes ?? ''}"></label>
@@ -1589,7 +1612,8 @@ function editDeuda(d, mes = cur){
         const row = {nombre: $('dn').value.trim(), pendiente: r2(pend), tin: isFinite(tin) ? tin : 0, cuota: cuota == null ? null : r2(cuota),
           cuotas_restantes: $('dr').value ? parseInt($('dr').value) : null, fin: $('df').value ? $('df').value + '-01' : null,
           cuenta: $('dcu').value || null, notas: $('dno').value.trim() || null, cada_mes: !cuota && $('dcm').checked,
-          cierre: (n => n >= 1 && n <= 31 ? n : null)(parseInt($('dci').value))};
+          cierre: (n => n >= 1 && n <= 31 ? n : null)(parseInt($('dci').value)),
+          inicial: (n => isFinite(n) && n > 0 ? r2(n) : null)($('dini').value ? parseNum($('dini').value) : NaN)};
         let pagaMes = null;
         if (sumada) { pagaMes = parseNum($('dmes').value); if (!isFinite(pagaMes) || pagaMes <= 0) return fieldErr($('dmes'), 'Escribe cuánto pagas este mes.'); }
         if (nuevo || Math.abs(row.pendiente - d.pendiente) > 0.005) row.a_fecha = today();
