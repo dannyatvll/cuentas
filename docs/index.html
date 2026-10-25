@@ -1615,10 +1615,12 @@ function ciclo(d, m = cur){
   const tj = d.tarjeta || d.cuenta;
   if (!d.cada_mes || !d.cierre || !tj) return null;
   const dd = String(d.cierre).padStart(2, '0'), ini = `${addMonth(m, -2)}-${dd}`, fin = `${addMonth(m, -1)}-${dd}`;
-  const total = D.pagos.filter(p => p.cuenta === tj && p.dia > ini && p.dia <= fin).reduce((a, p) => a + p.importe, 0);
+  // Si ya tienes el extracto de ese cierre (pendiente a fecha del cierre), manda su importe.
+  const ext = d.a_fecha && d.a_fecha.slice(0, 10) === fin && d.pendiente != null;
+  const total = ext ? Number(d.pendiente) : D.pagos.filter(p => p.cuenta === tj && p.dia > ini && p.dia <= fin).reduce((a, p) => a + p.importe, 0);
   const dia = k => new Date(k + 'T12:00:00Z').toLocaleDateString('es-ES', {day: 'numeric', month: 'short', timeZone: 'UTC'}).replace('.', '');
   const sig = new Date(ini + 'T12:00:00Z'); sig.setUTCDate(sig.getUTCDate() + 1);
-  return {total: r2(total), texto: `Lo gastado hasta el ${dia(fin)}`, abierto: today() <= fin, cierre: d.cierre};
+  return {total: r2(total), texto: ext ? `Factura cerrada el ${dia(fin)}` : `Lo gastado hasta el ${dia(fin)}`, abierto: today() <= fin, cierre: d.cierre};
 }
 function fijosDelMes(m = cur){ return fijosBase(m).filter(f => pmDe('fijo', f.id, m) || decDe('fijo', f.id, m)?.accion !== 'saltar'); }
 function cuotasDelMes(m = cur){
