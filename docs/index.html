@@ -464,6 +464,11 @@ svg.chart text{fill:var(--muted);font:500 26px var(--font)}
 .viaje .goal svg.i{color:#ff9f5a}
 .sheet > *{flex-shrink:0}
 .sheet > .ghrow.sm{margin-top:var(--s2)}
+.cierre{display:flex;flex-direction:column;gap:2px;margin-bottom:var(--s3)}
+.cierre > span{font-size:var(--t-sub);color:var(--muted)}
+.cierre > b{font-size:calc(var(--t-num) * .78);font-weight:700;letter-spacing:-.02em;line-height:1.08;font-variant-numeric:tabular-nums}
+.cierre > b small{font-size:.5em}
+.civer{display:block;margin:var(--s3) auto 0}
 .vjsum{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .vjsum > div{background:var(--chip);border-radius:16px;padding:12px 14px;display:flex;flex-direction:column;gap:2px}
 .vjsum span{font-size:var(--t-foot);color:var(--muted)} .vjsum b{font-size:var(--t-title);font-variant-numeric:tabular-nums}
@@ -726,6 +731,11 @@ const parseNum = v => Number(String(v).replace(/\s|€/g,'').replace(/\.(?=\d{3}
 const r2 = n => Math.round(n * 100) / 100;
 const sum = arr => arr.reduce((s,p) => s + p.importe, 0);
 
+// Mes económico: empieza el día que entra la nómina. La tabla meses guarda desde qué día cuenta cada mes que cierras;
+// sin fila, el mes es el del calendario.
+let MESES = [];
+const mesDe = dia => { const c = dia.slice(0, 7); let r = null; for (const x of MESES) if (x.desde <= dia && (!r || x.desde > r.desde)) r = x; return r && r.mes > c ? r.mes : c; };
+const mesHoy = () => mesDe(today());
 let D = null, cur = monthKey(new Date()), view = 'resumen', filtro = 'todos', busqueda = '', catSel = null, movLimit = 60;
 try { const v = localStorage.getItem('cuentas.view'); if (v) view = v; } catch {}
 
@@ -797,7 +807,7 @@ async function all(table, select, order){
     from += 1000;
   }
 }
-function prepPago(p){ p.mes = monthKey(p.fecha); p.dia = dayKey(p.fecha); p.importe = Number(p.importe); return p; }
+function prepPago(p){ p.dia = dayKey(p.fecha); p.mes = mesDe(p.dia); p.importe = Number(p.importe); return p; }
 function prepDeuda(d){ ['pendiente','tin','cuota','inicial'].forEach(k => d[k] = d[k] == null ? null : Number(d[k])); return d; }
 // Mientras llegan los datos, bloques grises con la forma de lo que viene.
 const skRows = n => Array.from({length: n}, () => '<div class="skrow" aria-hidden="true"><span class="sk"></span><span class="sk w"></span><span class="sk"></span><span class="sk"></span></div>').join('');
@@ -814,7 +824,7 @@ async function load(){
   $('app').setAttribute('aria-busy', 'true');
   $('estadoBtn').disabled = true;
   try {
-    const [pagos, topes, plan, deudas, fijos, pm, saldos, ingresos, dec, viajes, partidas] = await Promise.all([
+    const [pagos, topes, plan, deudas, fijos, pm, saldos, ingresos, dec, viajes, partidas, meses] = await Promise.all([
       all('pagos', COLS_PAGOS, 'fecha'),
       all('topes', 'categoria,tope,incluye'),
       all('plan_mes', 'mes,ingresos,vida,deuda_final,nota'),
@@ -826,7 +836,9 @@ async function load(){
       all('mes_decision', '*').catch(() => []),
       all('viajes', '*').catch(() => []),
       all('viaje_partidas', '*').catch(() => []),
+      all('meses', '*').catch(() => []),
     ]);
+    MESES = meses;
     pagos.forEach(prepPago);
     topes.forEach(t => t.tope = Number(t.tope));
     plan.forEach(p => { p.mes = p.mes.slice(0,7); p.deuda_final = Number(p.deuda_final); p.vida = Number(p.vida); p.ingresos = Number(p.ingresos); });
@@ -842,6 +854,7 @@ async function load(){
     viajes.forEach(v => v.presupuesto = Number(v.presupuesto));
     partidas.forEach(x => x.importe = Number(x.importe));
     D = {pagos, topes, plan, deudas, fijos, pm, saldos, ingresos, dec, viajes, partidas};
+    if (!cargadoEn) cur = mesHoy();
     cargadoEn = Date.now(); estado(''); $('app').classList.remove('sindatos');
     render();
   } catch (err) {
@@ -873,7 +886,7 @@ $('sheet').addEventListener('submit', e => { if (guardando) { e.preventDefault()
 $('sheet').addEventListener('click', e => { if (guardando && e.target.closest('button')) { e.preventDefault(); e.stopImmediatePropagation(); } }, true);
 
 function months(){
-  const now = monthKey(new Date());
+  const now = mesHoy();
   const first = D.pagos.length ? D.pagos[D.pagos.length-1].mes : now;
   const out = []; for (let m = first; m <= addMonth(now, 1); m = addMonth(m, 1)) out.push(m);
   return out;
@@ -895,7 +908,7 @@ function setView(v){
   $('title').textContent = TITLES[v];
   $('hAdd').hidden = v !== 'movs';
   $('mchips').hidden = v === 'deudas' || v === 'resumen';
-  if (v === 'resumen') cur = monthKey(new Date());  // Resumen es siempre hoy
+  if (v === 'resumen') cur = mesHoy();  // Resumen es siempre hoy
   scrollTo(0, 0); navbar();
   if (D) render();
 }
@@ -927,6 +940,14 @@ $('hSet').onclick = () => ajustes();
 $('hRef').onclick = async () => { const b = $('hRef'); if (b.classList.contains('gira')) return; b.classList.add('gira'); try { await load(); if ($('estado').hidden) toast('Actualizado'); } finally { b.classList.remove('gira'); } };
 // Fin de mes: recuerda pasar las exportaciones del banco (los 3 últimos días y los 3 primeros del mes siguiente).
 function avisoMes(){
+  const nom = nominaSinCerrar();
+  if (nom) {
+    $('aviso').hidden = false;
+    $('avisoTxt').innerHTML = `<b>Ha entrado la nómina</b>Cierra ${mesCorto(nom.mes)} y empieza ${mesCorto(addMonth(nom.mes, 1))} desde el día ${+nom.dia.slice(8, 10)}.`;
+    $('avisoOk').textContent = `Cerrar ${mesCorto(nom.mes)}`; $('avisoOk').onclick = () => cerrarMes(nom);
+    return;
+  }
+  $('avisoOk').textContent = 'Hecho';
   const h = today(), dia = +h.slice(8, 10), m = h.slice(0, 7), ult = new Date(Date.UTC(+m.slice(0, 4), +m.slice(5, 7), 0)).getUTCDate();
   const mes = dia <= 3 ? addMonth(m, -1) : dia >= ult - 2 ? m : null;
   let hecho = false; try { hecho = !!mes && localStorage.getItem('cuentas.export.' + mes) === '1'; } catch {}
@@ -936,6 +957,39 @@ function avisoMes(){
   $('avisoOk').onclick = () => { try { localStorage.setItem('cuentas.export.' + mes, '1'); } catch {} $('aviso').hidden = true; };
 }
 $('aAdd').onclick = () => editPago(null);
+// La nómina de la segunda quincena que aún cuenta en su mes del calendario: toca cerrar ese mes.
+function nominaSinCerrar(){
+  const h = today();
+  return D.pagos.filter(p => p.tipo === 'Ingreso' && p.importe >= 1000 && /n[oó]mina/i.test(p.comercio) && +p.dia.slice(8, 10) >= 15
+    && diasEntre(p.dia, h) <= 20 && p.mes === p.dia.slice(0, 7) && !MESES.some(x => x.mes === addMonth(p.mes, 1)))
+    .sort((a, b) => b.fecha.localeCompare(a.fecha))[0] || null;
+}
+// Cerrar un mes: lo que tenías justo antes de la nómina es lo que te sobró, y desde ese día empieza el mes siguiente.
+function cerrarMes(nom){
+  const vie = nom.mes, nue = addMonth(vie, 1), dd = +nom.dia.slice(8, 10);
+  // Solo bancos: el efectivo va aparte.
+  const bancos = D.saldos.filter(s => s.cuenta !== 'Efectivo'), enCuentas = new Set(bancos.map(s => s.cuenta)), ef = D.saldos.find(s => s.cuenta === 'Efectivo');
+  const sobra = r2(bancos.reduce((a, s) => a + saldoDe(s), 0) + D.pagos.filter(p => enCuentas.has(p.cuenta) && p.origen !== 'Descuadre' && p.dia >= nom.dia).reduce((a, p) => a + salida(p), 0));
+  const antes = D.pagos.filter(p => p.mes === vie && p.dia < nom.dia);
+  const entro = sum(antes.filter(p => p.tipo === 'Ingreso')), gastos = antes.filter(p => p.tipo === 'Gasto'), porCat = {};
+  gastos.forEach(p => porCat[p.categoria] = (porCat[p.categoria] || 0) + p.importe);
+  const top = Object.entries(porCat).sort((a, b) => b[1] - a[1]).slice(0, 3);
+  openSheet(`${hd(`Cerrar ${mesCorto(vie)}`)}
+    <div class="cierre"><span>Acabaste ${mesCorto(vie)} con</span><b class="${sobra < 0 ? 'neg-bad' : ''}">${cifra(sobra)}</b>
+      <p class="small muted">Lo que tenías en el banco justo antes de la nómina, según los saldos que has puesto${ef ? `, sin contar el efectivo (${eur(saldoDe(ef))})` : ''}.</p></div>
+    <div class="vjsum"><div><span>Te entró</span><b>${cifra(entro)}</b></div><div><span>Gastaste</span><b>${cifra(sum(gastos))}</b></div></div>
+    ${top.length ? `<p class="small muted">Lo que más: ${top.map(([c, v]) => `${esc(c.toLowerCase())} ${eur(v)}`).join(', ')}.</p>` : ''}
+    <p class="small muted">Lo que pagues desde el ${dd} de ${monthName(vie, {month: 'long'})} cuenta ya en ${mesCorto(nue)}.</p>
+    <div class="actions"><button class="primary" id="ciOk">Empezar ${mesCorto(nue)}</button></div>
+    <button class="linkbtn civer" id="ciVer">Ver los gastos de ${mesCorto(vie)}</button>`, () => {
+    $('ciVer').onclick = () => { closeSheet(); cur = vie; movLimit = 60; setView('movs'); };
+    $('ciOk').onclick = async () => {
+      let r; try { [r] = await write(sb.from('meses').insert({mes: nue, desde: nom.dia, sobrante: sobra})); } catch { return; }
+      MESES.push(r); D.pagos.forEach(p => p.mes = mesDe(p.dia)); cur = mesHoy();
+      closeSheet(); render(); toast(`Empiezas ${mesCorto(nue)}`);
+    };
+  });
+}
 
 function render(){
   const ms = months();
@@ -948,7 +1002,7 @@ function render(){
   const centra = () => { const mc = $('mchips'), r = sel.getBoundingClientRect(), c = mc.getBoundingClientRect(); mc.scrollLeft += r.left - c.left - (c.width - r.width) / 2; };
   if (sel) { centra(); requestAnimationFrame(centra); }
   // El número de la pestaña: lo que está sin categoría este mes.
-  const sinN = D.pagos.filter(p => p.categoria === 'Sin categoría' && p.mes === monthKey(new Date())).length;
+  const sinN = D.pagos.filter(p => p.categoria === 'Sin categoría' && p.mes === mesHoy()).length;
   $('sinDot').hidden = !sinN; $('sinDot').textContent = sinN;
   $('sinDot').closest('button').setAttribute('aria-label', 'Gastos' + (sinN ? `, ${sinN} sin categoría` : ''));
   ({resumen: renderResumen, movs: renderMovs, analisis: renderAnalisis, mes: renderMes, deudas: renderDeudas})[view]();
@@ -977,28 +1031,34 @@ function paraGastar(m = cur){
   const vidaT = planMes ? planMes.vida : D.topes.reduce((s, t) => s + t.tope, 0);
   // De más: lo que pasa de cada presupuesto y todo lo de las categorías sin presupuesto (viajes, tabaco…).
   const deMas = r2(filas.reduce((a, {t, g}) => a + Math.max(0, g - t.tope), 0));
-  const now = monthKey(new Date()), dias = new Date(Date.UTC(+m.slice(0,4), +m.slice(5,7), 0)).getUTCDate();
-  const hoy = m === now ? +today().slice(8, 10) : m > now ? 0 : dias;
+  const now = mesHoy(), {desde, hasta} = rangoMes(m), dias = diasEntre(desde, hasta) + 1;
+  const hoy = m === now ? diasEntre(desde, today()) + 1 : m > now ? 0 : dias;
   return {filas, vidaG, vidaT, deMas, dias, hoy};
+}
+// Días que abarca un mes: desde su nómina (o el día 1) hasta la víspera de la nómina siguiente (o fin de mes).
+function rangoMes(m){
+  const a = MESES.find(x => x.mes === m), b = MESES.find(x => x.mes === addMonth(m, 1));
+  const fin = new Date(Date.UTC(+m.slice(0, 4), +m.slice(5, 7), 0)).toISOString().slice(0, 10);
+  return {desde: a ? a.desde : m + '-01', hasta: b ? addDay(b.desde, -1) : fin};
 }
 // Lo que falta por pagar ahora: lo pendiente de este mes y las facturas de tarjeta ya cerradas
 // (la Amex cierra el 24 y se carga en BBVA el mes siguiente; al marcarla pagada vuelve a 0).
 function porPagar(){
-  const now = monthKey(new Date()), dia = +today().slice(8, 10), sig = addMonth(now, 1), out = [];
+  const now = mesHoy(), dia = +today().slice(8, 10), sig = addMonth(today().slice(0, 7), 1), out = [];
   if (now >= INICIO_SEGUIMIENTO) {
     fijosDelMes(now).filter(f => !tarjetaDe(f) && !pmDe('fijo', f.id, now)).forEach(f =>
       out.push({tipo: 'fijo', ref: f, m: now, n: f.concepto, importe: f.importe, s: [f.cuenta ? 'Sale de ' + f.cuenta : 'Sin cuenta', f.dia ? 'día ' + f.dia : ''].filter(Boolean).join(' · ')}));
     cuotasDelMes(now).filter(d => !pmDe('deuda', d.id, now)).forEach(d =>
       out.push({tipo: 'deuda', ref: d, m: now, n: d.nombre, importe: importeDeuda(d, now), s: [d.cuota ? 'Cuota' : d.cada_mes ? 'Factura' : 'Parte de la deuda', d.cuenta ? 'sale de ' + d.cuenta : ''].filter(Boolean).join(' · ')}));
   }
-  D.deudas.filter(d => d.cada_mes && d.cierre && dia > d.cierre && cuotasDelMes(sig).includes(d) && !pmDe('deuda', d.id, sig)).forEach(d =>
+  D.deudas.filter(d => sig !== now && d.cada_mes && d.cierre && dia > d.cierre && cuotasDelMes(sig).includes(d) && !pmDe('deuda', d.id, sig)).forEach(d =>
     out.push({tipo: 'deuda', ref: d, m: sig, n: d.nombre, importe: importeDeuda(d, sig), s: `Factura de ${mesCorto(sig)}, cerrada el ${d.cierre} · se carga en ${d.cuenta || 'tu cuenta'}`}));
   return {items: out, total: r2(out.reduce((a, i) => a + i.importe, 0))};
 }
 
 function renderResumen(){
   const total = renderDinero(); renderProximo(); avisoMes();
-  const now = monthKey(new Date()), pg = paraGastar(now), {vidaG, vidaT, hoy, dias} = pg;
+  const now = mesHoy(), pg = paraGastar(now), {vidaG, vidaT, hoy, dias} = pg;
   $('vidaDe').textContent = vidaG > vidaT ? `Te has pasado ${eur(vidaG - vidaT)}` : `Quedan ${eur(vidaT - vidaG)} de ${eur(vidaT)}`;
   $('vidaDe').className = 'ghnote num' + (vidaG > vidaT ? ' neg-bad' : '');
   // Una tarjeta por presupuesto, con el color de su categoría. Rojo solo si te pasas de verdad (más de un 25 %).
@@ -1153,7 +1213,7 @@ const bolaDeudas = () => D.deudas.filter(d => !d.pagada && !d.cada_mes && d.pend
 // Mes a mes: cada deuda paga su cuota y la bola (lo que sobra más las cuotas ya liberadas) va entera a la más pequeña.
 function simula(extra){
   const ds = bolaDeudas().map(d => ({d, p: d.pendiente, fin: null}));
-  let m = addMonth(monthKey(new Date()), 1), libres = 0;
+  let m = addMonth(mesHoy(), 1), libres = 0;
   for (let i = 0; i < 240 && ds.some(x => !x.fin); i++, m = addMonth(m, 1)) {
     let bola = extra + libres;
     ds.forEach(x => { if (x.fin) return; x.p += x.p * (x.d.tin || 0) / 1200; const c = Math.min(x.p, x.d.cuota || 0); x.p -= c; bola += (x.d.cuota || 0) - c; });
@@ -1164,7 +1224,7 @@ function simula(extra){
 }
 // Lo que te sobrará en el mes: lo que entra, menos los pagos del mes y lo que gastes (tu presupuesto entero, o lo gastado si ya te has pasado).
 function sobrante(){
-  const now = monthKey(new Date()), ent = m => ingresosDelMes(m).reduce((a, i) => a + i.importe, 0) || D.plan.find(p => p.mes === m)?.ingresos || 0;
+  const now = mesHoy(), ent = m => ingresosDelMes(m).reduce((a, i) => a + i.importe, 0) || D.plan.find(p => p.mes === m)?.ingresos || 0;
   const m = ent(now) ? now : addMonth(now, 1);
   const sale = fijosDelMes(m).filter(f => !tarjetaDe(f)).reduce((a, f) => a + Number(pmDe('fijo', f.id, m)?.importe ?? f.importe), 0) + cuotasDelMes(m).reduce((a, d) => a + importeDeuda(d, m), 0);
   const viaje = D.viajes.filter(v => v.desde.slice(0, 7) === m).reduce((a, v) => a + Math.max(v.presupuesto, cuentasViaje(v).gastado), 0);
@@ -1174,7 +1234,7 @@ function sobrante(){
 // Meses seguidos (ya cerrados) sin pasarte de ningún presupuesto.
 function racha(){
   const ms = months(); let n = 0;
-  for (let m = addMonth(monthKey(new Date()), -1); ms.includes(m) && paraGastar(m).deMas < 0.5; m = addMonth(m, -1)) n++;
+  for (let m = addMonth(mesHoy(), -1); ms.includes(m) && paraGastar(m).deMas < 0.5; m = addMonth(m, -1)) n++;
   return n;
 }
 function snowCard(el, enDeudas, total, pend){
@@ -1184,7 +1244,7 @@ function snowCard(el, enDeudas, total, pend){
   // Las que caerían con lo que sobra, y una marca en la hucha donde cae cada una.
   let acc = 0; const kills = [], mks = [];
   for (const d of ds) { acc += d.pendiente; if (acc <= v + 0.005) kills.push(d); if (acc <= top) mks.push(acc / top * 100); }
-  const dm = paraGastar(monthKey(new Date())).deMas, rc = racha(), pct = Math.round(v / M * 100);
+  const dm = paraGastar(mesHoy()).deMas, rc = racha(), pct = Math.round(v / M * 100);
   const puede = total != null && total - pend >= sig.pendiente;
   el.innerHTML = `<div class="top"><span class="flake">${svg('ui-snow')}</span><h2 id="${hId}">Bola de nieve</h2><button class="meta" data-meta aria-label="Meta: que te sobren ${eur(M)} al mes. Cambiar">Meta ${eur(M)}</button></div>
     <div><span class="lbl">${s.v < 0 ? 'Te faltarán' : 'Te sobrarán'} en ${mesCorto(s.m)}</span><span class="big ${s.v < 0 ? 'neg-bad' : ''}">${cifra(Math.abs(s.v))}</span></div>
@@ -1357,13 +1417,13 @@ function barras12(){
   const all12 = []; for (let i = 11; i >= 0; i--) all12.push(addMonth(cur, -i));
   const tot = all12.map(mm => sum(D.pagos.filter(p => p.mes === mm && p.tipo === 'Gasto')));
   const max = Math.max(1, ...tot);
-  const hoyM0 = monthKey(new Date()), cerr = tot.filter((v, i) => v > 0 && all12[i] !== hoyM0), media = cerr.length ? cerr.reduce((a,b) => a + b, 0) / cerr.length : 0;
+  const hoyM0 = mesHoy(), cerr = tot.filter((v, i) => v > 0 && all12[i] !== hoyM0), media = cerr.length ? cerr.reduce((a,b) => a + b, 0) / cerr.length : 0;
   const lbl = (mm, i) => (i % 2 === 1 || mm === cur) ? cap(monthName(mm,{month:'short'}).replace('.','').slice(0,3)) : '';
   $('bars').innerHTML = `<div class="plot">${media ? `<div class="avg" style="bottom:${media / max * 100}%"></div>` : ''}${all12.map((mm,i) => `<button class="bar ${mm === cur ? 'sel' : ''}" data-m="${mm}" aria-label="${monthName(mm)}: ${eur(tot[i])}">
       <i style="height:${Math.max(2, tot[i]/max*100)}%"></i>${mm === cur ? `<em class="num" style="bottom:${Math.max(2, tot[i]/max*100)}%">${eur(tot[i])}</em>` : ''}</button>`).join('')}</div>
     <div class="lbls" aria-hidden="true">${all12.map((mm,i) => `<span class="${mm === cur ? 'sel' : ''}">${lbl(mm, i)}</span>`).join('')}</div>`;
   $('bars').querySelectorAll('.bar').forEach(b => b.onclick = () => irAMes(b.dataset.m));
-  const hoyM = monthKey(new Date()), con = tot.filter((v, i) => v > 0 && all12[i] !== hoyM);
+  const hoyM = mesHoy(), con = tot.filter((v, i) => v > 0 && all12[i] !== hoyM);
   $('media').textContent = con.length ? `Línea de puntos: tu media, ${eur(con.reduce((a,b)=>a+b,0)/con.length)}` : '';
 
 }
@@ -1442,7 +1502,7 @@ function renderMovs(){
   else if (filtro === 'otros') $('movsTot').innerHTML = '';
   else if (ing) $('movsTot').innerHTML = `<div class="card movtot"><span class="l">Ingresos de ${monthName(cur, {month: 'long'})}</span><b class="num">${eur(-list.reduce((a,p) => a + salida(p), 0))}</b></div>`;
   else {
-    const g = sum(list.filter(p => p.tipo === 'Gasto')), now = monthKey(new Date());
+    const g = sum(list.filter(p => p.tipo === 'Gasto')), now = mesHoy();
     const dias = cur === now ? Number(new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Madrid',day:'numeric'}).format(new Date())) : new Date(Date.UTC(+cur.slice(0,4), +cur.slice(5,7), 0)).getUTCDate();
     $('movsTot').innerHTML = `<div class="card movtot"><span class="l">${catSel ? esc(catSel.nombre) + ' en ' : 'Gastado en '}${monthName(cur, {month: 'long'})}</span>
       <b class="num">${eur(g)}</b><span class="l num">${eur(g / dias)} al día de media</span>
@@ -1532,7 +1592,7 @@ function editPago(p, vPre = null){
   const enViaje = p ? !!vj && viajeDe(p) === vj : !!vPre || (!!vj && h >= vj.desde && h <= vj.hasta);
   const iguales = p ? D.pagos.filter(x => x.comercio === p.comercio && x.id !== p.id).length : 0;
   // Las categorías que más usas (últimos 3 meses) y la que ya tiene; «Otra» abre la lista entera.
-  const desde = addMonth(monthKey(new Date()), -3), n = {};
+  const desde = addMonth(mesHoy(), -3), n = {};
   D.pagos.forEach(x => { if (x.mes >= desde && x.tipo === 'Gasto' && x.categoria !== 'Sin categoría') n[x.categoria] = (n[x.categoria] || 0) + 1; });
   let top = Object.keys(n).sort((a,b) => n[b] - n[a]).slice(0, 8);
   if (cat0 && cat0 !== 'Sin categoría' && !top.includes(cat0)) top = [cat0, ...top.slice(0, 7)];
@@ -1658,7 +1718,7 @@ const tarjetaDe = f => D.deudas.find(d => d.cada_mes && d.cierre && !d.pagada &&
 // haya decidido en Pagos para ese mes. Todo se toca para editarlo.
 function ingresosDelMes(m = cur){ return D.ingresos.filter(i => i.activo && enMes(i.desde, i.hasta, m)); }
 function renderProximo(){
-  const m = addMonth(monthKey(new Date()), 1);
+  const m = addMonth(mesHoy(), 1);
   const fm = fijosDelMes(m).filter(f => !tarjetaDe(f)), cm = cuotasDelMes(m);
   const sale = fm.reduce((a, f) => a + Number(f.importe), 0) + cm.reduce((a, d) => a + importeDeuda(d, m), 0);
   const ins = ingresosDelMes(m);
@@ -1792,7 +1852,7 @@ function renderMes(){
   }).join('') || '<p class="empty">No hay cuotas este mes.</p>';
 
   // Lo que se puede sumar este mes (deudas sin cuota) y lo que se ha quitado.
-  const opc = cur >= monthKey(new Date()) ? opcionalesDelMes() : [];
+  const opc = cur >= mesHoy() ? opcionalesDelMes() : [];
   $('optGroup').hidden = !opc.length;
   $('opcionales').innerHTML = opc.map(d => `<div class="opt"><span class="c">${esc(d.nombre)}</span>
     <span class="s">Debes ${eurC(d.pendiente)}${d.cuenta ? ' · ' + esc(d.cuenta) : ''}</span>
@@ -1923,7 +1983,7 @@ function renderDeudas(){
   const bola = bolaDeudas(), tarj = deudas.filter(d => !d.pagada && d.cada_mes);
   const liq = deudas.filter(d => d.pagada).sort((a,b) => (b.pagada_el||'').localeCompare(a.pagada_el||''));
   const total = deudaActual();
-  const now = monthKey(new Date()), M = meta(), sim = simula(M);
+  const now = mesHoy(), M = meta(), sim = simula(M);
   $('deudaHoy').innerHTML = cifra(total);
   $('libre').textContent = sim.fin ? `Con ${eur(M)} al mes de bola, sin deudas en ${monthName(sim.fin)}` : '';
   snowCard($('snowDeu'), true, caja(), porPagar().total);
