@@ -1240,7 +1240,10 @@ function sobrante(){
   const sale = fijosDelMes(m).filter(f => !tarjetaDe(f)).reduce((a, f) => a + Number(pmDe('fijo', f.id, m)?.importe ?? f.importe), 0) + cuotasDelMes(m).reduce((a, d) => a + importeDeuda(d, m), 0);
   const viaje = D.viajes.filter(v => v.desde.slice(0, 7) === m).reduce((a, v) => a + Math.max(v.presupuesto, cuentasViaje(v).gastado), 0);
   const pg = paraGastar(m), gasto = Math.max(pg.vidaT, pg.vidaG) + pg.filas.filter(x => !x.t.tope).reduce((a, x) => a + x.g, 0) + viaje;
-  return {m, v: r2(ent(m) - sale - gasto)};
+  // Lo que ya has metido en la bola este mes: pagos de deuda que no son una cuota (esas ya van en los pagos del mes).
+  const cuotas = D.deudas.filter(d => d.cuota).map(d => d.cuota);
+  const bola = r2(D.pagos.filter(p => p.mes === m && p.tipo === 'Deuda' && p.importe > 0 && !cuotas.some(c => Math.abs(c - p.importe) < 1)).reduce((a, p) => a + p.importe, 0));
+  return {m, bola, v: r2(ent(m) - sale - gasto - bola)};
 }
 // Meses seguidos (ya cerrados) sin pasarte de ningún presupuesto.
 function racha(){
@@ -1251,17 +1254,17 @@ function racha(){
 function snowCard(el, enDeudas, total, pend){
   const ds = bolaDeudas(), sig = ds[0], hId = enDeudas ? 'hSnowD' : 'hSnowR';
   if (!sig) { el.innerHTML = `<div class="top"><span class="flake">${svg('ui-confetti')}</span><h2 id="${hId}">¡Sin deudas!</h2></div><p class="lbl">No te queda ninguna por pagar. Lo que te sobre ya es tuyo.</p>`; return; }
-  const s = sobrante(), M = meta(), v = Math.max(0, s.v), top = Math.max(M, v);
+  const s = sobrante(), M = meta(), v = Math.max(0, s.v), hecho = Math.min(s.bola, M), top = Math.max(M, v + hecho);
   // Las que caerían con lo que sobra, y una marca en la hucha donde cae cada una.
   let acc = 0; const kills = [], mks = [];
   for (const d of ds) { acc += d.pendiente; if (acc <= v + 0.005) kills.push(d); if (acc <= top) mks.push(acc / top * 100); }
-  const dm = paraGastar(mesHoy()).deMas, rc = racha(), pct = Math.round(v / M * 100);
+  const dm = paraGastar(mesHoy()).deMas, rc = racha(), pct = Math.round((v + s.bola) / M * 100);
   // Solo propone liquidar ya una deuda que cobra intereses (las del 0 % se dejan correr).
   const liq = total == null ? null : ds.find(d => d.tin > 0 && total - pend >= d.pendiente);
   el.innerHTML = `<div class="top"><span class="flake">${svg('ui-snow')}</span><h2 id="${hId}">Bola de nieve</h2><button class="meta" data-meta aria-label="Meta: que te sobren ${eur(M)} al mes. Cambiar">Meta ${eur(M)}</button></div>
     <div><span class="lbl">${s.v < 0 ? 'Te faltarán' : 'Te sobrarán'} en ${mesCorto(s.m)}</span><span class="big ${s.v < 0 ? 'neg-bad' : ''}">${cifra(Math.abs(s.v))}</span></div>
-    <div class="hucha" role="img" aria-label="${pct} % de tu meta"><i style="width:${v / top * 100}%"></i>${mks.map(x => `<span class="mk" style="left:${x}%"></span>`).join('')}</div>
-    <div class="hl"><span>${pct} % de la meta</span><span>${v >= M ? '¡Meta cumplida!' : `Faltan ${eur(M - v)}`}</span></div>
+    <div class="hucha" role="img" aria-label="${pct} % de tu meta"><i style="width:${(v + hecho) / top * 100}%"></i>${mks.map(x => `<span class="mk" style="left:${x}%"></span>`).join('')}</div>
+    <div class="hl"><span>${s.bola ? `Ya has metido ${eur(s.bola)}` : `${pct} % de la meta`}</span><span>${v + s.bola >= M ? '¡Meta cumplida!' : `Faltan ${eur(M - v - s.bola)}`}</span></div>
     <div class="goals"><span class="goal ${dm < 0.5 ? 'ok' : 'no'}">${svg(dm < 0.5 ? 'ui-check' : 'ui-alert')}${eur(dm)} de más este mes</span>${rc ? `<span class="goal fire">${svg('ui-flame')}${rc} ${rc === 1 ? 'mes' : 'meses'} sin pasarte</span>` : ''}</div>
     ${kills.length ? `<div class="kills"><span>Con eso liquidas</span>${kills.map(d => `<span class="kill">${svg('ui-check')}${esc(corto(d.nombre))}</span>`).join('')}</div>`
       : `<div class="kills"><span>La siguiente: <b>${esc(corto(sig.nombre))}</b>, ${eur(sig.pendiente)}</span></div>`}
