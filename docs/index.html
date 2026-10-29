@@ -445,7 +445,9 @@ svg.chart text{fill:var(--muted);font:500 26px var(--font)}
 .hucha .mk{position:absolute;top:-4px;bottom:-4px;width:2px;margin-left:-1px;border-radius:1px;background:rgba(255,255,255,.7)}
 .hucha + .hl{display:flex;justify-content:space-between;gap:8px;font-size:var(--t-foot);color:#c9cbe8;margin-top:-6px}
 .goals{display:flex;flex-wrap:wrap;gap:8px}
-.snow .fin{display:flex;flex-direction:column;gap:2px;margin-top:6px;padding-top:12px;border-top:.5px solid rgba(255,255,255,.12)} .snow .fin span{font-size:var(--t-sub);color:#cfd3e6} .snow .fin b{font-size:var(--t-title);font-variant-numeric:tabular-nums} .snow .fin b small{font-size:.6em}
+.finrow{grid-template-columns:1fr auto !important} .finrow.tot .c,.finrow.tot .a{font-weight:700}
+.snow .fin .s{display:inline-flex;align-items:center;gap:4px;font-size:var(--t-foot)} .snow .fin .s svg{width:14px;height:14px}
+.snow .fin{display:flex;flex-direction:column;align-items:flex-start;padding-left:0;padding-right:0;padding-bottom:0;text-align:left;width:100%;background:none;color:inherit;font:inherit;border:0;border-top:.5px solid rgba(255,255,255,.12);gap:2px;margin-top:6px;padding-top:12px;border-top:.5px solid rgba(255,255,255,.12)} .snow .fin span{font-size:var(--t-sub);color:#cfd3e6} .snow .fin b{font-size:var(--t-title);font-variant-numeric:tabular-nums} .snow .fin b small{font-size:.6em}
 .goal{display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:0 12px 0 8px;border-radius:var(--r-full);background:rgba(255,255,255,.08);font-size:var(--t-foot);font-weight:600}
 .goal svg.i{width:16px;height:16px}
 .goal.ok svg.i{color:var(--good)} .goal.no svg.i{color:var(--bad)} .goal.fire svg.i{color:#ffb86b}
@@ -1260,22 +1262,54 @@ function snowCard(el, enDeudas, total, pend){
   let acc = 0; const kills = [], mks = [];
   for (const d of ds) { acc += d.pendiente; if (acc <= v + 0.005) kills.push(d); if (acc <= top) mks.push(acc / top * 100); }
   // A fin de mes con todo lo que tienes (bancos y efectivo): menos lo que falta por pagar y lo que te queda del día a día.
-  const pgH = paraGastar(mesHoy()), fin = total == null ? null : r2(total - pend - Math.max(0, pgH.vidaT - pgH.vidaG));
-  const dm = pgH.deMas, rc = racha(), pct = Math.round((v + s.bola) / M * 100);
+  const fm = total == null ? null : finDeMes(total, pend), fin = fm && fm.v;
+  const dm = paraGastar(mesHoy()).deMas, rc = racha(), pct = Math.round((v + s.bola) / M * 100);
   // Solo propone liquidar ya una deuda que cobra intereses (las del 0 % se dejan correr).
   const liq = total == null ? null : ds.find(d => d.tin > 0 && total - pend >= d.pendiente);
   el.innerHTML = `<div class="top"><span class="flake">${svg('ui-snow')}</span><h2 id="${hId}">Bola de nieve</h2><button class="meta" data-meta aria-label="Meta: que te sobren ${eur(M)} al mes. Cambiar">Meta ${eur(M)}</button></div>
     <div><span class="lbl">${s.v < 0 ? 'Te faltarán' : 'Te sobrarán'} en ${mesCorto(s.m)}</span><span class="big ${s.v < 0 ? 'neg-bad' : ''}">${cifra(Math.abs(s.v))}</span></div>
     <div class="hucha" role="img" aria-label="${pct} % de tu meta"><i style="width:${(v + hecho) / top * 100}%"></i>${mks.map(x => `<span class="mk" style="left:${x}%"></span>`).join('')}</div>
     <div class="hl"><span>${s.bola ? `Ya has metido ${eur(s.bola)}` : `${pct} % de la meta`}</span><span>${v + s.bola >= M ? '¡Meta cumplida!' : `Faltan ${eur(M - v - s.bola)}`}</span></div>
-    ${fin == null ? '' : `<div class="fin"><span>Con todo lo que tienes, a fin de ${mesCorto(mesHoy())} te quedarán</span><b class="${fin < 0 ? 'neg-bad' : ''}">${cifra(fin)}</b></div>`}
+    ${fin == null ? '' : `<button class="fin" type="button" data-fin><span>Con todo lo que tienes, a fin de ${mesCorto(mesHoy())} te quedarán</span><b class="${fin < 0 ? 'neg-bad' : ''}">${cifra(fin)}</b><span class="s">Ver la cuenta ${svg('ui-chev')}</span></button>`}
     <div class="goals"><span class="goal ${dm < 0.5 ? 'ok' : 'no'}">${svg(dm < 0.5 ? 'ui-check' : 'ui-alert')}${eur(dm)} de más este mes</span>${rc ? `<span class="goal fire">${svg('ui-flame')}${rc} ${rc === 1 ? 'mes' : 'meses'} sin pasarte</span>` : ''}</div>
     ${kills.length ? `<div class="kills"><span>Con eso liquidas</span>${kills.map(d => `<span class="kill">${svg('ui-check')}${esc(corto(d.nombre))}</span>`).join('')}</div>`
       : `<div class="kills"><span>La siguiente: <b>${esc(corto(sig.nombre))}</b>, ${eur(sig.pendiente)}</span></div>`}
     ${liq ? `<button class="snowbtn" data-liq="${liq.id}">¡Ya puedes liquidar ${esc(corto(liq.nombre))}!</button>` : enDeudas ? '' : '<button class="snowbtn soft" data-ver>Ver la bola de nieve</button>'}`;
   el.querySelector('[data-meta]').onclick = editMeta;
+  el.querySelector('[data-fin]')?.addEventListener('click', () => verFin(fm));
   el.querySelector('[data-ver]')?.addEventListener('click', () => setView('deudas'));
   el.querySelector('[data-liq]')?.addEventListener('click', () => liquidar(liq));
+}
+// A fin de mes con todo: lo que tienes hoy, más lo que aún te tiene que entrar, menos lo que falta por pagar,
+// las facturas de tarjeta marcadas que el banco aún no ha cobrado, lo que llevas en la tarjeta (se cobra después) y tu día a día.
+function finDeMes(total, pend){
+  const m = mesHoy(), lineas = [['Tienes hoy (bancos y efectivo)', total]];
+  // Lo que te entra este mes y aún no ha llegado: ingresos previstos menos lo cobrado (ingresos y lo que te devuelven).
+  const prev = ingresosDelMes(m).reduce((a, i) => a + i.importe, 0);
+  const cobrado = D.pagos.filter(p => p.mes === m && (p.tipo === 'Ingreso' ? true : p.categoria === 'Entre personas' && p.importe < 0)).reduce((a, p) => a + Math.abs(p.importe), 0);
+  if (prev - cobrado > 0.5) lineas.push(['Te falta por cobrar', r2(prev - cobrado)]);
+  if (pend > 0.005) lineas.push(['Te falta por pagar este mes', -pend]);
+  D.deudas.filter(d => d.cada_mes && d.cierre && d.tarjeta && !d.pagada).forEach(d => {
+    // Factura marcada como pagada que aún no ha salido del banco.
+    const r = pmDe('deuda', d.id, m);
+    if (r && r.importe > 0 && !D.pagos.some(p => p.cuenta === (d.cuenta || 'BBVA') && Math.abs(p.importe - r.importe) < 1 && p.dia >= addDay(r.pagado_el || m + '-01', -7)))
+      lineas.push([`Factura de ${d.tarjeta}, aún no cobrada`, -Number(r.importe)]);
+    // Lo que llevas en la tarjeta y sus fijos que aún no han pasado: se cobra en la siguiente factura.
+    const h = today(), mf = +h.slice(8, 10) > d.cierre ? addMonth(h.slice(0, 7), 2) : addMonth(h.slice(0, 7), 1), c = ciclo(d, mf);
+    const ini = `${addMonth(mf, -2)}-${String(d.cierre).padStart(2, '0')}`, enCiclo = D.pagos.filter(p => p.cuenta === d.tarjeta && p.dia > ini);
+    const fijos = fijosDelMes(m).filter(f => f.cuenta === d.tarjeta && !enCiclo.some(p => Math.abs(p.importe - f.importe) < 0.5)).reduce((a, f) => a + f.importe, 0);
+    const lleva = r2((c ? c.total : 0) + fijos);
+    if (lleva > 0.005) lineas.push([`Llevas en ${d.tarjeta} (con sus cuotas)`, -lleva]);
+  });
+  const pg = paraGastar(m), queda = Math.max(0, pg.vidaT - pg.vidaG);
+  if (queda > 0.005) lineas.push(['Lo que te queda del día a día', -r2(queda)]);
+  return {lineas, v: r2(lineas.reduce((a, l) => a + l[1], 0))};
+}
+function verFin(fm){
+  openSheet(`${hd('A fin de ' + mesCorto(mesHoy()))}
+    <div class="card"><div class="list">${fm.lineas.map(([t, n], i) => `<div class="tx finrow"><span class="c">${esc(t)}</span><span class="a num">${i && n > 0 ? '+' : ''}${eur2(n)}</span></div>`).join('')}
+      <div class="tx finrow tot"><span class="c">Te quedarán</span><span class="a num ${fm.v < 0 ? 'neg-bad' : ''}">${eur2(fm.v)}</span></div></div></div>
+    <p class="small muted">El día a día cuenta tu presupuesto; si te pasas, lo que gastes de verdad ya sale en tus cuentas.</p>`);
 }
 function editMeta(){
   openSheet(`${hd('Tu meta del mes')}
