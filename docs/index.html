@@ -1119,6 +1119,7 @@ function cuentasViaje(v){
 }
 function viajeCard(el){
   const v = viajeVivo(); el.hidden = !v; if (!v) return;
+  if (!v.presupuesto) return viajeLibre(el, v);
   const c = cuentasViaje(v), h = today(), pct = Math.min(100, c.gastado / v.presupuesto * 100);
   const falta = diasEntre(h, v.desde);
   const chip = h < v.desde ? (falta === 1 ? 'Mañana' : `En ${falta} días`) : h <= v.hasta ? `Día ${diasEntre(v.desde, h) + 1} de ${c.dias}` : 'Ya has vuelto';
@@ -1132,6 +1133,16 @@ function viajeCard(el){
     <button class="snowbtn soft" type="button" data-ver>Ver el viaje</button>`;
   el.querySelector('[data-ver]').onclick = () => abrirViaje(v);
 }
+// Sin presupuesto: solo lo que lleváis gastado allí.
+function viajeLibre(el, v){
+  const c = cuentasViaje(v), h = today(), falta = diasEntre(h, v.desde), dia = h < v.desde ? 0 : Math.min(c.dias, diasEntre(v.desde, h) + 1);
+  const chip = h < v.desde ? (falta === 1 ? 'Mañana' : `En ${falta} días`) : h <= v.hasta ? `Día ${dia} de ${c.dias}` : 'Ya has vuelto';
+  el.innerHTML = `<div class="top"><span class="flake">${svg('ui-plane')}</span><h2 id="hViaje">${esc(v.nombre)}</h2><span class="meta">${chip}</span></div>
+    <div><span class="lbl">${h < v.desde ? 'Lo que gastéis allí irá apareciendo aquí' : 'Lleváis gastado allí'}</span><span class="big">${cifra(c.gastado)}</span></div>
+    <div class="goals">${dia && c.gastado ? `<span class="goal">${svg('ui-coins')}${eur(c.gastado / dia)} al día</span>` : ''}<span class="goal">${svg('ui-card')}Vuelos y alojamiento aparte</span></div>
+    <button class="snowbtn soft" type="button" data-ver>Ver el viaje</button>`;
+  el.querySelector('[data-ver]').onclick = () => abrirViaje(v);
+}
 function abrirViaje(v){
   const c = cuentasViaje(v), byF = (a, b) => b.fecha.localeCompare(a.fecha);
   const fila = p => `<button class="tx" type="button" data-id="${p.id}"><span class="c">${esc(p.comercio)}</span><span class="a num">${eur2(p.importe)}</span>${svg('ui-chev')}<span class="s">${esc(p.categoria)} · ${cuando(p)}</span></button>`;
@@ -1141,7 +1152,7 @@ function abrirViaje(v){
     <div class="vjsum"><div><span>Gastado allí</span><b>${cifra(c.gastado)}</b></div><div><span>Reservas</span><b>${cifra(c.reservas)}</b></div></div>
     <div class="ghrow sm"><h3>Allí</h3><button class="ghlink" type="button" id="vjAdd">${svg('ui-plus')}Añadir gasto</button></div>
     <div class="card"><div class="list">${c.alli.sort(byF).map(fila).join('') || `<p class="empty">Lo que pagues del ${fechaCorta(v.desde)} al ${fechaCorta(v.hasta)} entra aquí solo, menos lo de casa (alquiler, suscripciones, cuotas). Para sacar uno, ábrelo y quita «Del viaje».</p>`}</div></div>
-    <div class="ghrow sm"><h3>Reservas, aparte del presupuesto</h3><button class="ghlink" type="button" id="vjRes">${svg('ui-plus')}Añadir</button></div>
+    <div class="ghrow sm"><h3>${v.presupuesto ? 'Reservas, aparte del presupuesto' : 'Reservas, pagadas antes de ir'}</h3><button class="ghlink" type="button" id="vjRes">${svg('ui-plus')}Añadir</button></div>
     <div class="card"><div class="list">${[...c.antes.sort(byF).map(fila), ...c.parts.map(part)].join('') || '<p class="empty">Vuelos, alojamiento y lo que pagues antes de ir.</p>'}</div></div>`, sh => {
     sh.querySelectorAll('[data-id]').forEach(b => b.onclick = () => editPago(D.pagos.find(p => p.id == b.dataset.id)));
     sh.querySelectorAll('[data-part]').forEach(b => b.onclick = () => editPartida(v, D.partidas.find(x => x.id == b.dataset.part)));
@@ -1151,9 +1162,9 @@ function abrirViaje(v){
   });
 }
 function editViaje(v){
-  openSheet(`${hd('Presupuesto del viaje')}
+  openSheet(`${hd('El viaje')}
     <form id="fv" novalidate>
-      ${amt('vpi', v.presupuesto, 'euros para gastar allí')}
+      ${amt('vpi', v.presupuesto || null, 'para gastar allí (opcional)')}
       <label class="f">Nombre<input id="vn" autocomplete="off" value="${esc(v.nombre)}"></label>
       <label class="f">Primer día<input id="vd" type="date" value="${v.desde}"></label>
       <label class="f">Último día<input id="vh" type="date" value="${v.hasta}"></label>
@@ -1161,8 +1172,8 @@ function editViaje(v){
     </form>`, () => {
     $('fv').onsubmit = async e => {
       e.preventDefault();
-      const n = parseNum($('vpi').value);
-      if (!isFinite(n) || n <= 0) return fieldErr($('vpi'), 'Escribe una cifra, por ejemplo 1.000.');
+      const n = $('vpi').value.trim() ? parseNum($('vpi').value) : 0;
+      if (!isFinite(n) || n < 0) return fieldErr($('vpi'), 'Escribe una cifra, por ejemplo 1.000, o déjalo vacío.');
       if (!$('vd').value || !$('vh').value || $('vh').value < $('vd').value) return fieldErr($('vh'), 'El último día tiene que ir después del primero.');
       try {
         const [r] = await write(sb.from('viajes').update({presupuesto: r2(n), nombre: $('vn').value.trim() || v.nombre, desde: $('vd').value, hasta: $('vh').value}).eq('id', v.id));
