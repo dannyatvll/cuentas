@@ -1286,7 +1286,8 @@ function finDeMes(total, pend){
   const m = mesHoy(), lineas = [['Tienes hoy (bancos y efectivo)', total]];
   // Lo que te entra este mes y aún no ha llegado: ingresos previstos menos lo cobrado (ingresos y lo que te devuelven).
   const prev = ingresosDelMes(m).reduce((a, i) => a + i.importe, 0);
-  const cobrado = D.pagos.filter(p => p.mes === m && (p.tipo === 'Ingreso' ? true : p.categoria === 'Entre personas' && p.importe < 0)).reduce((a, p) => a + Math.abs(p.importe), 0);
+  const delMes = D.pagos.filter(p => p.mes === m), personas = -delMes.filter(p => p.categoria === 'Entre personas').reduce((a, p) => a + p.importe, 0);
+  const cobrado = delMes.filter(p => p.tipo === 'Ingreso').reduce((a, p) => a + p.importe, 0) + Math.max(0, personas);
   if (prev - cobrado > 0.5) lineas.push(['Te falta por cobrar', r2(prev - cobrado)]);
   if (pend > 0.005) lineas.push(['Te falta por pagar este mes', -pend]);
   D.deudas.filter(d => d.cada_mes && d.cierre && d.tarjeta && !d.pagada).forEach(d => {
