@@ -445,6 +445,7 @@ svg.chart text{fill:var(--muted);font:500 26px var(--font)}
 .hucha .mk{position:absolute;top:-4px;bottom:-4px;width:2px;margin-left:-1px;border-radius:1px;background:rgba(255,255,255,.7)}
 .hucha + .hl{display:flex;justify-content:space-between;gap:8px;font-size:var(--t-foot);color:#c9cbe8;margin-top:-6px}
 .goals{display:flex;flex-wrap:wrap;gap:8px}
+.snow .fin{display:flex;flex-direction:column;gap:2px;margin-top:6px;padding-top:12px;border-top:.5px solid rgba(255,255,255,.12)} .snow .fin span{font-size:var(--t-sub);color:#cfd3e6} .snow .fin b{font-size:var(--t-title);font-variant-numeric:tabular-nums} .snow .fin b small{font-size:.6em}
 .goal{display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:0 12px 0 8px;border-radius:var(--r-full);background:rgba(255,255,255,.08);font-size:var(--t-foot);font-weight:600}
 .goal svg.i{width:16px;height:16px}
 .goal.ok svg.i{color:var(--good)} .goal.no svg.i{color:var(--bad)} .goal.fire svg.i{color:#ffb86b}
@@ -1258,13 +1259,16 @@ function snowCard(el, enDeudas, total, pend){
   // Las que caerían con lo que sobra, y una marca en la hucha donde cae cada una.
   let acc = 0; const kills = [], mks = [];
   for (const d of ds) { acc += d.pendiente; if (acc <= v + 0.005) kills.push(d); if (acc <= top) mks.push(acc / top * 100); }
-  const dm = paraGastar(mesHoy()).deMas, rc = racha(), pct = Math.round((v + s.bola) / M * 100);
+  // A fin de mes con todo lo que tienes (bancos y efectivo): menos lo que falta por pagar y lo que te queda del día a día.
+  const pgH = paraGastar(mesHoy()), fin = total == null ? null : r2(total - pend - Math.max(0, pgH.vidaT - pgH.vidaG));
+  const dm = pgH.deMas, rc = racha(), pct = Math.round((v + s.bola) / M * 100);
   // Solo propone liquidar ya una deuda que cobra intereses (las del 0 % se dejan correr).
   const liq = total == null ? null : ds.find(d => d.tin > 0 && total - pend >= d.pendiente);
   el.innerHTML = `<div class="top"><span class="flake">${svg('ui-snow')}</span><h2 id="${hId}">Bola de nieve</h2><button class="meta" data-meta aria-label="Meta: que te sobren ${eur(M)} al mes. Cambiar">Meta ${eur(M)}</button></div>
     <div><span class="lbl">${s.v < 0 ? 'Te faltarán' : 'Te sobrarán'} en ${mesCorto(s.m)}</span><span class="big ${s.v < 0 ? 'neg-bad' : ''}">${cifra(Math.abs(s.v))}</span></div>
     <div class="hucha" role="img" aria-label="${pct} % de tu meta"><i style="width:${(v + hecho) / top * 100}%"></i>${mks.map(x => `<span class="mk" style="left:${x}%"></span>`).join('')}</div>
     <div class="hl"><span>${s.bola ? `Ya has metido ${eur(s.bola)}` : `${pct} % de la meta`}</span><span>${v + s.bola >= M ? '¡Meta cumplida!' : `Faltan ${eur(M - v - s.bola)}`}</span></div>
+    ${fin == null ? '' : `<div class="fin"><span>Con todo lo que tienes, a fin de ${mesCorto(mesHoy())} te quedarán</span><b class="${fin < 0 ? 'neg-bad' : ''}">${cifra(fin)}</b></div>`}
     <div class="goals"><span class="goal ${dm < 0.5 ? 'ok' : 'no'}">${svg(dm < 0.5 ? 'ui-check' : 'ui-alert')}${eur(dm)} de más este mes</span>${rc ? `<span class="goal fire">${svg('ui-flame')}${rc} ${rc === 1 ? 'mes' : 'meses'} sin pasarte</span>` : ''}</div>
     ${kills.length ? `<div class="kills"><span>Con eso liquidas</span>${kills.map(d => `<span class="kill">${svg('ui-check')}${esc(corto(d.nombre))}</span>`).join('')}</div>`
       : `<div class="kills"><span>La siguiente: <b>${esc(corto(sig.nombre))}</b>, ${eur(sig.pendiente)}</span></div>`}
