@@ -1029,7 +1029,7 @@ const icon = cat => `<span class="ico" style="--c:${tono(cat)}" aria-hidden="tru
 
 // Para gastar de un mes: lo gastado en cada presupuesto, el total y lo que te has pasado.
 function paraGastar(m = cur){
-  const gastos = D.pagos.filter(p => p.mes === m && p.tipo === 'Gasto' && !deAlli(p));
+  const gastos = D.pagos.filter(p => p.mes === m && p.tipo === 'Gasto' && !viajeDe(p));
   const filas = D.topes.map(t => ({t, g: sum(gastos.filter(p => t.incluye.includes(p.categoria)))}));
   const vidaG = filas.filter(x => x.t.tope > 0).reduce((a, x) => a + x.g, 0);
   const planMes = D.plan.find(p => p.mes === m);
@@ -1115,7 +1115,6 @@ const viajeVivo = () => D.viajes.filter(v => today() <= addDay(v.hasta, 10)).sor
 const viajeAuto = p => p.tipo === 'Gasto' && !CASA.has(p.categoria) && !PLAZOS.test(p.comercio) && D.viajes.find(v => p.dia >= v.desde && p.dia <= v.hasta) || null;
 const viajeDe = p => p.viaje_id === 0 ? null : p.viaje_id ? D.viajes.find(v => v.id === p.viaje_id) || null : viajeAuto(p);
 // Gastado allí: lo del viaje desde el primer día. Lo de antes (y lo pagado a plazos) son reservas.
-const deAlli = p => { const v = viajeDe(p); return !!v && p.dia >= v.desde; };
 function cuentasViaje(v){
   const ps = D.pagos.filter(p => viajeDe(p) === v);
   const alli = ps.filter(p => p.dia >= v.desde), antes = ps.filter(p => p.dia < v.desde), parts = D.partidas.filter(x => x.viaje_id === v.id);
