@@ -237,6 +237,8 @@ header.top{display:flex;flex-direction:column;gap:var(--s1);padding-top:var(--s3
 .wlabel{font-size:var(--t-body);font-weight:500;color:var(--ink)}
 .wbig{font-family:var(--display);font-size:var(--t-num);font-weight:var(--w-display);letter-spacing:-.02em;line-height:1.05;margin:2px 0}
 .tqm{width:min(300px,85%);margin-top:12px;height:6px} .tqsub{font-size:var(--t-sub);color:var(--muted);margin-top:10px}
+.tqc{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:var(--s4)} .tqc .tqm{width:100%} .tqc .tqsub{margin-top:8px}
+.mbig{font-family:var(--display);font-size:calc(var(--t-num) * .62);font-weight:var(--w-display);letter-spacing:-.02em;line-height:1.1;margin:2px 0}
 .wbig small{font-size:.5em;letter-spacing:0;margin-left:1px}
 .wsub{font-size:var(--t-sub);color:var(--muted);min-height:1.3em}
 .skw{display:block;height:calc(var(--t-num) * 1.25);width:55%;border-radius:var(--r-s);background:var(--chip);margin:6px 0 8px}
@@ -568,8 +570,14 @@ details.mas > div{display:flex;flex-direction:column;gap:12px;padding-bottom:8px
   <!-- RESUMEN -->
   <div id="v-resumen" class="view">
     <div class="aviso" id="aviso" hidden><p id="avisoTxt"></p><button class="linkbtn" id="avisoOk">Hecho</button></div>
-    <section class="hz" aria-label="Tu mes">
-      <div class="tq"><span class="wlabel" id="wLbl">Te quedan para gastar</span><span class="wbig num" id="wTotal"></span>
+    <section class="hz" aria-label="Tu dinero">
+      <div class="tq"><span class="wlabel">Tu dinero</span><span class="wbig num" id="wDinero"></span></div>
+      <div class="accs" id="wAccs" role="tablist" aria-label="Cuentas"></div>
+      <p class="accnote" id="wNote"></p>
+    </section>
+
+    <section class="group" aria-label="Tu mes">
+      <div class="card tqc"><span class="wlabel" id="wLbl">Te quedan para gastar</span><span class="mbig num" id="wTotal"></span>
         <span class="meter tqm" id="wMeter"><i></i></span><span class="tqsub" id="wSub"></span>
         <button class="estado" id="wEstado" hidden></button></div>
     </section>
@@ -586,8 +594,6 @@ details.mas > div{display:flex;flex-direction:column;gap:12px;padding-bottom:8px
 
     <section class="group" aria-labelledby="hUlt">
       <div class="ghrow"><h2 id="hUlt">Últimos movimientos</h2><button class="ghlink" id="aAdd"><span data-ico="ui-plus"></span>Añadir</button></div>
-      <div class="accs" id="wAccs" role="tablist" aria-label="Cuentas"></div>
-      <p class="accnote" id="wNote"></p>
       <div class="card"><div class="list" id="ult"></div></div>
     </section>
 
@@ -817,7 +823,7 @@ function prepDeuda(d){ ['pendiente','tin','cuota','inicial'].forEach(k => d[k] =
 // Mientras llegan los datos, bloques grises con la forma de lo que viene.
 const skRows = n => Array.from({length: n}, () => '<div class="skrow" aria-hidden="true"><span class="sk"></span><span class="sk w"></span><span class="sk"></span><span class="sk"></span></div>').join('');
 function esqueleto(){
-  $('wTotal').innerHTML = '<span class="skw" aria-label="Cargando"></span>';
+  $('wDinero').innerHTML = '<span class="skw" aria-label="Cargando"></span>';
   ['topes','prox','movs','fijos','cuotas','debts','topCom'].forEach(id => $(id).innerHTML = skRows(3));
   $('cats').innerHTML = skRows(3);
 }
@@ -1393,6 +1399,7 @@ function renderUlt(){
 function renderDinero(){
   const ss = D.saldos.map(s => ({...s, ahora: saldoDe(s)}));
   const total = ss.reduce((a,s) => a + s.ahora, 0);
+  $('wDinero').innerHTML = ss.length ? cifra(total) : 'Sin saldos';
   // Una cuenta por saldo, y la tarjeta de crédito con lo que lleva la factura que viene.
   tarjetas = ss.map(s => ({nombre: s.cuenta, cuentas: s.cuenta === 'BBVA' ? ['BBVA', 'BBVA (retención)'] : [s.cuenta], tipo: s.cuenta === 'Efectivo' ? 'En mano' : 'Débito', lb: 'Saldo de hoy', v: s.ahora, saldo: true}));
   D.deudas.filter(d => d.cada_mes && d.cierre && d.tarjeta && !d.pagada).forEach(d => {
