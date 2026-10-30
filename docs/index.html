@@ -236,6 +236,7 @@ header.top{display:flex;flex-direction:column;gap:var(--s1);padding-top:var(--s3
 @container (max-width: 19em){.tx{grid-template-columns:minmax(0,1fr) auto}.tx svg.i{display:none}.tx .a{grid-column:1/-1;grid-row:2;text-align:left}}
 .wlabel{font-size:var(--t-body);font-weight:500;color:var(--ink)}
 .wbig{font-family:var(--display);font-size:var(--t-num);font-weight:var(--w-display);letter-spacing:-.02em;line-height:1.05;margin:2px 0}
+.tqm{width:min(300px,85%);margin-top:12px;height:6px} .tqsub{font-size:var(--t-sub);color:var(--muted);margin-top:10px}
 .wbig small{font-size:.5em;letter-spacing:0;margin-left:1px}
 .wsub{font-size:var(--t-sub);color:var(--muted);min-height:1.3em}
 .skw{display:block;height:calc(var(--t-num) * 1.25);width:55%;border-radius:var(--r-s);background:var(--chip);margin:6px 0 8px}
@@ -567,17 +568,15 @@ details.mas > div{display:flex;flex-direction:column;gap:12px;padding-bottom:8px
   <!-- RESUMEN -->
   <div id="v-resumen" class="view">
     <div class="aviso" id="aviso" hidden><p id="avisoTxt"></p><button class="linkbtn" id="avisoOk">Hecho</button></div>
-    <section class="hz" aria-label="Dinero">
-      <div class="tq"><span class="wlabel">Te queda</span><span class="wbig num" id="wTotal"></span><button class="estado" id="wEstado" hidden></button></div>
-      <div class="accs" id="wAccs" role="tablist" aria-label="Cuentas"></div>
-      <p class="accnote" id="wNote"></p>
+    <section class="hz" aria-label="Tu mes">
+      <div class="tq"><span class="wlabel" id="wLbl">Te quedan para gastar</span><span class="wbig num" id="wTotal"></span>
+        <span class="meter tqm" id="wMeter"><i></i></span><span class="tqsub" id="wSub"></span>
+        <button class="estado" id="wEstado" hidden></button></div>
     </section>
 
-    <section class="snow viaje" id="viajeRes" aria-labelledby="hViaje" hidden></section>
-
-    <section class="group" aria-labelledby="hUlt">
-      <div class="ghrow"><h2 id="hUlt">Últimos movimientos</h2><button class="ghlink" id="aAdd"><span data-ico="ui-plus"></span>Añadir</button></div>
-      <div class="card"><div class="list" id="ult"></div></div>
+    <section class="group" aria-labelledby="hTopes">
+      <div class="ghrow"><h2 id="hTopes">En qué</h2><span class="ghnote num" id="vidaDe"></span></div>
+      <div class="tiles" id="topes"></div>
     </section>
 
     <section class="group" id="pendGroup" aria-labelledby="hPend" hidden>
@@ -585,12 +584,14 @@ details.mas > div{display:flex;flex-direction:column;gap:12px;padding-bottom:8px
       <div class="card"><div class="list" id="pend"></div></div>
     </section>
 
-    <section class="snow" id="snowRes" aria-labelledby="hSnowR"></section>
-
-    <section class="group" aria-labelledby="hTopes">
-      <div class="ghrow"><h2 id="hTopes">Para gastar</h2><span class="ghnote num" id="vidaDe"></span></div>
-      <div class="tiles" id="topes"></div>
+    <section class="group" aria-labelledby="hUlt">
+      <div class="ghrow"><h2 id="hUlt">Últimos movimientos</h2><button class="ghlink" id="aAdd"><span data-ico="ui-plus"></span>Añadir</button></div>
+      <div class="accs" id="wAccs" role="tablist" aria-label="Cuentas"></div>
+      <p class="accnote" id="wNote"></p>
+      <div class="card"><div class="list" id="ult"></div></div>
     </section>
+
+    <section class="snow" id="snowRes" aria-labelledby="hSnowR"></section>
 
     <section class="group" aria-labelledby="proxT">
       <div class="ghrow"><h2 id="proxT">El mes que viene</h2></div>
@@ -600,6 +601,7 @@ details.mas > div{display:flex;flex-direction:column;gap:12px;padding-bottom:8px
 
   <!-- GASTOS (todos los movimientos) -->
   <div id="v-movs" class="view" hidden>
+    <section class="snow viaje" id="viajeRes" aria-labelledby="hViaje" hidden></section>
     <div class="group">
       <label class="vh" for="search">Buscar gastos</label>
       <input id="search" type="search" placeholder="Buscar" autocomplete="off" enterkeyhint="search">
@@ -1062,8 +1064,14 @@ function porPagar(){
 function renderResumen(){
   const total = renderDinero(); renderProximo(); avisoMes();
   const now = mesHoy(), pg = paraGastar(now), {vidaG, vidaT, hoy, dias} = pg;
-  $('vidaDe').textContent = vidaG > vidaT ? `Te has pasado ${eur(vidaG - vidaT)}` : `Quedan ${eur(vidaT - vidaG)} de ${eur(vidaT)}`;
-  $('vidaDe').className = 'ghnote num' + (vidaG > vidaT ? ' neg-bad' : '');
+  // Arriba, cómo va el mes: lo que te queda para gastar, cuánto llevas y a cuánto sales al día.
+  const libreM = vidaT - vidaG, quedan = Math.max(1, dias - hoy + 1), pctM = vidaT ? Math.min(100, vidaG / vidaT * 100) : 0;
+  $('wLbl').textContent = libreM >= 0 ? `Te quedan para gastar en ${mesCorto(now)}` : `Te has pasado en ${mesCorto(now)}`;
+  $('wTotal').innerHTML = cifra(Math.abs(libreM)); $('wTotal').classList.toggle('neg-bad', libreM < 0);
+  const mt = $('wMeter'); mt.className = 'meter tqm ' + (vidaG > vidaT * 1.25 ? 'bad' : vidaG > vidaT || vidaG > vidaT * hoy / dias * 1.1 ? 'warn' : 'ok');
+  mt.querySelector('i').style.width = pctM + '%'; mt.setAttribute('role', 'img'); mt.setAttribute('aria-label', `${Math.round(pctM)} % gastado`);
+  $('wSub').textContent = `Llevas ${eur(vidaG)} de ${eur(vidaT)} · ${quedan === 1 ? 'último día' : `${quedan} días`}${libreM > 0 ? ` · ${eur(libreM / quedan)} al día` : ''}`;
+  $('vidaDe').textContent = '';
   // Una tarjeta por presupuesto, con el color de su categoría. Rojo solo si te pasas de verdad (más de un 25 %).
   const sinTope = pg.filas.filter(({t, g}) => !t.tope && g > 0.5);
   $('topes').innerHTML = pg.filas.filter(({t}) => t.tope > 0).map(({t, g}) => {
@@ -1088,14 +1096,10 @@ function renderResumen(){
   $('pend').querySelectorAll('[data-pk]').forEach(b => b.onclick = () => { const i = pp.items[b.dataset.pk]; (i.tipo === 'fijo' ? toggleFijo : toggleDeuda)(i.ref, b, i.m); });
   $('pend').querySelectorAll('[data-pe]').forEach(b => b.onclick = () => { const i = pp.items[b.dataset.pe]; i.tipo === 'fijo' ? editFijo(i.ref, i.m) : editDeuda(i.ref, i.m); });
 
-  // Debajo de «Te queda»: si falta algo por pagar, cuánto; si no, lo que puedes gastar este mes.
-  const e = $('wEstado'), libre = vidaT - vidaG; e.hidden = false;
-  if (pp.items.length) { e.style.setProperty('--c', 'var(--warn)'); e.innerHTML = `${svg('ui-clock')}<span>Te falta por pagar</span><b>${eur(pp.total)}</b>${svg('ui-chev')}`; e.onclick = () => $('pendGroup').scrollIntoView({behavior: suave(), block: 'start'}); }
-  else if (libre >= 0) { e.style.setProperty('--c', 'var(--good)'); e.innerHTML = `${svg('ui-coins')}<span>Puedes gastar</span><b>${eur(libre)}</b>${svg('ui-chev')}`; e.onclick = () => $('hTopes').scrollIntoView({behavior: suave(), block: 'start'}); }
-  else { e.style.setProperty('--c', 'var(--bad)'); e.innerHTML = `${svg('ui-alert')}<span>Te has pasado</span><b>${eur(-libre)}</b>${svg('ui-chev')}`; e.onclick = () => $('hTopes').scrollIntoView({behavior: suave(), block: 'start'}); }
-  e.setAttribute('aria-label', e.textContent);
+  // Debajo: si falta algo por pagar este mes, cuánto.
+  const e = $('wEstado'); e.hidden = !pp.items.length;
+  if (pp.items.length) { e.style.setProperty('--c', 'var(--warn)'); e.innerHTML = `${svg('ui-clock')}<span>Te falta por pagar</span><b>${eur(pp.total)}</b>${svg('ui-chev')}`; e.onclick = () => $('pendGroup').scrollIntoView({behavior: suave(), block: 'start'}); e.setAttribute('aria-label', e.textContent); }
   snowCard($('snowRes'), false, total, pp.total);
-  viajeCard($('viajeRes'));
 }
 
 // ---------- viajes ----------
@@ -1390,7 +1394,6 @@ function renderUlt(){
 function renderDinero(){
   const ss = D.saldos.map(s => ({...s, ahora: saldoDe(s)}));
   const total = ss.reduce((a,s) => a + s.ahora, 0);
-  $('wTotal').innerHTML = ss.length ? cifra(total) : 'Sin saldos';
   // Una cuenta por saldo, y la tarjeta de crédito con lo que lleva la factura que viene.
   tarjetas = ss.map(s => ({nombre: s.cuenta, cuentas: s.cuenta === 'BBVA' ? ['BBVA', 'BBVA (retención)'] : [s.cuenta], tipo: s.cuenta === 'Efectivo' ? 'En mano' : 'Débito', lb: 'Saldo de hoy', v: s.ahora, saldo: true}));
   D.deudas.filter(d => d.cada_mes && d.cierre && d.tarjeta && !d.pagada).forEach(d => {
@@ -1533,6 +1536,7 @@ $('filters').querySelectorAll('button[data-f]').forEach(b => b.onclick = () => {
   renderMovs();
 });
 function renderMovs(){
+  viajeCard($('viajeRes'));
   // "Sin categoría" y la búsqueda miran todos los meses; el resto, el mes elegido.
   const global = filtro === 'sin' || busqueda;
   let list = D.pagos.filter(p => global || p.mes === cur);
