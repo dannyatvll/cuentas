@@ -28,7 +28,7 @@
   /* color */
   --bg:#f3f3f1; --surface:#fefefd; --surface-2:#ebebe8; --field:#ebebe8; --raised:#fefefd;
   --ink:#1c1b19; --muted:#6b6863; --soft:#8f8b85; --line:rgba(28,27,25,.1); --bar:color-mix(in srgb,var(--ink) 55%,transparent);
-  --accent:#1f5bd6; --accent-soft:rgba(31,91,214,.1); --on-accent:#ffffff;
+  --accent:#15803d; --accent-soft:rgba(21,128,61,.1); --on-accent:#ffffff;
   --pop:#f2a71b; --pop-soft:rgba(242,167,27,.2);
   --good:#1b7a43; --warn:#9a5b00; --bad:#c8321e; --on-bad:#ffffff;
   --glass:rgba(254,254,253,.86); --scrim:rgba(18,17,16,.36); --shadow:0 8px 24px rgba(28,27,25,.07);
@@ -48,19 +48,19 @@
 @media (prefers-color-scheme: dark){:root{
   --bg:#121110; --surface:#1d1b19; --surface-2:#292623; --field:#312e2a; --raised:#24221f;
   --ink:#f3efe8; --muted:#a8a197; --soft:#77716a; --line:rgba(243,239,232,.1);
-  --accent:#7ea6ff; --accent-soft:rgba(126,166,255,.16); --on-accent:#0f1420;
+  --accent:#4ade80; --accent-soft:rgba(74,222,128,.16); --on-accent:#052e16;
   --pop:#ffc24d; --pop-soft:rgba(255,194,77,.18); --brand:#2b2825; --on-brand:#f7f3ec;
   --good:#4fcf8b; --warn:#f5b04a; --bad:#ff7b67; --on-bad:#1a0d0a;
   --glass:rgba(36,34,31,.86); --scrim:rgba(0,0,0,.55); --shadow:0 8px 24px rgba(0,0,0,.35);
   color-scheme:dark;
 }}
 /* Siempre en oscuro: grafito neutro (sin marrones) y el color va en los datos: cada categoría tiene su tono,
-   el violeta es la acción y el hielo (--pop) marca hoy y la bola de nieve. */
+   el verde es la acción y la lima (--pop) marca hoy y la bola de nieve. */
 :root[data-look="d"]{color-scheme:dark;
   --bg:#0b0b0f; --surface:#16161c; --surface-2:#202028; --field:#23232c; --raised:#1a1a21;
   --ink:#f5f5f7; --muted:#a4a4b0; --soft:#787884; --line:rgba(255,255,255,.08);
-  --accent:#a193ff; --accent-soft:rgba(161,147,255,.16); --on-accent:#140f33;
-  --pop:#6fe3ff; --pop-soft:rgba(111,227,255,.16); --brand:#16161c; --on-brand:#f5f5f7;
+  --accent:#4ade80; --accent-soft:rgba(74,222,128,.16); --on-accent:#052e16;
+  --pop:#bef264; --pop-soft:rgba(190,242,100,.16); --brand:#16161c; --on-brand:#f5f5f7;
   --good:#3ee6a0; --warn:#ffc65c; --bad:#ff7070; --on-bad:#1c0707; --on-good:#06261a;
   --glass:rgba(22,22,28,.82); --scrim:rgba(0,0,0,.6); --shadow:0 8px 24px rgba(0,0,0,.4);
   --photo:none; --chip:rgba(255,255,255,.08); --seg:#2e2e39;
@@ -68,8 +68,8 @@
   /* barras de datos: degradado de un solo tono, la punta es la parte fuerte */
   --track:rgba(255,255,255,.08);
   --fill-good:linear-gradient(90deg,#19b77f,#5ff0b8); --fill-warn:linear-gradient(90deg,#f09a1a,#ffd166);
-  --fill-bad:linear-gradient(90deg,#f0405f,#ff8a80); --fill-acc:linear-gradient(90deg,#7b6cff,#c3b9ff);
-  --col-off:rgba(255,255,255,.12); --col-sel:linear-gradient(180deg,#c3b9ff,#7b6cff); --glow:0 0 10px -2px currentColor}
+  --fill-bad:linear-gradient(90deg,#f0405f,#ff8a80); --fill-acc:linear-gradient(90deg,#16a34a,#86efac);
+  --col-off:rgba(255,255,255,.12); --col-sel:linear-gradient(180deg,#86efac,#16a34a); --glow:0 0 10px -2px currentColor}
 @media (prefers-contrast: more){:root[data-look="d"]{--line:rgba(255,255,255,.3); --muted:#c8c8d2; --soft:#a4a4b0; --glass:var(--surface)}}
 
 *{box-sizing:border-box}
@@ -433,18 +433,18 @@ svg.chart text{fill:var(--muted);font:500 26px var(--font)}
 
 /* Bola de nieve */
 .snow{position:relative;overflow:hidden;border-radius:var(--r-l);padding:18px 18px 16px;display:flex;flex-direction:column;gap:14px;color:var(--ink);
-  background:radial-gradient(90% 70% at 100% 0%,rgba(111,227,255,.24),transparent 65%),radial-gradient(80% 60% at 0% 100%,rgba(161,147,255,.24),transparent 70%),#14152a;
+  background:radial-gradient(90% 70% at 100% 0%,rgba(190,242,100,.2),transparent 65%),radial-gradient(80% 60% at 0% 100%,rgba(74,222,128,.24),transparent 70%),#0f1a14;
   box-shadow:inset 0 0 0 .5px rgba(255,255,255,.1)}
 .snow .top{display:flex;align-items:center;gap:10px}
 .snow .top h2{font-family:var(--font);font-size:var(--t-body);font-weight:700;flex:1;letter-spacing:0}
-.flake{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;background:rgba(111,227,255,.18);color:var(--pop);flex:none}
+.flake{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;background:rgba(190,242,100,.18);color:var(--pop);flex:none}
 .flake svg.i{width:22px;height:22px}
 .snow .meta{background:rgba(255,255,255,.09);border:0;border-radius:var(--r-full);min-height:36px;padding:0 12px;font-size:var(--t-foot);font-weight:600;color:var(--ink);white-space:nowrap}
 .snow .lbl{font-size:var(--t-sub);color:#c9cbe8}
 .snow .big{display:block;font-size:calc(var(--t-num) * .78);font-weight:700;letter-spacing:-.02em;line-height:1.08;font-variant-numeric:tabular-nums}
 .snow .big small{font-size:.5em}
 .hucha{position:relative;height:14px;border-radius:7px;background:rgba(255,255,255,.1)}
-.hucha i{display:block;height:100%;border-radius:7px;background:linear-gradient(90deg,#6fe3ff,#a193ff);box-shadow:0 0 16px -3px rgba(111,227,255,.7)}
+.hucha i{display:block;height:100%;border-radius:7px;background:linear-gradient(90deg,#bef264,#4ade80);box-shadow:0 0 16px -3px rgba(74,222,128,.7)}
 .hucha .mk{position:absolute;top:-4px;bottom:-4px;width:2px;margin-left:-1px;border-radius:1px;background:rgba(255,255,255,.7)}
 .hucha + .hl{display:flex;justify-content:space-between;gap:8px;font-size:var(--t-foot);color:#c9cbe8;margin-top:-6px}
 .goals{display:flex;flex-wrap:wrap;gap:8px}
@@ -455,9 +455,9 @@ svg.chart text{fill:var(--muted);font:500 26px var(--font)}
 .goal svg.i{width:16px;height:16px}
 .goal.ok svg.i{color:var(--good)} .goal.no svg.i{color:var(--bad)} .goal.fire svg.i{color:#ffb86b}
 .kills{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:var(--t-sub);color:#c9cbe8}
-.kill{display:inline-flex;align-items:center;gap:4px;min-height:28px;padding:0 10px 0 6px;border-radius:var(--r-full);background:rgba(111,227,255,.15);color:var(--ink);font-weight:600;font-size:var(--t-foot)}
+.kill{display:inline-flex;align-items:center;gap:4px;min-height:28px;padding:0 10px 0 6px;border-radius:var(--r-full);background:rgba(190,242,100,.15);color:var(--ink);font-weight:600;font-size:var(--t-foot)}
 .kill svg.i{width:14px;height:14px;color:var(--pop)}
-.snowbtn{min-height:50px;border:0;border-radius:var(--r-full);font-weight:700;font-size:var(--t-body);background:linear-gradient(90deg,#6fe3ff,#a193ff);color:#0d0b26;padding:0 20px}
+.snowbtn{min-height:50px;border:0;border-radius:var(--r-full);font-weight:700;font-size:var(--t-body);background:linear-gradient(90deg,#bef264,#4ade80);color:#052e16;padding:0 20px}
 .snowbtn.soft{background:rgba(255,255,255,.1);color:var(--ink);font-weight:600}
 .snowbtn:active{transform:scale(.97)}
 /* Viaje: el molde de la bola de nieve en tonos cálidos */
@@ -482,8 +482,8 @@ svg.chart text{fill:var(--muted);font:500 26px var(--font)}
 .debt.sn{display:grid;grid-template-columns:auto minmax(0,1fr);gap:3px 12px;align-items:center}
 .debt.sn > :not(.pos){grid-column:2}
 .pos{grid-row:1 / span 3;align-self:start;width:32px;height:32px;margin-top:2px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:var(--t-sub);background:var(--chip);color:var(--muted);font-variant-numeric:tabular-nums}
-.debt.next .pos{background:linear-gradient(135deg,#6fe3ff,#a193ff);color:#0d0b26}
-.debt.next .meter i{background:linear-gradient(90deg,#6fe3ff,#a193ff)!important}
+.debt.next .pos{background:linear-gradient(135deg,#bef264,#4ade80);color:#052e16}
+.debt.next .meter i{background:linear-gradient(90deg,#bef264,#4ade80)!important}
 .debt .tagn{color:var(--pop);font-weight:700}
 .debt.paid .pos{background:color-mix(in srgb,var(--good) 18%,transparent);color:var(--good)}
 .debt.paid .pos svg.i{width:16px;height:16px}
@@ -1025,7 +1025,7 @@ function deudaActual(){ return D.deudas.filter(d => !d.pagada).reduce((s,d) => s
 const CATC = {'Supermercado':'#3ee6a0','Restaurantes':'#ff9f5a','Salidas de noche':'#ff6fb5','Ocio':'#b18cff','Transporte':'#5eb8ff','Compras':'#ffd166',
   'Cuidado personal':'#5ee0e0','Viajes':'#7aa8ff','Deporte':'#a3e65c','Otros':'#8fa3ff','Bizum':'#8fa3ff','Tabaco':'#ff8a8a','Apuestas':'#ff8a8a',
   'Vivienda':'#7fd1ff','Salud':'#ff7d9c','Suscripciones':'#c08cff','Teléfono e internet':'#6fe0c8','Impuestos':'#aab4c8','Ingreso':'var(--good)',
-  'Pago de deuda':'#a193ff','Entre personas':'#ffb86b','Movimiento interno':'#aab4c8','Comisiones':'#aab4c8','Educación':'#7aa8ff','Multas':'#ff7070',
+  'Pago de deuda':'#4ade80','Entre personas':'#ffb86b','Movimiento interno':'#aab4c8','Comisiones':'#aab4c8','Educación':'#7aa8ff','Multas':'#ff7070',
   'Efectivo':'#3ee6a0','Sin categoría':'var(--warn)'};
 const tono = cat => CATC[cat] || '#9aa0b4';
 const suave = () => matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
@@ -1353,7 +1353,7 @@ async function marcarPagada(d){
 }
 // Confeti y un mensaje cuando cae una deuda (sin confeti si el iPhone tiene reducir movimiento).
 function fiesta(d){
-  const sig = bolaDeudas()[0], cols = ['#6fe3ff', '#a193ff', '#3ee6a0', '#ffd166', '#ff6fb5', '#ff9f5a'], r = (a, b) => a + Math.random() * (b - a);
+  const sig = bolaDeudas()[0], cols = ['#bef264', '#4ade80', '#3ee6a0', '#ffd166', '#ff6fb5', '#ff9f5a'], r = (a, b) => a + Math.random() * (b - a);
   const f = document.createElement('div'); f.className = 'fiesta';
   f.setAttribute('role', 'alertdialog'); f.setAttribute('aria-modal', 'true'); f.setAttribute('aria-labelledby', 'fiT'); f.setAttribute('aria-describedby', 'fiD');
   f.innerHTML = Array.from({length: 80}, () => `<i class="conf" aria-hidden="true" style="left:${r(0, 100).toFixed(1)}%;background:${cols[Math.random() * cols.length | 0]};--x:${r(-90, 90).toFixed(0)}px;--r:${r(-500, 500).toFixed(0)}deg;--d:${r(1.8, 3.4).toFixed(2)}s;--w:${r(0, .6).toFixed(2)}s"></i>`).join('')
