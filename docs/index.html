@@ -475,6 +475,8 @@ svg.chart text{fill:var(--muted);font:500 26px var(--font)}
 .cierre > b{font-size:calc(var(--t-num) * .78);font-weight:700;letter-spacing:-.02em;line-height:1.08;font-variant-numeric:tabular-nums}
 .cierre > b small{font-size:.5em}
 .civer{display:block;margin:var(--s3) auto 0}
+.vjtot{display:flex;justify-content:space-between;align-items:baseline;background:var(--chip);border-radius:16px;padding:12px 14px;margin:0 0 8px}.vjtot span{font-size:var(--t-foot);color:var(--muted)}.vjtot b{font-size:var(--t-title);font-variant-numeric:tabular-nums}
+.vjg summary{display:flex;align-items:center;gap:8px;padding:12px 14px;cursor:pointer;list-style:none;min-height:44px}.vjg summary::-webkit-details-marker{display:none}.vjg summary span:first-child{flex:1;font-weight:600}.vjg summary .n{flex:none;font-size:var(--t-foot);color:var(--muted)}.vjg summary svg.i{transition:transform .2s}.vjg[open] summary svg.i{transform:rotate(90deg)}.vjg + .vjg{border-top:1px solid var(--line,rgba(255,255,255,.08))}
 .vjsum{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .vjsum > div{background:var(--chip);border-radius:16px;padding:12px 14px;display:flex;flex-direction:column;gap:2px}
 .vjsum span{font-size:var(--t-foot);color:var(--muted)} .vjsum b{font-size:var(--t-title);font-variant-numeric:tabular-nums}
@@ -1155,17 +1157,39 @@ function viajeLibre(el, v){
     <button class="snowbtn soft" type="button" data-ver>Ver el viaje</button>`;
   el.querySelector('[data-ver]').onclick = () => abrirViaje(v);
 }
+// Reservas por tipo (vuelos, alojamiento, entradas…) y gasto de allí por tipo de gasto.
+const RES_ORDEN = ['Vuelos', 'Vuelo extra', 'Alojamiento', 'Entradas y actividades', 'Transporte', 'Otros'];
+const resGrupo = (cat, texto) => {
+  if (cat === 'Vuelo extra') return 'Vuelo extra';
+  if (cat === 'Vuelos' || /iberia|aerom[eé]xico|vuelo/i.test(texto || '')) return 'Vuelos';
+  if (cat === 'Alojamiento' || /airbnb(?! exp)|hotel/i.test(texto || '')) return 'Alojamiento';
+  if (cat === 'Entradas' || cat === 'Actividades' || cat === 'Ocio' || /ticketmaster|getyourguide|globo|aerotours|experiences|entrada/i.test(texto || '')) return 'Entradas y actividades';
+  return cat === 'Transporte' ? 'Transporte' : 'Otros';
+};
+const ALLI_GRUPO = {Restaurantes: 'Comida y bebida', 'Salidas de noche': 'Comida y bebida', Supermercado: 'Comida y bebida', Compras: 'Recuerdos y compras', Viajes: 'Efectivo, eSIM y otros', Comisiones: 'Otros', Salud: 'Otros'};
+const alliGrupo = p => ALLI_GRUPO[p.categoria] || p.categoria;
 function abrirViaje(v){
   const c = cuentasViaje(v), byF = (a, b) => b.fecha.localeCompare(a.fecha);
   const fila = p => `<button class="tx" type="button" data-id="${p.id}"><span class="c">${esc(p.comercio)}</span><span class="a num">${eur2(p.importe)}</span>${svg('ui-chev')}<span class="s">${esc(p.categoria)} · ${cuando(p)}</span></button>`;
   const part = x => `<button class="tx" type="button" data-part="${x.id}"><span class="c">${esc(x.concepto)}</span><span class="a num">${eur2(x.importe)}</span>${svg('ui-chev')}<span class="s">${esc(x.categoria || 'Reserva')} · a plazos</span></button>`;
+  const grupos = (items, orden) => {
+    const m = new Map();
+    items.forEach(i => { if (!m.has(i.g)) m.set(i.g, []); m.get(i.g).push(i); });
+    const ks = [...m.keys()].sort((a, b) => orden ? (orden.indexOf(a) + 1 || 99) - (orden.indexOf(b) + 1 || 99) : sum(m.get(b)) - sum(m.get(a)));
+    return ks.map(k => { const g = m.get(k), t = r2(g.reduce((a, i) => a + i.importe, 0));
+      return `<details class="vjg"><summary><span>${esc(k)}</span><span class="n">${g.length}</span><b class="num">${eur2(t)}</b>${svg('ui-chev')}</summary><div class="list">${g.map(i => i.html).join('')}</div></details>`; }).join('');
+  };
+  const reservas = [...c.antes.map(p => ({g: resGrupo(p.categoria, p.comercio), importe: p.importe, html: fila(p)})), ...c.parts.map(x => ({g: resGrupo(x.categoria, x.concepto), importe: x.importe, html: part(x)}))];
+  const alli = c.alli.slice().sort(byF).map(p => ({g: alliGrupo(p), importe: p.importe, html: fila(p)}));
+  const total = r2(c.gastado + c.reservas);
   openSheet(`${hd(esc(v.nombre))}
     <p class="small muted">Del ${fechaCorta(v.desde)} al ${fechaCorta(v.hasta)}, ${c.dias} días · <button class="linkbtn" type="button" id="vjEd">Cambiar</button></p>
-    <div class="vjsum"><div><span>Gastado allí</span><b>${cifra(c.gastado)}</b></div><div><span>Reservas</span><b>${cifra(c.reservas)}</b></div></div>
-    <div class="ghrow sm"><h3>Allí</h3><button class="ghlink" type="button" id="vjAdd">${svg('ui-plus')}Añadir gasto</button></div>
-    <div class="card"><div class="list">${c.alli.sort(byF).map(fila).join('') || `<p class="empty">Lo que pagues del ${fechaCorta(v.desde)} al ${fechaCorta(v.hasta)} entra aquí solo, menos lo de casa (alquiler, suscripciones, cuotas). Para sacar uno, ábrelo y quita «Del viaje».</p>`}</div></div>
-    <div class="ghrow sm"><h3>${v.presupuesto ? 'Reservas, aparte del presupuesto' : 'Reservas, pagadas antes de ir'}</h3><button class="ghlink" type="button" id="vjRes">${svg('ui-plus')}Añadir</button></div>
-    <div class="card"><div class="list">${[...c.antes.sort(byF).map(fila), ...c.parts.map(part)].join('') || '<p class="empty">Vuelos, alojamiento y lo que pagues antes de ir.</p>'}</div></div>`, sh => {
+    <div class="vjtot"><span>Total del viaje</span><b>${cifra(total)}</b></div>
+    <div class="vjsum"><div><span>Reservas</span><b>${cifra(c.reservas)}</b></div><div><span>Gastado allí${v.presupuesto ? ` · de ${eur(v.presupuesto)}` : ''}</span><b>${cifra(c.gastado)}</b></div></div>
+    <div class="ghrow sm"><h3>Reservas${v.presupuesto ? ', aparte del presupuesto' : ''}</h3><button class="ghlink" type="button" id="vjRes">${svg('ui-plus')}Añadir</button></div>
+    <div class="card">${grupos(reservas, RES_ORDEN) || '<p class="empty">Vuelos, alojamiento y lo que pagues antes de ir.</p>'}</div>
+    <div class="ghrow sm"><h3>Gastos de allí</h3><button class="ghlink" type="button" id="vjAdd">${svg('ui-plus')}Añadir gasto</button></div>
+    <div class="card">${grupos(alli) || `<p class="empty">Lo que pagues del ${fechaCorta(v.desde)} al ${fechaCorta(v.hasta)} entra aquí solo, menos lo de casa (alquiler, suscripciones, cuotas). Para sacar uno, ábrelo y quita «Del viaje».</p>`}</div>`, sh => {
     sh.querySelectorAll('[data-id]').forEach(b => b.onclick = () => editPago(D.pagos.find(p => p.id == b.dataset.id)));
     sh.querySelectorAll('[data-part]').forEach(b => b.onclick = () => editPartida(v, D.partidas.find(x => x.id == b.dataset.part)));
     $('vjAdd').onclick = () => editPago(null, v);
@@ -1203,7 +1227,7 @@ function editPartida(v, x){
       ${amt('rpi', x?.importe, 'euros en total')}
       <label class="f">Qué es<input id="rc" autocomplete="off" value="${esc(x?.concepto || '')}" placeholder="Ej. Hotel, 3 noches"></label>
       <p class="flbl" id="rcatL">Tipo</p>
-      <div class="cchips plain" role="radiogroup" aria-labelledby="rcatL">${chipsDe('rcat', ['Vuelos', 'Alojamiento', 'Transporte', 'Ocio', 'Otros'].map(t => ({v: t})), x?.categoria || 'Alojamiento')}</div>
+      <div class="cchips plain" role="radiogroup" aria-labelledby="rcatL">${chipsDe('rcat', ['Vuelos', 'Vuelo extra', 'Alojamiento', 'Entradas', 'Transporte', 'Otros'].map(t => ({v: t})), x?.categoria || 'Alojamiento')}</div>
       <p class="small muted">Para lo que pagas a plazos. Si sale entero en el banco, mejor abre ese movimiento y marca «Del viaje».</p>
       <div class="actions"><button class="primary" type="submit">${nuevo ? 'Añadir' : 'Guardar'}</button>${nuevo ? '' : '<button class="danger" type="button" id="rdel">Borrar</button>'}</div>
     </form>`, sh => {
