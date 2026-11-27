@@ -461,11 +461,13 @@ svg.chart text{fill:var(--muted);font:500 26px var(--font)}
 .snowbtn.soft{background:rgba(255,255,255,.1);color:var(--ink);font-weight:600}
 .snowbtn:active{transform:scale(.97)}
 /* Viaje: el molde de la bola de nieve en tonos cálidos */
-.ximena{position:relative;overflow:hidden;border-radius:var(--r-l);padding:22px 20px;margin:0 0 14px;text-align:center;color:#fff;background:radial-gradient(90% 80% at 100% 0%,rgba(255,111,181,.45),transparent 65%),radial-gradient(80% 70% at 0% 100%,rgba(255,159,90,.4),transparent 70%),#2a1330}
-.ximena h2{margin:0;font-size:30px;line-height:1.05;letter-spacing:-.02em;font-weight:800}
-.ximena p{margin:8px 0 0;font-size:14px;color:#f3dbe9}
-.ximena .xd{font-size:44px;font-weight:800;line-height:1;margin-top:12px}
-.ximena .xs{margin-top:10px;font-size:15px;font-weight:600}
+.ximena{display:flex;align-items:center;justify-content:space-between;gap:14px;border-radius:var(--r-l);padding:12px 16px;margin:0 0 12px;color:#fff;background:radial-gradient(90% 120% at 100% 0%,rgba(255,111,181,.32),transparent 65%),#2a1330}
+.ximena .xt{min-width:0}
+.ximena h2{margin:0;font-size:15px;line-height:1.2;font-weight:700}
+.ximena p{margin:2px 0 0;font-size:12px;color:#e8cfe0}
+.ximena .xd{flex:none;text-align:right;line-height:1}
+.ximena .xd b{display:block;font-size:28px;font-weight:800;font-variant-numeric:tabular-nums}
+.ximena .xd span{font-size:11px;color:#e8cfe0;text-transform:uppercase;letter-spacing:.06em}
 .snow.viaje{background:radial-gradient(90% 70% at 100% 0%,rgba(255,159,90,.26),transparent 65%),radial-gradient(80% 60% at 0% 100%,rgba(255,111,181,.22),transparent 70%),#1d1424}
 .viaje .flake{background:rgba(255,159,90,.2);color:#ff9f5a}
 .viaje .meta{display:inline-flex;align-items:center}
@@ -1080,7 +1082,7 @@ function renderXimena(){
   el.hidden = !v; if (!v) return;
   const dias = diasEntre(h, v.desde), meses = Math.max(1, Math.round(dias / 30));
   const falta = (Number(v.presupuesto) || 0) + D.partidas.filter(x => x.viaje_id === v.id).reduce((a, x) => a + (Number(x.importe) || 0), 0);
-  el.innerHTML = `<h2>Do it for her</h2><p>Ahorrar y no gastar para ver a Ximena. Es la prioridad número uno.</p><div class="xd">${dias} días</div><p>para el ${fechaCorta(v.desde)}</p><div class="xs">≈ ${eur(Math.ceil(falta / meses), 0)} al mes durante ${meses} meses</div>`;
+  el.innerHTML = `<div class="xt"><h2>Do it for her · Ximena</h2><p>Ahorra para el ${fechaCorta(v.desde)} · ≈ ${eur(Math.ceil(falta / meses), 0)} al mes</p></div><div class="xd"><b>${dias}</b><span>días</span></div>`;
 }
 function renderResumen(){
   renderXimena();
